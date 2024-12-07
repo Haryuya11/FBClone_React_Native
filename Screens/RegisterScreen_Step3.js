@@ -122,7 +122,7 @@ const RegisterScreen_Step3 = ({ navigation }) => {
       style={styles.container}
     >
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
+        <TouchableOpacity onPress={() => navigation.navigate("Register_Step2")}>
           <Ionicons name="arrow-back-outline" size={24} />
         </TouchableOpacity>
       </View>
@@ -179,7 +179,7 @@ const RegisterScreen_Step3 = ({ navigation }) => {
           setGenderInfoPopupVisible={setGenderInfoPopupVisible}
         />
 
-        <TouchableOpacity style={styles.button}>
+        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate("Register_Step4_Phone")}>
           <Text style={styles.buttonText}>Tiếp</Text>
         </TouchableOpacity>
       </View>

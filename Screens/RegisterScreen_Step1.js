@@ -1,14 +1,65 @@
-import React from "react";
+import React, { useState, useRef } from "react";
 import {
   Text,
   View,
   StyleSheet,
   TouchableOpacity,
   TextInput,
+  Animated,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import Ionicons from "@expo/vector-icons/Ionicons";
 const RegisterScreen_Step1 = ({ navigation }) => {
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const firstNameAnimation = useRef(new Animated.Value(0)).current;
+  const lastNameAnimation = useRef(new Animated.Value(0)).current;
+  const firstNameRef = useRef(null);
+  const lastNameRef = useRef(null);
+
+  const handleFocus = (inputType) => {
+    Animated.timing(
+      inputType === "firstName" ? firstNameAnimation : lastNameAnimation,
+      {
+        toValue: 1,
+        duration: 150,
+        useNativeDriver: false,
+      }
+    ).start();
+  };
+
+  const handleBlur = (inputType) => {
+    const value = inputType === "firstName" ? firstName : lastName;
+    if (!value) {
+      Animated.timing(
+        inputType === "firstName" ? firstNameAnimation : lastNameAnimation,
+        {
+          toValue: 0,
+          duration: 150,
+          useNativeDriver: false,
+        }
+      ).start();
+    }
+  };
+
+  const handleInputGroupPress = (inputRef, inputType) => {
+    inputRef.current.focus();
+    handleFocus(inputType);
+  };
+
+  const floatingLabelStyle = (animation) => ({
+    position: "absolute",
+    left: 10,
+    top: animation.interpolate({
+      inputRange: [0, 1],
+      outputRange: [15, 5],
+    }),
+    fontSize: animation.interpolate({
+      inputRange: [0, 1],
+      outputRange: [14, 12],
+    }),
+  });
+
   return (
     <LinearGradient
       colors={["#FFE5E5", "#E5F1FF", "#E0F4FF"]}
@@ -17,7 +68,7 @@ const RegisterScreen_Step1 = ({ navigation }) => {
       style={styles.container}
     >
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
+        <TouchableOpacity onPress={() => navigation.navigate("Login")}>
           <Ionicons name="arrow-back-outline" size={24} />
         </TouchableOpacity>
       </View>
@@ -29,16 +80,45 @@ const RegisterScreen_Step1 = ({ navigation }) => {
         </Text>
 
         <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.input}
-            placeholder="Họ"
-            placeholderTextColor="#666"
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Tên"
-            placeholderTextColor="#666"
-          />
+          <TouchableOpacity
+            style={styles.inputGroup}
+            activeOpacity={1}
+            onPress={() => handleInputGroupPress(firstNameRef, "firstName")}
+          >
+            <Animated.Text
+              style={[styles.label, floatingLabelStyle(firstNameAnimation)]}
+            >
+              Họ
+            </Animated.Text>
+            <TextInput
+              ref={firstNameRef}
+              style={styles.input}
+              value={firstName}
+              onChangeText={setFirstName}
+              onFocus={() => handleFocus("firstName")}
+              onBlur={() => handleBlur("firstName")}
+            />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.inputGroup}
+            activeOpacity={1}
+            onPress={() => handleInputGroupPress(lastNameRef, "lastName")}
+          >
+            <Animated.Text
+              style={[styles.label, floatingLabelStyle(lastNameAnimation)]}
+            >
+              Tên
+            </Animated.Text>
+            <TextInput
+              ref={lastNameRef}
+              style={styles.input}
+              value={lastName}
+              onChangeText={setLastName}
+              onFocus={() => handleFocus("lastName")}
+              onBlur={() => handleBlur("lastName")}
+            />
+          </TouchableOpacity>
         </View>
         <TouchableOpacity
           style={styles.button}
@@ -88,14 +168,28 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginBottom: 20,
   },
-  input: {
+  inputGroup: {
+    width: "48%",
     borderWidth: 1,
     borderColor: "#666",
     borderRadius: 12,
-    padding: 10,
-    height: 50,
-    width: "48%",
     backgroundColor: "#f5f5f5",
+    paddingHorizontal: 10,
+    height: 55,
+    justifyContent: "center",
+    position: "relative",
+    flexDirection: "row",
+  },
+  label: {
+    fontSize: 14,
+    color: "#666",
+    backgroundColor: "#f5f5f5",
+    paddingHorizontal: 4,
+  },
+  input: {
+    fontSize: 14,
+    paddingVertical: 8,
+    marginTop: 10,
   },
   bottomContainer: {
     width: "100%",
