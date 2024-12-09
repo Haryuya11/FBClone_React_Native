@@ -11,6 +11,10 @@ import RegisterScreen_Step5 from "./Screens/RegisterScreen_Step5";
 import RegisterScreen_Step6 from "./Screens/RegisterScreen_Step6";
 import VerifyScreen from "./Screens/VerifyScreen";
 import HomeScreen from "./Screens/Mainscreen/HomeScreen";
+import PostScreen from "./Screens/Mainscreen/PostScreen";
+import ProfileScreen from "./Screens/Mainscreen/ProfileScreen";
+import VideoScreen from "./Screens/Mainscreen/VideoScreen";
+
 import TopTabNavigator from "./navigation/TopTabNavigator";
 import { Button, View } from "react-native"; // Dùng để debug
 
@@ -78,14 +82,6 @@ const AuthStack = () => {
           headerShown: false,
         }}
       />
-      {/* Dùng để debug */}
-      <authStack.Screen
-        name="HomeScreen"
-        component={HomeScreen}
-        options={{
-          headerShown: false,
-        }}
-      />
     </authStack.Navigator>
 
   );
@@ -94,7 +90,10 @@ const AuthStack = () => {
 const MainStack = () => {
   return (
     <mainStack.Navigator screenOptions={{ headerShown: false }}>
-      <mainStack.Screen name="Home" component={TopTabNavigator} />
+      <mainStack.Screen name="Home" component={HomeScreen} />
+      <mainStack.Screen name="Post" component={PostScreen} />
+      <mainStack.Screen name="Video" component={VideoScreen} />
+      <mainStack.Screen name="Profile" component={ProfileScreen} />
     </mainStack.Navigator>
   );
 };
