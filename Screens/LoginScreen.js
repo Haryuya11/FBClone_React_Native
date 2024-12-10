@@ -55,6 +55,13 @@ const LoginScreen = ({ navigation }) => {
           </TouchableOpacity>
         </View>
       </View>
+
+      {/* Dùng để debug */}
+      <TouchableOpacity
+        onPress={() => {setIsAuthenticated(true);}}
+      >
+        
+      </TouchableOpacity>
     </LinearGradient>
   );
 };
