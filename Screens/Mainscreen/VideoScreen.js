@@ -1,4 +1,5 @@
-import React, { useRef, useState } from 'react';
+// Tạm thời giống như Home
+import React, { useState } from 'react';
 import {
     View,
     Text,
@@ -6,18 +7,17 @@ import {
     Image,
     TouchableOpacity,
     StyleSheet,
-    StatusBar,
-    Animated,
-    Easing
+    StatusBar
 } from 'react-native';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import SimpleLineIcons from '@expo/vector-icons/SimpleLineIcons';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import HeaderNavigationComponent from '../../Components/HeaderNavigationComponent';
-import Entypo from '@expo/vector-icons/Entypo';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import Ionicons from '@expo/vector-icons/Ionicons';
+import Home from '../../assets/svg/home_outline.svg'
+import Post from '../../assets/svg/post_outline.svg'
+import Video from '../../assets/svg/video_blue.svg'
+import Profile from '../../assets/svg/profile_outline.svg'
+import LikeReaction from '../../assets/svg/like_reaction.svg'
 
 // Chiều cao của Header
 const HEADER_HEIGHT = 55;
@@ -30,49 +30,63 @@ const posts = [
         image: 'https://inseclab.uit.edu.vn/upload/2018/04/mrCam.png',
         avatar: 'https://nc.uit.edu.vn/wp-content/uploads/2022/11/80299-NguyenTanCam-Cam-Nguyen-Tan-272x300.jpg',
         time: '2 giờ trước',
+        like: 50,
+        comment: 21,
+        share: 53,
     },
     {
         id: '2',
-        user: 'Nguyễn Tấn Cầm',
-        content: 'de nhat tien si!',
-        image: 'https://inseclab.uit.edu.vn/upload/2018/04/mrCam.png',
-        avatar: 'https://nc.uit.edu.vn/wp-content/uploads/2022/11/80299-NguyenTanCam-Cam-Nguyen-Tan-272x300.jpg',
+        user: 'Mr.Mewing',
+        content: '50 years challenge!',
+        image: 'https://i.ytimg.com/vi/Hlf18AIRg8Y/mqdefault.jpg',
+        avatar: 'https://steamuserimages-a.akamaihd.net/ugc/2494510408099943078/F01916FFB56B797146821623A1E2811C03229A66/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true',
         time: '2 giờ trước',
+        like: 6969,
+        comment: 666,
+        share: 1945,
     },
     {
         id: '3',
-        user: 'Phạm Thế Sơn',
-        content: 'codeblock!',
-        image: 'https://o.rada.vn/data/image/2020/09/15/codeblock-error.png',
-        avatar: 'https://o.rada.vn/data/image/2020/09/15/codeblock-error.png',
+        user: 'Yi Long Ma',
+        content: 'This is my new Tesla',
+        image: 'https://www.mundodeportivo.com/files/image_449_220/files/fp/uploads/2021/12/17/61bd03fcb8ed6.r_d.493-271-5908.png',
+        avatar: 'https://i1.sndcdn.com/avatars-XpzN0ujJa3iI96PS-hKizHQ-t1080x1080.jpg',
         time: '1 ngày trước',
+        like: 30,
+        comment: 23,
+        share: 11,
     },
     {
         id: '4',
         user: 'Phạm Thế Sơn',
-        content: 'codeblock!',
+        content: 'Tôi yêu codeblock!',
         image: 'https://o.rada.vn/data/image/2020/09/15/codeblock-error.png',
         avatar: 'https://o.rada.vn/data/image/2020/09/15/codeblock-error.png',
         time: '1 ngày trước',
+        like: 11,
+        comment: 23,
+        share: 11,
     },
 ];
+
 const VideoScreen = ({ navigation }) => {
 
-    const [selectedButton, setSelectedButton] = useState('Video'); 
+    const [selectedButton, setSelectedButton] = useState('Video');
     const handleButtonPress = (name) => {
         console.log(name);
         navigation.navigate(name);
         // Console log Navigation
     };
 
-    // Cần thay thế label bằng biểu tượng
+    // Biểu tượng trên Navigation
     const navigationButtons = [
-        { name: 'Home', label: <Entypo name="home" size={35} color="black" /> },
-        { name: 'Post', label: <MaterialCommunityIcons name="post-outline" size={35} color="black" /> },
-        { name: 'Video', label: <Ionicons name="videocam-outline" size={37} color="blue" /> },
-        { name: 'Profile', label: 'Profile' },
-      ];
+        { name: 'Home', label: <Home width={50} height={50} /> },
+        { name: 'Post', label: <Post width={50} height={50} /> },
+        { name: 'Video', label: <Video width={50} height={50} /> },
+        { name: 'Profile', label: <Profile width={50} height={50} /> },
+    ];
 
+    // Làm basic tạm thời
     const renderPost = ({ item }) => (
         <View style={styles.post}>
             <View style={styles.header}>
@@ -86,19 +100,34 @@ const VideoScreen = ({ navigation }) => {
             <Text style={styles.content}>{item.content}</Text>
 
             <Image source={{ uri: item.image }} style={styles.postImage} />
-
+            {(item.like > 0 || item.comment > 0 || item.share > 0) && (
+                <View style={styles.reaction}>
+                    {item.like > 0 && (
+                        <View style={styles.reactionLike}>
+                            <LikeReaction />
+                            <Text>{item.like}</Text>
+                        </View>
+                    )}
+                    {item.comment > 0 && (
+                        <Text> {item.comment} bình luận</Text>
+                    )}
+                    {item.share > 0 && (
+                        <Text style={styles.reactionComment}> {item.share} lượt chia sẻ</Text>
+                    )}
+                </View>
+            )}
             <View style={styles.actions}>
                 <TouchableOpacity style={styles.actionButton}>
                     <AntDesign name="like2" size={24} color="black" />
-                    <Text style={styles.actionText}>Like</Text>
+                    <Text style={styles.actionText}>Thích</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.actionButton}>
                     <FontAwesome name="comment-o" size={24} color="black" />
-                    <Text style={styles.actionText}>Comment</Text>
+                    <Text style={styles.actionText}>Bình luận</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.actionButton}>
                     <SimpleLineIcons name="share" size={24} color="black" />
-                    <Text style={styles.actionText}>Share</Text>
+                    <Text style={styles.actionText}>Chia sẻ</Text>
                 </TouchableOpacity>
             </View>
         </View>
@@ -112,7 +141,7 @@ const VideoScreen = ({ navigation }) => {
                 <HeaderNavigationComponent
                     navigationButtons={navigationButtons}
                     onButtonPress={handleButtonPress}
-                    selectedButton={selectedButton} 
+                    selectedButton={selectedButton}
                 />
             </View>
             {/* Post List */}
@@ -207,10 +236,25 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         marginVertical: 10,
     },
+    reaction: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginHorizontal: 5,
+        height: 25,
+    },
+    reactionComment: {
+        marginInlineStart: -85,
+    },
+    reactionLike: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 2
+    },
     actions: {
         flexDirection: 'row',
         justifyContent: 'space-around',
-        marginInline: -15,
+        marginInline: -10,
     },
     actionButton: {
         flexDirection: 'row',

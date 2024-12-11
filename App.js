@@ -14,8 +14,6 @@ import HomeScreen from "./Screens/Mainscreen/HomeScreen";
 import PostScreen from "./Screens/Mainscreen/PostScreen";
 import ProfileScreen from "./Screens/Mainscreen/ProfileScreen";
 import VideoScreen from "./Screens/Mainscreen/VideoScreen";
-
-import TopTabNavigator from "./navigation/TopTabNavigator";
 import { Button, View } from "react-native"; // Dùng để debug
 
 
