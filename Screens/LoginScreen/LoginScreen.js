@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Image,
   StyleSheet,
@@ -8,8 +8,11 @@ import {
   View,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-
+import { signIn } from "../../services/userService";
 const LoginScreen = ({ navigation }) => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
   return (
     <LinearGradient
       colors={["#FFE5E5", "#E5F1FF", "#E0F4FF"]}
@@ -20,7 +23,7 @@ const LoginScreen = ({ navigation }) => {
       <View style={styles.imageContainer}>
         <Image
           style={styles.logo}
-          source={require("../assets/logo/logo_react_native.png")}
+          source={require("../../assets/logo/logo_react_native.png")}
         />
       </View>
 
@@ -30,17 +33,21 @@ const LoginScreen = ({ navigation }) => {
             placeholder="Email"
             placeholderTextColor="#666"
             style={styles.input}
+            value={email}
+            onChangeText={(text) => setEmail(text)}
           />
           <TextInput
             placeholder="Mật khẩu"
             placeholderTextColor="#666"
             secureTextEntry={true}
             style={styles.input}
+            value={password}
+            onChangeText={(text) => setPassword(text)}
           />
         </View>
 
         <View style={[styles.loginButton, styles.button]}>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => signIn(email, password)}>
             <Text style={styles.loginButtonText}>Đăng nhập</Text>
           </TouchableOpacity>
         </View>
@@ -55,13 +62,6 @@ const LoginScreen = ({ navigation }) => {
           </TouchableOpacity>
         </View>
       </View>
-
-      {/* Dùng để debug */}
-      <TouchableOpacity
-        onPress={() => {setIsAuthenticated(true);}}
-      >
-        
-      </TouchableOpacity>
     </LinearGradient>
   );
 };

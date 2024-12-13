@@ -1,6 +1,6 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { LinearGradient } from "expo-linear-gradient";
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useContext, useEffect } from "react";
 import {
   StyleSheet,
   Text,
@@ -10,25 +10,16 @@ import {
   Animated,
   Linking,
 } from "react-native";
+import { RegisterContext } from "../../context/RegisterContext";
 
-const RegisterScreen_Step5 = ({ navigation, route }) => {
-  const { from } = route.params || { from: "email" };
-
-  const [password, setPassword] = useState("");
-  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-  const passwordAnimation = useRef(new Animated.Value(0)).current;
-  const passwordRef = useRef(null);
-
-  const handleBack = () => {
-    if (from === "email") {
-      navigation.navigate("Register_Step4_Email");
-    } else {
-      navigation.navigate("Register_Step4_Phone");
-    }
-  };
+const RegisterScreen_Step4 = ({ navigation }) => {
+  const { registerData, setRegisterData } = useContext(RegisterContext);
+  const [email, setEmail] = useState(registerData.email || "");
+  const emailAnimation = useRef(new Animated.Value(0)).current;
+  const emailRef = useRef(null);
 
   const handleFocus = () => {
-    Animated.timing(passwordAnimation, {
+    Animated.timing(emailAnimation, {
       toValue: 1,
       duration: 150,
       useNativeDriver: false,
@@ -36,8 +27,8 @@ const RegisterScreen_Step5 = ({ navigation, route }) => {
   };
 
   const handleBlur = () => {
-    if (!password) {
-      Animated.timing(passwordAnimation, {
+    if (!email) {
+      Animated.timing(emailAnimation, {
         toValue: 0,
         duration: 150,
         useNativeDriver: false,
@@ -46,8 +37,11 @@ const RegisterScreen_Step5 = ({ navigation, route }) => {
   };
 
   const handleInputGroupPress = () => {
-    passwordRef.current.focus();
+    emailRef.current.focus();
     handleFocus();
+    setTimeout(() => {
+      emailRef.current.setSelection(email.length);
+    }, 0);
   };
 
   const floatingLabelStyle = (animation) => ({
@@ -60,9 +54,23 @@ const RegisterScreen_Step5 = ({ navigation, route }) => {
     }),
   });
 
-  const togglePasswordVisibility = () => {
-    setIsPasswordVisible(!isPasswordVisible);
+  const handleNext = () => {
+    if (email === "" || !email.includes("@") || !email.includes(".")) {
+      alert("Email không hợp lệ");
+      return;
+    }
+
+    setRegisterData((prev) => ({
+      ...prev,
+      email: email,
+    }));
+    navigation.navigate("Register_Step5");
   };
+
+  useEffect(() => {
+    // emailRef.current.focus();
+    handleFocus();
+  }, []);
 
   return (
     <LinearGradient
@@ -72,57 +80,53 @@ const RegisterScreen_Step5 = ({ navigation, route }) => {
       style={styles.container}
     >
       <View style={styles.header}>
-        <TouchableOpacity onPress={handleBack}>
+        <TouchableOpacity onPress={() => navigation.navigate("Register_Step3")}>
           <Ionicons name="arrow-back-outline" size={24} />
         </TouchableOpacity>
       </View>
 
       <View style={styles.contentContainer}>
-        <Text style={styles.title}>Tạo mật khẩu</Text>
+        <Text style={styles.title}>Email của bạn là gì?</Text>
         <Text style={styles.subtitle}>
-          Tạo mật khẩu gồm ít nhất 6 chữ cái hoặc chữ số. Bạn nên chọn mật khẩu
-          thật khó đoán.
+          Nhập email có thể dùng để liên hệ với bạn. Thông tin này sẽ không hiển
+          thị với ai khác trên trang cá nhân của bạn.
         </Text>
 
         <View style={styles.inputContainer}>
           <TouchableOpacity
             style={styles.inputGroup}
             activeOpacity={1}
-            onPress={() => handleInputGroupPress(passwordRef, "password")}
+            onPress={() => handleInputGroupPress(emailRef, "email")}
           >
             <Animated.Text
-              style={[styles.label, floatingLabelStyle(passwordAnimation)]}
+              style={[styles.label, floatingLabelStyle(emailAnimation)]}
             >
-              Mật khẩu
+              Email
             </Animated.Text>
-            <View style={styles.passwordContainer}>
-              <TextInput
-                ref={passwordRef}
-                style={[styles.input, { flex: 1 }]}
-                value={password}
-                onChangeText={setPassword}
-                onFocus={handleFocus}
-                onBlur={handleBlur}
-                secureTextEntry={!isPasswordVisible}
-              />
-              <TouchableOpacity
-                style={styles.eyeIcon}
-                onPress={togglePasswordVisibility}
-              >
-                <Ionicons
-                  name={isPasswordVisible ? "eye-outline" : "eye-off-outline"}
-                  size={24}
-                  color="#666"
-                />
-              </TouchableOpacity>
-            </View>
+            <TextInput
+              ref={emailRef}
+              style={styles.input}
+              value={email}
+              onChangeText={setEmail}
+              onFocus={handleFocus}
+              onBlur={handleBlur}
+            />
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => navigation.navigate("Register_Step6")}
-        >
+        <Text style={styles.subtitle}>
+          Bạn cũng có thể nhận đươc email của chúng tôi và có thể chọn không
+          nhận bất cứ lúc nào.
+          <Text
+            style={styles.link}
+            onPress={() =>
+              Linking.openURL("https://www.facebook.com/help/297947214257999")
+            }
+          >
+            Tìm hiểu thêm.
+          </Text>
+        </Text>
+        <TouchableOpacity style={styles.button} onPress={handleNext}>
           <Text style={styles.buttonText}>Tiếp</Text>
         </TouchableOpacity>
       </View>
@@ -167,11 +171,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginBottom: 20,
   },
-  eyeIcon: {
-    padding: 10,
-    position: "absolute",
-    right: 0,
-  },
   inputGroup: {
     width: "100%",
     borderWidth: 1,
@@ -193,7 +192,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     paddingVertical: 8,
     marginTop: 10,
-    paddingRight: 40,
   },
   bottomContainer: {
     width: "100%",
@@ -207,21 +205,16 @@ const styles = StyleSheet.create({
     backgroundColor: "blue",
   },
   buttonText: {
-    color: "#fff",
     textAlign: "center",
-    fontWeight: "bold",
     fontSize: 18,
+    color: "#fff",
   },
+
   link: {
     fontSize: 16,
     color: "#007AFF",
     textAlign: "center",
   },
-  passwordContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    width: "100%",
-  },
 });
 
-export default RegisterScreen_Step5;
+export default RegisterScreen_Step4;

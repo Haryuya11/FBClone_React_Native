@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import {
   Text,
   View,
@@ -10,6 +10,7 @@ import {
 import { LinearGradient } from "expo-linear-gradient";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { RegisterContext } from "../../context/RegisterContext";
 
 const BirthdayInfoPopup = ({ visible, onClose }) => {
   return (
@@ -55,8 +56,11 @@ const BirthdayInfoPopup = ({ visible, onClose }) => {
 };
 
 const RegisterScreen_Step2 = ({ navigation }) => {
+  const { registerData, setRegisterData } = useContext(RegisterContext);
   const [modalVisible, setModalVisible] = useState(false);
-  const [date, setDate] = useState(new Date());
+  const [date, setDate] = useState(
+    registerData.dateOfBirth ? new Date(registerData.dateOfBirth) : new Date()
+  );
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [age, setAge] = useState(null);
 
@@ -88,6 +92,23 @@ const RegisterScreen_Step2 = ({ navigation }) => {
       setAge(calculateAge(selectedDate));
     }
   };
+
+  const handleNext = () => {
+    if(age < 13) {
+      alert("Bạn phải đủ 13 tuổi trở lên để sử dụng dịch vụ của chúng tôi");
+      return;
+    }
+
+    setRegisterData((prev) => ({
+      ...prev,
+      dateOfBirth: date.toISOString(),
+    }));
+    navigation.navigate("Register_Step3");
+  }
+
+  useEffect(() => {
+    setAge(calculateAge(date));
+  }, []);
 
   return (
     <LinearGradient
@@ -132,10 +153,7 @@ const RegisterScreen_Step2 = ({ navigation }) => {
             />
           )}
         </View>
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => navigation.navigate("Register_Step3")}
-        >
+        <TouchableOpacity style={styles.button} onPress={handleNext}>
           <Text style={styles.buttonText}>Tiếp</Text>
         </TouchableOpacity>
       </View>

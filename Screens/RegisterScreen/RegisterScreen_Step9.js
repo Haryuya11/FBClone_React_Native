@@ -1,6 +1,6 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { LinearGradient } from "expo-linear-gradient";
-import React from "react";
+import React, { useContext } from "react";
 import {
   StyleSheet,
   Text,
@@ -10,8 +10,22 @@ import {
   Linking,
   Image,
 } from "react-native";
+import { signUp } from "../../services/userService";
+import { RegisterContext } from "../../context/RegisterContext";
 
-const RegisterScreen_Step6 = ({ navigation }) => {
+const RegisterScreen_Step9 = ({ navigation }) => {
+  const { registerData } = useContext(RegisterContext);
+  const handleRegister = async () => {
+    try {
+      const user = await signUp(registerData);
+      if (user) {
+        navigation.navigate("Register_Step10");
+      }
+    } catch (error) {
+      alert("Có lỗi xảy ra khi đăng ký: " + error.message);
+    }
+  };
+
   return (
     <LinearGradient
       colors={["#FFE5E5", "#E5F1FF", "#E0F4FF"]}
@@ -20,7 +34,7 @@ const RegisterScreen_Step6 = ({ navigation }) => {
       style={styles.container}
     >
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.navigate("Register_Step5")}>
+        <TouchableOpacity onPress={() => navigation.navigate("Register_Step8")}>
           <Ionicons name="arrow-back-outline" size={24} />
         </TouchableOpacity>
       </View>
@@ -32,7 +46,7 @@ const RegisterScreen_Step6 = ({ navigation }) => {
         <View style={styles.imageContainer}>
           <Image
             style={styles.image}
-            source={require("../assets/logo/register_step6_image.jpg")}
+            source={require("../../assets/logo/register_step6_image.jpg")}
             resizeMode="cover"
           />
         </View>
@@ -45,11 +59,7 @@ const RegisterScreen_Step6 = ({ navigation }) => {
 
         <View style={styles.infoSection}>
           <View style={styles.infoItem}>
-            <Ionicons
-              name="id-card-outline"
-              size={24}
-              style={styles.icon}
-            />
+            <Ionicons name="id-card-outline" size={24} style={styles.icon} />
             <View style={styles.infoText}>
               <Text style={styles.infoTitle}>
                 Chúng tôi dùng thông tin của bạn để hiển thị cũng như cá nhân
@@ -176,16 +186,13 @@ const RegisterScreen_Step6 = ({ navigation }) => {
             của Facebook.
           </Text>
         </View>
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => navigation.navigate("VerifyScreen")}
-        >
+        <TouchableOpacity style={styles.button} onPress={handleRegister}>
           <Text style={styles.buttonText}>Tôi đồng ý</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={() => navigation.navigate("Login")}>
           <Text style={styles.link}>Bạn đã có tài khoản u?</Text>
         </TouchableOpacity>
-      </View> 
+      </View>
     </LinearGradient>
   );
 };
@@ -281,5 +288,4 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
 });
-
-export default RegisterScreen_Step6;
+export default RegisterScreen_Step9;

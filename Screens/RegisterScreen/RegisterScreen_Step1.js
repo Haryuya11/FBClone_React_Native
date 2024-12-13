@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useContext, useEffect } from "react";
 import {
   Text,
   View,
@@ -9,13 +9,26 @@ import {
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { RegisterContext } from "../../context/RegisterContext";
 const RegisterScreen_Step1 = ({ navigation }) => {
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
+  const { registerData, setRegisterData } = useContext(RegisterContext);
+
+  const [firstName, setFirstName] = useState(registerData.firstName || "");
+  const [lastName, setLastName] = useState(registerData.lastName || "");
   const firstNameAnimation = useRef(new Animated.Value(0)).current;
   const lastNameAnimation = useRef(new Animated.Value(0)).current;
   const firstNameRef = useRef(null);
   const lastNameRef = useRef(null);
+
+  useEffect(() => {
+    if (firstName) {
+      handleFocus("firstName");
+    }
+    if (lastName) {
+      handleFocus("lastName");
+    }
+  }, []);
+
 
   const handleFocus = (inputType) => {
     Animated.timing(
@@ -45,8 +58,16 @@ const RegisterScreen_Step1 = ({ navigation }) => {
   const handleInputGroupPress = (inputRef, inputType) => {
     inputRef.current.focus();
     handleFocus(inputType);
+    if (inputType === "firstName") {
+      setTimeout(() => {
+        inputRef.current.setSelection(firstName.length);
+      }, 0);
+    } else {
+      setTimeout(() => {
+        inputRef.current.setSelection(lastName.length);
+      }, 0);
+    }
   };
-
   const floatingLabelStyle = (animation) => ({
     position: "absolute",
     left: 10,
@@ -59,6 +80,20 @@ const RegisterScreen_Step1 = ({ navigation }) => {
       outputRange: [14, 12],
     }),
   });
+
+  const handleNext = () => {
+    if(firstName === "" || lastName === "") {
+      alert("Vui lòng nhập đầy đủ thông tin họ và tên");
+      return;
+    }
+
+    setRegisterData((prev) => ({
+      ...prev,
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
+    }));
+    navigation.navigate("Register_Step2");
+  };
 
   return (
     <LinearGradient
@@ -120,10 +155,7 @@ const RegisterScreen_Step1 = ({ navigation }) => {
             />
           </TouchableOpacity>
         </View>
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => navigation.navigate("Register_Step2")}
-        >
+        <TouchableOpacity style={styles.button} onPress={handleNext}>
           <Text style={styles.buttonText}>Tiếp</Text>
         </TouchableOpacity>
       </View>
@@ -176,7 +208,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#f5f5f5",
     paddingHorizontal: 10,
     height: 55,
-    justifyContent: "center",
+    // justifyContent: "cent  er",
     position: "relative",
     flexDirection: "row",
   },
