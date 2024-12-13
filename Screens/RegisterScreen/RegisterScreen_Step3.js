@@ -1,6 +1,6 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { LinearGradient } from "expo-linear-gradient";
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import {
   StyleSheet,
   Text,
@@ -11,6 +11,7 @@ import {
   Label,
 } from "react-native";
 import { RadioButton } from "react-native-paper";
+import { RegisterContext } from "../../context/RegisterContext";
 
 const GenderInfoPopup = ({ visible, onClose }) => {
   return (
@@ -112,8 +113,24 @@ const GenderInfoOther = ({ visible, setGenderInfoPopupVisible }) => {
 };
 
 const RegisterScreen_Step3 = ({ navigation }) => {
-  const [gender, setGender] = useState(null);
+  const { registerData, setRegisterData } = useContext(RegisterContext);
+  const [gender, setGender] = useState(registerData.gender || "");
   const [genderInfoPopupVisible, setGenderInfoPopupVisible] = useState(false);
+
+  const handleNext = () => {
+
+    if(gender === "") {
+      alert("Vui lòng chọn giới tính");
+      return;
+    }
+
+    setRegisterData((prev) => ({
+      ...prev,
+      gender: gender,
+    }));
+    navigation.navigate("Register_Step4");
+  };
+
   return (
     <LinearGradient
       colors={["#FFE5E5", "#E5F1FF", "#E0F4FF"]}
@@ -179,7 +196,7 @@ const RegisterScreen_Step3 = ({ navigation }) => {
           setGenderInfoPopupVisible={setGenderInfoPopupVisible}
         />
 
-        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate("Register_Step4_Phone")}>
+        <TouchableOpacity style={styles.button} onPress={handleNext}>
           <Text style={styles.buttonText}>Tiếp</Text>
         </TouchableOpacity>
       </View>
