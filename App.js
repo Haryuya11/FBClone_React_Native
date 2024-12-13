@@ -1,21 +1,28 @@
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import React, { useState } from "react";
-import LoginScreen from "./Screens/LoginScreen";
-import RegisterScreen_Step1 from "./Screens/RegisterScreen_Step1";
-import RegisterScreen_Step2 from "./Screens/RegisterScreen_Step2";
-import RegisterScreen_Step3 from "./Screens/RegisterScreen_Step3";
-import RegisterScreen_Step4_Email from "./Screens/RegisterScreen_Step4_Email";
-import RegisterScreen_Step4_Phone from "./Screens/RegisterScreen_Step4_Phone";
-import RegisterScreen_Step5 from "./Screens/RegisterScreen_Step5";
-import RegisterScreen_Step6 from "./Screens/RegisterScreen_Step6";
-import VerifyScreen from "./Screens/VerifyScreen";
+// LoginScreen
+import LoginScreen from "./Screens/LoginScreen/LoginScreen";
+// RegisterScreen
+import RegisterScreen_Step1 from "./Screens/RegisterScreen/RegisterScreen_Step1";
+import RegisterScreen_Step2 from "./Screens/RegisterScreen/RegisterScreen_Step2";
+import RegisterScreen_Step3 from "./Screens/RegisterScreen/RegisterScreen_Step3";
+import RegisterScreen_Step4 from "./Screens/RegisterScreen/RegisterScreen_Step4";
+import RegisterScreen_Step5 from "./Screens/RegisterScreen/RegisterScreen_Step5";
+import RegisterScreen_Step6 from "./Screens/RegisterScreen/RegisterScreen_Step6";
+import RegisterScreen_Step7 from "./Screens/RegisterScreen/RegisterScreen_Step7";
+import RegisterScreen_Step8 from "./Screens/RegisterScreen/RegisterScreen_Step8";
+import RegisterScreen_Step9 from "./Screens/RegisterScreen/RegisterScreen_Step9";
+import RegisterScreen_Step10 from "./Screens/RegisterScreen/RegisterScreen_Step10";
+// MainScreen
 import HomeScreen from "./Screens/Mainscreen/HomeScreen";
 import PostScreen from "./Screens/Mainscreen/PostScreen";
 import ProfileScreen from "./Screens/Mainscreen/ProfileScreen";
 import VideoScreen from "./Screens/Mainscreen/VideoScreen";
-import { Button, View } from "react-native"; // Dùng để debug
 
+// import TopTabNavigator from "./navigation/TopTabNavigator";
+import { Button, View } from "react-native";
+import { RegisterProvider } from './context/RegisterContext';
 
 const authStack = createStackNavigator();
 const mainStack = createStackNavigator();
@@ -46,15 +53,8 @@ const AuthStack = () => {
         }}
       />
       <authStack.Screen
-        name="Register_Step4_Email"
-        component={RegisterScreen_Step4_Email}
-        options={{
-          headerShown: false,
-        }}
-      />
-      <authStack.Screen
-        name="Register_Step4_Phone"
-        component={RegisterScreen_Step4_Phone}
+        name="Register_Step4"
+        component={RegisterScreen_Step4}
         options={{
           headerShown: false,
         }}
@@ -74,14 +74,34 @@ const AuthStack = () => {
         }}
       />
       <authStack.Screen
-        name="VerifyScreen"
-        component={VerifyScreen}
+        name="Register_Step7"
+        component={RegisterScreen_Step7}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <authStack.Screen
+        name="Register_Step8"
+        component={RegisterScreen_Step8}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <authStack.Screen
+        name="Register_Step9"
+        component={RegisterScreen_Step9}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <authStack.Screen
+        name="Register_Step10"
+        component={RegisterScreen_Step10}
         options={{
           headerShown: false,
         }}
       />
     </authStack.Navigator>
-
   );
 };
 
@@ -96,17 +116,25 @@ const MainStack = () => {
   );
 };
 
-
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  // Thêm setIsAuthenticated vào global để có thể truy cập từ RegisterScreen_Step10
+  global.setIsAuthenticated = setIsAuthenticated;
+
   return (
-    <NavigationContainer>
-      {isAuthenticated ? <MainStack /> : <AuthStack />}
-      {/* Dùng để debug*/}
-      
-      <View style={{ position: 'absolute', bottom: 50, right: 20 }}>
-        <Button title="Set Authenticated" onPress={() => setIsAuthenticated(!isAuthenticated)} />
-      </View>
-    </NavigationContainer>
-  )
+    <RegisterProvider>
+      <NavigationContainer>
+        {isAuthenticated ? <MainStack /> : <AuthStack />}
+        {/* Dùng để debug*/}
+
+        <View style={{ position: "absolute", bottom: 50, right: 20 }}>
+          <Button
+            title="Set Authenticated"
+            onPress={() => setIsAuthenticated(!isAuthenticated)}
+          />
+        </View>
+      </NavigationContainer>
+    </RegisterProvider>
+  );
 }

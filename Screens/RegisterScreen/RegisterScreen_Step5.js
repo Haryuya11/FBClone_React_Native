@@ -1,6 +1,6 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { LinearGradient } from "expo-linear-gradient";
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useContext, useEffect } from "react";
 import {
   StyleSheet,
   Text,
@@ -10,14 +10,18 @@ import {
   Animated,
   Linking,
 } from "react-native";
+import { RegisterContext } from "../../context/RegisterContext";
 
-const RegisterScreen_Step4_Phone = ({ navigation }) => {
-  const [phone, setPhone] = useState("");
-  const phoneAnimation = useRef(new Animated.Value(0)).current;
-  const phoneRef = useRef(null);
+
+const RegisterScreen_Step5 = ({ navigation }) => {
+  const { registerData, setRegisterData } = useContext(RegisterContext);
+  const [password, setPassword] = useState(registerData.password || "");
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const passwordAnimation = useRef(new Animated.Value(0)).current;
+  const passwordRef = useRef(null);
 
   const handleFocus = () => {
-    Animated.timing(phoneAnimation, {
+    Animated.timing(passwordAnimation, {
       toValue: 1,
       duration: 150,
       useNativeDriver: false,
@@ -25,8 +29,8 @@ const RegisterScreen_Step4_Phone = ({ navigation }) => {
   };
 
   const handleBlur = () => {
-    if (!phone) {
-      Animated.timing(phoneAnimation, {
+    if (!password) {
+      Animated.timing(passwordAnimation, {
         toValue: 0,
         duration: 150,
         useNativeDriver: false,
@@ -35,7 +39,7 @@ const RegisterScreen_Step4_Phone = ({ navigation }) => {
   };
 
   const handleInputGroupPress = () => {
-    phoneRef.current.focus();
+    passwordRef.current.focus();
     handleFocus();
   };
 
@@ -49,6 +53,24 @@ const RegisterScreen_Step4_Phone = ({ navigation }) => {
     }),
   });
 
+  const togglePasswordVisibility = () => {
+    setIsPasswordVisible(!isPasswordVisible);
+  };
+
+  const handleNext = () => {
+    if (password.length < 6) {
+      alert("Mật khẩu phải chứa ít nhất 6 ký tự");
+      return;
+    }
+
+    setRegisterData({ ...registerData, password });
+    navigation.navigate("Register_Step6");
+  };
+
+  useEffect(() => {
+    handleFocus();
+  });
+
   return (
     <LinearGradient
       colors={["#FFE5E5", "#E5F1FF", "#E0F4FF"]}
@@ -57,68 +79,55 @@ const RegisterScreen_Step4_Phone = ({ navigation }) => {
       style={styles.container}
     >
       <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => navigation.navigate("Register_Step3")}
-        >
+        <TouchableOpacity onPress={() => navigation.navigate("Register_Step4")}>
           <Ionicons name="arrow-back-outline" size={24} />
         </TouchableOpacity>
       </View>
 
       <View style={styles.contentContainer}>
-        <Text style={styles.title}>Số điện thoại của bạn là gì?</Text>
+        <Text style={styles.title}>Tạo mật khẩu</Text>
         <Text style={styles.subtitle}>
-          Nhập số điện thoại có thể dùng để liên hệ với bạn. Thông tin này sẽ
-          không hiển thị với ai khác trên trang cá nhân của bạn.
+          Tạo mật khẩu gồm ít nhất 6 chữ cái hoặc chữ số. Bạn nên chọn mật khẩu
+          thật khó đoán.
         </Text>
 
         <View style={styles.inputContainer}>
           <TouchableOpacity
             style={styles.inputGroup}
             activeOpacity={1}
-            onPress={() => handleInputGroupPress(phoneRef, "phone")}
+            onPress={() => handleInputGroupPress(passwordRef, "password")}
           >
             <Animated.Text
-              style={[styles.label, floatingLabelStyle(phoneAnimation)]}
+              style={[styles.label, floatingLabelStyle(passwordAnimation)]}
             >
-              Số điện thoại
+              Mật khẩu
             </Animated.Text>
-            <TextInput
-              ref={phoneRef}
-              style={styles.input}
-              value={phone}
-              onChangeText={setPhone}
-              onFocus={handleFocus}
-              onBlur={handleBlur}
-            />
+            <View style={styles.passwordContainer}>
+              <TextInput
+                ref={passwordRef}
+                style={[styles.input, { flex: 1 }]}
+                value={password}
+                onChangeText={setPassword}
+                onFocus={handleFocus}
+                onBlur={handleBlur}
+                secureTextEntry={!isPasswordVisible}
+              />
+              <TouchableOpacity
+                style={styles.eyeIcon}
+                onPress={togglePasswordVisibility}
+              >
+                <Ionicons
+                  name={isPasswordVisible ? "eye-outline" : "eye-off-outline"}
+                  size={24}
+                  color="#666"
+                />
+              </TouchableOpacity>
+            </View>
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.subtitle}>
-          Chúng tôi có thể gửi thông báo cho bạn qua Whatsapp và SMS.
-          <Text
-            style={styles.link}
-            onPress={() =>
-              Linking.openURL("https://www.facebook.com/help/297947214257999")
-            }
-          >
-            Tìm hiểu thêm.
-          </Text>
-        </Text>
-
-        <TouchableOpacity
-          style={[styles.button, styles.buttonNext]}
-          onPress={() => navigation.navigate("Register_Step5", { from: 'phone' })}
-        >
-          <Text style={[styles.buttonText, styles.buttonNextText]}>Tiếp</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.button, styles.buttonChange]}
-          onPress={() => navigation.navigate("Register_Step4_Email")}
-        >
-          <Text style={[styles.buttonText, styles.buttonChangeText]}>
-            Đăng ký bằng email
-          </Text>
+        <TouchableOpacity style={styles.button} onPress={handleNext}>
+          <Text style={styles.buttonText}>Tiếp</Text>
         </TouchableOpacity>
       </View>
 
@@ -162,6 +171,11 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginBottom: 20,
   },
+  eyeIcon: {
+    padding: 10,
+    position: "absolute",
+    right: 0,
+  },
   inputGroup: {
     width: "100%",
     borderWidth: 1,
@@ -183,6 +197,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     paddingVertical: 8,
     marginTop: 10,
+    paddingRight: 40,
   },
   bottomContainer: {
     width: "100%",
@@ -193,30 +208,24 @@ const styles = StyleSheet.create({
     height: 40,
     justifyContent: "center",
     borderRadius: 50,
-  },
-  buttonNext: {
     backgroundColor: "blue",
   },
-  buttonChange: {
-    backgroundColor: "transparent",
-    borderWidth: 1,
-    marginTop: 15,
-  },
   buttonText: {
-    textAlign: "center",
-    fontSize: 18,
-  },
-  buttonNextText: {
     color: "#fff",
-  },
-  buttonChangeText: {
-    color: "#000",
+    textAlign: "center",
+    fontWeight: "bold",
+    fontSize: 18,
   },
   link: {
     fontSize: 16,
     color: "#007AFF",
     textAlign: "center",
   },
+  passwordContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    width: "100%",
+  },
 });
 
-export default RegisterScreen_Step4_Phone;
+export default RegisterScreen_Step5;
