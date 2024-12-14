@@ -14,6 +14,10 @@ import RegisterScreen_Step7 from "./Screens/RegisterScreen/RegisterScreen_Step7"
 import RegisterScreen_Step8 from "./Screens/RegisterScreen/RegisterScreen_Step8";
 import RegisterScreen_Step9 from "./Screens/RegisterScreen/RegisterScreen_Step9";
 import RegisterScreen_Step10 from "./Screens/RegisterScreen/RegisterScreen_Step10";
+//ProfileScreen
+import EditProfileScreen from "./Screens/ProfileScreen/EditProfileScreen";
+import FriendListScreen from "./Screens/ProfileScreen/FriendListScreen";
+import PostArticlesScreen from "./Screens/ProfileScreen/PostArticlesScreen";
 // MainScreen
 import HomeScreen from "./Screens/Mainscreen/HomeScreen";
 import PostScreen from "./Screens/Mainscreen/PostScreen";
@@ -25,6 +29,7 @@ import { Button, View } from "react-native";
 import { RegisterProvider } from './context/RegisterContext';
 
 const authStack = createStackNavigator();
+const profileStack = createStackNavigator();
 const mainStack = createStackNavigator();
 
 const AuthStack = () => {
@@ -111,11 +116,20 @@ const MainStack = () => {
       <mainStack.Screen name="Home" component={HomeScreen} />
       <mainStack.Screen name="Post" component={PostScreen} />
       <mainStack.Screen name="Video" component={VideoScreen} />
-      <mainStack.Screen name="Profile" component={ProfileScreen} />
+      <mainStack.Screen name="Profile" component={ProfileStack} />
     </mainStack.Navigator>
   );
 };
-
+const ProfileStack  = () => {
+  return (
+    <profileStack.Navigator screenOptions={{ headerShown: false }}>
+      <profileStack.Screen name="ProfileScreen" component={ProfileScreen} />
+      <profileStack.Screen name="FriendList" component={FriendListScreen} />
+      <profileStack.Screen name="EditProfile" component={EditProfileScreen} />
+      <profileStack.Screen name="PostArticles" component={PostArticlesScreen} />
+    </profileStack.Navigator>
+  );
+};
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
