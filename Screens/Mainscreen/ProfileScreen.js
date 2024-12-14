@@ -94,6 +94,7 @@ const friends = [
       "https://img.freepik.com/photos-premium/homme-regarde-planete-montagnes-au-sommet_7023-8807.jpg",
   },
 ];
+
 const ProfileScreen = ({ navigation }) => {
   const handleButtonPress = (name) => {
     console.log(name);

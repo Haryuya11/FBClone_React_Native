@@ -11,12 +11,7 @@ const HeaderNavigationComponent = ({ navigationButtons, onButtonPress, selectedB
           onPress={() => onButtonPress(button.name)}
         >
           <View style={styles.buttonLabelContainer}>
-            <Text 
-              style={[
-                styles.headerButtonText, 
-                button.name === selectedButton && styles.selectedButtonText
-              ]}
-            >
+            <Text style={styles.headerButtonText}>
               {button.label}
             </Text>
           </View>
@@ -54,11 +49,6 @@ const styles = StyleSheet.create({
     textAlign: 'center', 
     
   },
-  selectedButtonText: {
-    color: 'blue',
-    textDecorationLine: 'underline', 
-    
-  },
   underlineContainer: {
     position: 'absolute', 
     bottom: 0, 
@@ -67,11 +57,11 @@ const styles = StyleSheet.create({
   },
   selectedButton: {
     fontSize: 16,
-    color: 'blue', 
+    color: '#316ff6', 
     fontWeight: 'bold',
     marginTop: 5, 
     top: 0,
-    width: 63, 
+    width: 80, 
     textAlign: 'center', 
   },
 });

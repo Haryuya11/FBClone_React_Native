@@ -1,20 +1,84 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { LinearGradient } from "expo-linear-gradient";
-import React, { useState, useRef } from "react";
+import React, { useRef, useState, useEffect, useContext } from "react";
 import {
+  Animated,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
-  Animated,
-  Linking,
 } from "react-native";
+import { RegisterContext } from "../../context/RegisterContext";
 
-const VerifyScreen = ({ navigation }) => {
+const generateVerificationCode = () => {
+  return Math.floor(10000 + Math.random() * 90000).toString();
+};
+
+const RegisterScreen_Step6 = ({ navigation }) => {
+  const { registerData, setRegisterData } = useContext(RegisterContext);
   const [code, setCode] = useState("");
+  const [generateCode, setGenerateCode] = useState("");
+  const [expiryTime, setExpiryTime] = useState(null);
   const codeAnimation = useRef(new Animated.Value(0)).current;
   const codeRef = useRef(null);
+
+  useEffect(() => {
+    sendVerificationCode();
+  }, []);
+
+  const sendVerificationCode = async () => {
+    const newCode = generateVerificationCode();
+    console.log(newCode);
+    setGenerateCode(newCode);
+    setExpiryTime(Date.now() + 5 * 60 * 1000);
+    const email = registerData.email.trim();
+    const apiKey =
+      "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";
+
+    const mailOptions = {
+      personalizations: [
+        {
+          to: [{ email }],
+          subject: "Mã xác nhận tài khoản",
+        },
+      ],
+      from: { email: "vchieu1108@gmail.com" },
+      content: [
+        {
+          type: "text/plain",
+          value: `Mã xác nhận của bạn là: ${newCode}`,
+        },
+      ],
+    };
+
+    try {
+        const response = await fetch("https://api.sendgrid.com/v3/mail/send", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${apiKey}`,
+            },
+            body: JSON.stringify(mailOptions),
+          });
+          
+          if (!response.ok) {
+            throw new Error(`SendGrid error: ${response.status}`);
+          }
+          
+    } catch (error) {
+      console.error("Chi tiết lỗi:", error);
+      alert("Có lỗi xảy ra khi gửi mã xác nhận. Vui lòng thử lại sau.");
+    }
+  };
+
+  const handleNext = () => {
+    if (code === generateCode && Date.now() < expiryTime) {
+      navigation.navigate("Register_Step7");
+    } else {
+      alert("Mã xác nhận không hợp lệ. Vui lòng thử lại.");
+    }
+  };
 
   const handleFocus = () => {
     Animated.timing(codeAnimation, {
@@ -51,14 +115,14 @@ const VerifyScreen = ({ navigation }) => {
 
   return (
     <LinearGradient
-      colors={["#002238", "#003A59", "#004F73"]}
+      colors={["#FFE5E5", "#E5F1FF", "#E0F4FF"]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 0 }}
       style={styles.container}
     >
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.navigate("Register_Step6")}>
-          <Ionicons name="close-outline" size={24} color="#fff" />
+        <TouchableOpacity onPress={() => navigation.navigate("Register_Step5")}>
+          <Ionicons name="close-outline" size={24} color="#000" />
         </TouchableOpacity>
       </View>
 
@@ -66,7 +130,7 @@ const VerifyScreen = ({ navigation }) => {
         <Text style={styles.title}>Nhập mã xác nhận</Text>
         <Text style={styles.subtitle}>
           Để xác nhận tài khoản, hãy nhập mã gồm 5 chữ số mà chúng tôi đã gửi
-          đến email của bạn hoặc số điện thoại của bạn.
+          đến email {registerData.email} của bạn.
         </Text>
 
         <View style={styles.inputContainer}>
@@ -93,16 +157,18 @@ const VerifyScreen = ({ navigation }) => {
 
         <TouchableOpacity
           style={[styles.button, styles.buttonNext]}
-          onPress={() => navigation.navigate("Register_Step6")}
+          onPress={handleNext}
         >
-          <Text style={styles.buttonText}>Tiếp</Text>
+          <Text style={[styles.buttonText, styles.buttonNextText]}>Tiếp</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.button, styles.buttonChange]}
-          onPress={() => {}}
+          style={[styles.button, styles.buttonReset]}
+          onPress={sendVerificationCode}
         >
-          <Text style={styles.buttonText}>Tôi không nhận được mã</Text>
+          <Text style={[styles.buttonText, styles.buttonResetText]}>
+            Tôi không nhận được mã
+          </Text>
         </TouchableOpacity>
       </View>
     </LinearGradient>
@@ -127,11 +193,11 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold",
     marginBottom: 15,
-    color: "#fff",
+    color: "#000",
   },
   subtitle: {
     fontSize: 16,
-    color: "#fff",
+    color: "#000",
     marginBottom: 30,
   },
   inputContainer: {
@@ -153,13 +219,13 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     paddingHorizontal: 4,
-    color: "#fff",
+    color: "#000",
   },
   input: {
     fontSize: 14,
     paddingVertical: 8,
     marginTop: 10,
-    color: "#fff",
+    color: "#000",
   },
   bottomContainer: {
     width: "100%",
@@ -174,7 +240,7 @@ const styles = StyleSheet.create({
   buttonNext: {
     backgroundColor: "blue",
   },
-  buttonChange: {
+  buttonReset: {
     backgroundColor: "transparent",
     borderWidth: 1,
     marginTop: 15,
@@ -182,8 +248,13 @@ const styles = StyleSheet.create({
   buttonText: {
     textAlign: "center",
     fontSize: 18,
+  },
+  buttonNextText: {
     color: "#fff",
-  }
+  },
+  buttonResetText: {
+    color: "#000",
+  },
 });
 
-export default VerifyScreen;
+export default RegisterScreen_Step6;
