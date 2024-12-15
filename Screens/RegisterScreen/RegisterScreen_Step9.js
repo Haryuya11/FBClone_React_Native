@@ -1,6 +1,6 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { LinearGradient } from "expo-linear-gradient";
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import {
   StyleSheet,
   Text,
@@ -22,6 +22,7 @@ const RegisterScreen_Step9 = ({ navigation }) => {
     setIsLoading(true);
     try {
       register(registerData);
+      navigation.navigate("Register_Step10");
     } catch (error) {
       alert("Đăng ký thất bại: " + error.message);
     } finally {

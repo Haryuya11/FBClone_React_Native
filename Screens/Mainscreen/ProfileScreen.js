@@ -1,4 +1,10 @@
-import React, { useEffect, useRef, useState, useContext } from "react";
+import React, {
+  useEffect,
+  useRef,
+  useState,
+  useContext,
+  useCallback,
+} from "react";
 import {
   View,
   Text,
@@ -18,6 +24,7 @@ import HeaderNavigationComponent from "../../Components/HeaderNavigationComponen
 import { ScrollView } from "react-native-gesture-handler";
 import Entypo from "@expo/vector-icons/Entypo";
 import { UserContext } from "../../context/UserContext";
+import { useFocusEffect } from "@react-navigation/native";
 // Chiều cao của Header
 const HEADER_HEIGHT = 0;
 
@@ -97,8 +104,14 @@ const friends = [
 ];
 
 const ProfileScreen = ({ navigation }) => {
-  const { userProfile, logout } = useContext(UserContext);
+  const { userProfile, logout, refreshProfile, imageCache } = useContext(UserContext);
   const [selectedButton, setSelectedButton] = useState("Profile");
+
+  useFocusEffect(
+    useCallback(() => {
+      refreshProfile();
+    }, [])
+  );
 
   const handleLogout = async () => {
     try {
@@ -163,7 +176,6 @@ const ProfileScreen = ({ navigation }) => {
       </Text>
     </TouchableOpacity>
   );
-  // console.log(user.avatar_url);
   return (
     <View style={{ flex: 1 }}>
       {/* Post List */}
@@ -187,9 +199,7 @@ const ProfileScreen = ({ navigation }) => {
               <Image
                 style={styles.backgroundImageProfile}
                 source={{
-                  uri:
-                    userProfile?.background_image ||
-                    "https://t4.ftcdn.net/jpg/07/69/40/97/360_F_769409709_PjhFP5bP2AZVJinAEE4tAVKNkQVhQMpH.jpg",
+                  uri: imageCache.background || userProfile?.background_image || "default_background_url"
                 }}
               />
               <View style={styles.avatarBox}>
@@ -198,9 +208,7 @@ const ProfileScreen = ({ navigation }) => {
                     <Image
                       style={styles.avatar}
                       source={{
-                        uri:
-                          userProfile?.avatar_url ||
-                          "https://cdn-icons-png.flaticon.com/512/6858/6858504.png",
+                        uri: imageCache.avatar || userProfile?.avatar_url || "default_avatar_url"
                       }}
                     />
                   </View>
