@@ -1,6 +1,6 @@
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
-import React, { useState } from "react";
+import React, { useContext } from "react";
 // LoginScreen
 import LoginScreen from "./Screens/LoginScreen/LoginScreen";
 // RegisterScreen
@@ -22,7 +22,9 @@ import VideoScreen from "./Screens/Mainscreen/VideoScreen";
 
 // import TopTabNavigator from "./navigation/TopTabNavigator";
 import { Button, View } from "react-native";
-import { RegisterProvider } from './context/RegisterContext';
+
+import { RegisterProvider } from "./context/RegisterContext";
+import { UserProvider, UserContext } from "./context/UserContext";
 
 const authStack = createStackNavigator();
 const mainStack = createStackNavigator();
@@ -116,25 +118,29 @@ const MainStack = () => {
   );
 };
 
-export default function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  // Thêm setIsAuthenticated vào global để có thể truy cập từ RegisterScreen_Step10
-  global.setIsAuthenticated = setIsAuthenticated;
-
+const MainApp = () => {
+  const { isAuthenticated } = useContext(UserContext);
   return (
-    <RegisterProvider>
-      <NavigationContainer>
-        {isAuthenticated ? <MainStack /> : <AuthStack />}
-        {/* Dùng để debug*/}
+    <NavigationContainer>
+      {isAuthenticated ? <MainStack /> : <AuthStack />}
+      {/* Dùng để debug*/}
 
-        <View style={{ position: "absolute", bottom: 50, right: 20 }}>
-          <Button
-            title="Set Authenticated"
-            onPress={() => setIsAuthenticated(!isAuthenticated)}
-          />
-        </View>
-      </NavigationContainer>
-    </RegisterProvider>
+      {/* <View style={{ position: "absolute", bottom: 50, right: 20 }}>
+        <Button
+          title="Set Authenticated"
+          onPress={() => setIsAuthenticated(!isAuthenticated)}
+        />
+      </View> */}
+    </NavigationContainer>
+  );
+};
+
+export default function App() {
+  return (
+    <UserProvider>
+      <RegisterProvider>
+        <MainApp />
+      </RegisterProvider>
+    </UserProvider>
   );
 }

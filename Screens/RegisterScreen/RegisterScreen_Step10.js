@@ -1,12 +1,20 @@
 import React, { useEffect, useContext } from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { RegisterContext } from "../../context/RegisterContext";
+import { UserContext } from "../../context/UserContext";
 
 const RegisterScreen_Step10 = ({ navigation, route }) => {
   const { registerData } = useContext(RegisterContext);
+  const { register } = useContext(UserContext);
+
   useEffect(() => {
-    const timer = setTimeout(() => {
-      global.setIsAuthenticated(true);
+    const timer = setTimeout(async () => {
+      try {
+        await register(registerData);
+      } catch (error) {
+        alert(error.message);
+        navigation.navigate("Register_Step1");
+      }
     }, 3000);
 
     return () => clearTimeout(timer);

@@ -10,21 +10,24 @@ import {
   Linking,
   Image,
 } from "react-native";
-import { signUp } from "../../services/userService";
 import { RegisterContext } from "../../context/RegisterContext";
+import { UserContext } from "../../context/UserContext";
 
 const RegisterScreen_Step9 = ({ navigation }) => {
   const { registerData } = useContext(RegisterContext);
-  const handleRegister = async () => {
+  const { register } = useContext(UserContext);
+  const [isLoading, setIsLoading] = useState(false);
+  
+  const handleRegister = () => {
+    setIsLoading(true);
     try {
-      const user = await signUp(registerData);
-      if (user) {
-        navigation.navigate("Register_Step10");
-      }
+      register(registerData);
     } catch (error) {
-      alert("Có lỗi xảy ra khi đăng ký: " + error.message);
+      alert("Đăng ký thất bại: " + error.message);
+    } finally {
+      setIsLoading(false);
     }
-  };
+  }
 
   return (
     <LinearGradient
