@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useContext } from "react";
 import {
   View,
   Text,
@@ -17,6 +17,7 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import HeaderNavigationComponent from "../../Components/HeaderNavigationComponent";
 import { ScrollView } from "react-native-gesture-handler";
 import Entypo from "@expo/vector-icons/Entypo";
+import { UserContext } from "../../context/UserContext";
 // Chiều cao của Header
 const HEADER_HEIGHT = 0;
 
@@ -96,6 +97,17 @@ const friends = [
 ];
 
 const ProfileScreen = ({ navigation }) => {
+  const { userProfile, logout } = useContext(UserContext);
+  const [selectedButton, setSelectedButton] = useState("Profile");
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      alert("Đăng xuất thất bại: " + error.message);
+    }
+  };
+
   const handleButtonPress = (name) => {
     console.log(name);
     navigation.navigate(name);
@@ -151,6 +163,7 @@ const ProfileScreen = ({ navigation }) => {
       </Text>
     </TouchableOpacity>
   );
+  // console.log(user.avatar_url);
   return (
     <View style={{ flex: 1 }}>
       {/* Post List */}
@@ -174,7 +187,9 @@ const ProfileScreen = ({ navigation }) => {
               <Image
                 style={styles.backgroundImageProfile}
                 source={{
-                  uri: "https://t4.ftcdn.net/jpg/07/69/40/97/360_F_769409709_PjhFP5bP2AZVJinAEE4tAVKNkQVhQMpH.jpg",
+                  uri:
+                    userProfile?.background_image ||
+                    "https://t4.ftcdn.net/jpg/07/69/40/97/360_F_769409709_PjhFP5bP2AZVJinAEE4tAVKNkQVhQMpH.jpg",
                 }}
               />
               <View style={styles.avatarBox}>
@@ -183,12 +198,16 @@ const ProfileScreen = ({ navigation }) => {
                     <Image
                       style={styles.avatar}
                       source={{
-                        uri: "https://cdn-icons-png.flaticon.com/512/6858/6858504.png",
+                        uri:
+                          userProfile?.avatar_url ||
+                          "https://cdn-icons-png.flaticon.com/512/6858/6858504.png",
                       }}
                     />
                   </View>
                 </View>
-                <Text style={styles.userNameAvatarBox}>Tên người dùng</Text>
+                <Text style={styles.userNameAvatarBox}>
+                  {userProfile?.first_name || ""} {userProfile?.last_name || ""}
+                </Text>
                 <Text style={styles.numberOfFriends}>100 người bạn</Text>
               </View>
             </View>
@@ -300,6 +319,7 @@ const styles = StyleSheet.create({
   avatar: {
     height: "100%",
     width: "100%",
+    borderRadius: 200,
   },
   userNameAvatarBox: {
     fontSize: 20,

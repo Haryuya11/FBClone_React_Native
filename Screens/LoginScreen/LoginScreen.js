@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import {
   Image,
   StyleSheet,
@@ -6,12 +6,30 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  ActivityIndicator,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { signIn } from "../../services/userService";
+import { UserContext } from "../../context/UserContext";
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const { login } = useContext(UserContext);
+
+  const handleLogin = async () => {
+    if (email === "" || password === "") {
+      alert("Vui lòng nhập đủ thông tin");
+      return;
+    }
+    setIsLoading(true);
+    try {
+      await login(email, password);
+    } catch (error) {
+      alert("Đăng nhập thất bại: " + error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <LinearGradient
@@ -47,8 +65,12 @@ const LoginScreen = ({ navigation }) => {
         </View>
 
         <View style={[styles.loginButton, styles.button]}>
-          <TouchableOpacity onPress={() => signIn(email, password)}>
-            <Text style={styles.loginButtonText}>Đăng nhập</Text>
+          <TouchableOpacity onPress={handleLogin} disabled={isLoading}>
+            {isLoading ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <Text style={styles.loginButtonText}>Đăng nhập</Text>
+            )}
           </TouchableOpacity>
         </View>
         <Text style={styles.forgotPasswordText}>Bạn quên mật khẩu ư?</Text>
