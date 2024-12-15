@@ -42,15 +42,21 @@ export const signIn = async (email, password) => {
   }
 };
 
-export const signUp = async (userData, setIsAuthenticated) => {
+export const signUp = async (userData) => {
   try {
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email: userData.email,
       password: userData.password,
+      options: {
+        data: {
+          firstName: userData.firstName,
+          lastName: userData.lastName,
+        },
+      },
     });
 
     if (authError) {
-      alert("Có lỗi xảy ra khi đăng ký", authError.message);
+      alert("Có lỗi xảy ra khi đăng ký" + authError.message);
       throw authError;
     }
 
@@ -63,7 +69,7 @@ export const signUp = async (userData, setIsAuthenticated) => {
         .from("avatars")
         .upload(fileName, {
           uri: userData.avatar.uri,
-          type: userData.avatar.type,
+          type: "image/" + fileExt,
           name: fileName,
         });
 
@@ -122,7 +128,7 @@ export const updateProfile = async (userId, updateData) => {
           fileName,
           {
             uri: updateData.avatar.uri,
-            type: updateData.avatar.type,
+            type: "image/" + fileExt,
             name: fileName,
           },
           {
@@ -173,33 +179,3 @@ export const signOut = async () => {
     throw error;
   }
 };
-
-// export const getCurrentUser = async () => {
-//   try {
-//     const {
-//       data: { user },
-//     } = await supabase.auth.getUser();
-//     if (user) {
-//       const { data: profileData, error: profileError } = await supabase
-//         .from("profiles")
-//         .select("*")
-//         .eq("id", user.id)
-//         .single();
-
-//       if (profileError) {
-//         alert("Có lỗi xảy ra khi lấy thông tin cá nhân", profileError.message);
-//         return;
-//       }
-
-//       if (!profileData) {
-//         alert("Không tìm thấy thông tin cá nhân");
-//         return;
-//       }
-
-//       return profileData;
-//     }
-//     return null;
-//   } catch (error) {
-//     console.log(error);
-//   }
-// };

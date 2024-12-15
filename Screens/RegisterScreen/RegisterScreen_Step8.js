@@ -10,7 +10,6 @@ const RegisterScreen_Step8 = ({ navigation }) => {
     registerData.avatar || require("../../assets/avatar/avatar_default.png")
   );
 
-  // Function to select an image from the library
   const selectImage = async () => {
     const permissionResult =
       await ImagePicker.requestMediaLibraryPermissionsAsync();
