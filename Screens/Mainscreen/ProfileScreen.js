@@ -1,6 +1,4 @@
 import React, {
-  useEffect,
-  useRef,
   useState,
   useContext,
   useCallback,
@@ -13,57 +11,20 @@ import {
   TouchableOpacity,
   StyleSheet,
   StatusBar,
-  Animated,
-  Easing,
 } from "react-native";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import SimpleLineIcons from "@expo/vector-icons/SimpleLineIcons";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import HeaderNavigationComponent from "../../Components/HeaderNavigationComponent";
-import { ScrollView } from "react-native-gesture-handler";
 import Entypo from "@expo/vector-icons/Entypo";
 import { UserContext } from "../../context/UserContext";
 import { useFocusEffect } from "@react-navigation/native";
+import PostComponent from '../../Components/PostComponent';
+import PostCreationComponent from '../../Components/PostCreationComponent';
+
 // Chiều cao của Header
 const HEADER_HEIGHT = 0;
 
-const posts = [
-  {
-    id: "1",
-    user: "Nguyễn Tấn Cầm",
-    content: "de nhat tien si!",
-    image: "https://inseclab.uit.edu.vn/upload/2018/04/mrCam.png",
-    avatarInPost:
-      "https://nc.uit.edu.vn/wp-content/uploads/2022/11/80299-NguyenTanCam-Cam-Nguyen-Tan-272x300.jpg",
-    time: "2 giờ trước",
-  },
-  {
-    id: "2",
-    user: "Nguyễn Tấn Cầm",
-    content: "de nhat tien si!",
-    image: "https://inseclab.uit.edu.vn/upload/2018/04/mrCam.png",
-    avatarInPost:
-      "https://nc.uit.edu.vn/wp-content/uploads/2022/11/80299-NguyenTanCam-Cam-Nguyen-Tan-272x300.jpg",
-    time: "2 giờ trước",
-  },
-  {
-    id: "3",
-    user: "Phạm Thế Sơn",
-    content: "codeblock!",
-    image: "https://o.rada.vn/data/image/2020/09/15/codeblock-error.png",
-    avatarInPost: "https://o.rada.vn/data/image/2020/09/15/codeblock-error.png",
-    time: "1 ngày trước",
-  },
-  {
-    id: "4",
-    user: "Phạm Thế Sơn",
-    content: "codeblock!",
-    image: "https://o.rada.vn/data/image/2020/09/15/codeblock-error.png",
-    avatarInPost: "https://o.rada.vn/data/image/2020/09/15/codeblock-error.png",
-    time: "1 ngày trước",
-  },
-];
 const friends = [
   {
     id: "1",
@@ -104,6 +65,59 @@ const friends = [
 ];
 
 const ProfileScreen = ({ navigation }) => {
+  // Temp post để làm mẫu
+  const [posts, setPosts] = useState([
+    {
+      id: '1',
+      user: 'Nguyễn Tấn Cầm',
+      content: 'de nhat tien si!',
+      image: 'https://inseclab.uit.edu.vn/upload/2018/04/mrCam.png',
+      avatar: 'https://nc.uit.edu.vn/wp-content/uploads/2022/11/80299-NguyenTanCam-Cam-Nguyen-Tan-272x300.jpg',
+      time: '2 giờ trước',
+      like: 9,
+      comment: 0,
+      share: 0,
+      isLike: false,
+    },
+    {
+      id: '2',
+      user: 'Mr.Mewing',
+      content: '50 years challenge!',
+      image: 'https://i.ytimg.com/vi/Hlf18AIRg8Y/mqdefault.jpg',
+      avatar: 'https://steamuserimages-a.akamaihd.net/ugc/2494510408099943078/F01916FFB56B797146821623A1E2811C03229A66/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true',
+      time: '2 giờ trước',
+      like: 6969,
+      comment: 666,
+      share: 1945,
+      isLike: false,
+    },
+    {
+      id: '3',
+      user: 'Yi Long Ma',
+      content: 'This is my new Tesla',
+      image: 'https://www.mundodeportivo.com/files/image_449_220/files/fp/uploads/2021/12/17/61bd03fcb8ed6.r_d.493-271-5908.png',
+      avatar: 'https://i1.sndcdn.com/avatars-XpzN0ujJa3iI96PS-hKizHQ-t1080x1080.jpg',
+      time: '1 ngày trước',
+      like: 30,
+      comment: 0,
+      share: 11,
+      isLike: false,
+    },
+    {
+      id: '4',
+      user: 'Phạm Thế Sơn',
+      content: 'Tôi yêu codeblock!',
+      image: 'https://o.rada.vn/data/image/2020/09/15/codeblock-error.png',
+      avatar: 'https://o.rada.vn/data/image/2020/09/15/codeblock-error.png',
+      time: '1 ngày trước',
+      like: 0,
+      comment: 2,
+      share: 1,
+      isLike: false,
+    },
+  ]);
+
+
   const { userProfile, logout, refreshProfile, imageCache } = useContext(UserContext);
   const [selectedButton, setSelectedButton] = useState("Profile");
 
@@ -135,39 +149,6 @@ const ProfileScreen = ({ navigation }) => {
     { name: "Profile", label: "Profile" },
   ];
 
-  const renderPost = ({ item }) => (
-    <View style={styles.post}>
-      <View style={styles.header}>
-        <Image
-          source={{ uri: item.avatarInPost }}
-          style={styles.avatarInPost}
-        />
-        <View style={styles.headerText}>
-          <Text style={styles.username}>{item.user}</Text>
-          <Text style={styles.time}>{item.time}</Text>
-        </View>
-      </View>
-
-      <Text style={styles.content}>{item.content}</Text>
-
-      <Image source={{ uri: item.image }} style={styles.postImage} />
-
-      <View style={styles.actions}>
-        <TouchableOpacity style={styles.actionButton}>
-          <AntDesign name="like2" size={24} color="black" />
-          <Text style={styles.actionText}>Like</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.actionButton}>
-          <FontAwesome name="comment-o" size={24} color="black" />
-          <Text style={styles.actionText}>Comment</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.actionButton}>
-          <SimpleLineIcons name="share" size={24} color="black" />
-          <Text style={styles.actionText}>Share</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
   const renderFriendItem = ({ item }) => (
     <TouchableOpacity style={styles.friendItem}>
       <Image source={{ uri: item.avatar }} style={styles.friendAvatar} />
@@ -176,14 +157,19 @@ const ProfileScreen = ({ navigation }) => {
       </Text>
     </TouchableOpacity>
   );
+
+  // Hàm xử lý khi bài viết mới được đăng
+  const handlePostSubmit = (newPost) => {
+    setPosts((prevPosts) => [newPost, ...prevPosts]); // Thêm bài mới vào đầu danh sách
+  };
+
   return (
     <View style={{ flex: 1 }}>
       {/* Post List */}
       <FlatList
         data={posts}
-        renderItem={renderPost}
+        renderItem={({ item }) => <PostComponent post={item} setPosts={setPosts} />}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={{ paddingTop: HEADER_HEIGHT }}
         ListHeaderComponent={
           <>
             <StatusBar barStyle="dark-content" backgroundColor="#fff" />
@@ -270,24 +256,7 @@ const ProfileScreen = ({ navigation }) => {
                   contentContainerStyle={styles.friendList}
                 />
               </View>
-              <View style={styles.postBox}>
-                <Text style={{ fontSize: 20 }}>Bài viết</Text>
-                <View style={styles.postBoxBtn}>
-                  <View style={styles.avatarContainerPost}>
-                    <View style={styles.borderAvatarPost}>
-                      <Image
-                        style={styles.avatarPost}
-                        source={{
-                          uri: "https://cdn-icons-png.flaticon.com/512/6858/6858504.png",
-                        }}
-                      />
-                    </View>
-                  </View>
-                  <TouchableOpacity style={{ marginLeft: 15 }}>
-                    <Text style={{ fontSize: 18 }}>Bạn đang nghĩ gì ?</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
+              <PostCreationComponent onPostSubmit={handlePostSubmit} />
             </View>
           </>
         }

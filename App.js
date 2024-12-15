@@ -20,10 +20,10 @@ import EditProfileScreen from "./Screens/ProfileScreen/EditProfileScreen";
 import FriendListScreen from "./Screens/ProfileScreen/FriendListScreen";
 import PostArticlesScreen from "./Screens/ProfileScreen/PostArticlesScreen";
 // MainScreen
-import HomeScreen from "./Screens/Mainscreen/HomeScreen";
-import PostScreen from "./Screens/Mainscreen/PostScreen";
-import ProfileScreen from "./Screens/Mainscreen/ProfileScreen";
-import VideoScreen from "./Screens/Mainscreen/VideoScreen";
+import HomeScreen from "./Screens/MainScreen/HomeScreen";
+import PostScreen from "./Screens/MainScreen/PostScreen";
+import ProfileScreen from "./Screens/MainScreen/ProfileScreen";
+import VideoScreen from "./Screens/MainScreen/VideoScreen";
 
 // import TopTabNavigator from "./navigation/TopTabNavigator";
 import {RegisterProvider} from "./context/RegisterContext";
