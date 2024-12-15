@@ -212,7 +212,10 @@ const ProfileScreen = ({ navigation }) => {
               </View>
             </View>
             <View style={styles.midContent}>
-              <TouchableOpacity style={styles.editProfileBtn}>
+              <TouchableOpacity
+                style={styles.editProfileBtn}
+                onPress={() => navigation.navigate("EditProfile")}
+              >
                 <Entypo name="edit" size={24} color="black" />
                 <Text style={styles.textEditProfileBtn}>
                   Chỉnh sửa thông tin cá nhân
@@ -242,7 +245,9 @@ const ProfileScreen = ({ navigation }) => {
                 {/* Tiêu đề danh sách bạn bè */}
                 <View style={styles.friendHeader}>
                   <Text style={styles.friendTitle}>Bạn bè</Text>
-                  <TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => navigation.navigate("FriendList")}
+                  >
                     <Text style={styles.friendSeeAll}>Xem tất cả</Text>
                   </TouchableOpacity>
                 </View>
