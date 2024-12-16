@@ -77,10 +77,10 @@ const PostComponent = ({ post, setPosts }) => {
                         </View>
                     )}
                     {post.comment > 0 && (
-                        <Text> {post.comment} bình luận</Text>
+                        <Text style={styles.reactionComment}> {post.comment} bình luận</Text>
                     )}
                     {post.share > 0 && (
-                        <Text style={styles.reactionComment}> {post.share} lượt chia sẻ</Text>
+                        <Text style={styles.reactionShare}> {post.share} lượt chia sẻ</Text>
                     )}
                 </View>
             )}
@@ -164,13 +164,23 @@ const styles = StyleSheet.create({
         marginHorizontal: 5,
         height: 35,
     },
-    reactionComment: {
-        marginInlineStart: -85,
+
+    reactionLike: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 2
     },
     reactionLike: {
         flexDirection: 'row',
         alignItems: 'center',
         gap: 2
+    },
+    reactionComment: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 2
+    },
+    reactionShare: {
     },
     actions: {
         flexDirection: 'row',

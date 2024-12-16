@@ -12,18 +12,17 @@ import {
   StyleSheet,
   StatusBar,
 } from "react-native";
-import AntDesign from "@expo/vector-icons/AntDesign";
-import FontAwesome from "@expo/vector-icons/FontAwesome";
-import SimpleLineIcons from "@expo/vector-icons/SimpleLineIcons";
 import HeaderNavigationComponent from "../../Components/HeaderNavigationComponent";
 import Entypo from "@expo/vector-icons/Entypo";
+import Home from '../../assets/svg/home_outline.svg'
+import Post from '../../assets/svg/post_outline.svg'
+import Video from '../../assets/svg/video_outline.svg'
 import { UserContext } from "../../context/UserContext";
 import { useFocusEffect } from "@react-navigation/native";
 import PostComponent from '../../Components/PostComponent';
 import PostCreationComponent from '../../Components/PostCreationComponent';
 
 // Chiều cao của Header
-const HEADER_HEIGHT = 0;
 
 const friends = [
   {
@@ -78,48 +77,11 @@ const ProfileScreen = ({ navigation }) => {
       comment: 0,
       share: 0,
       isLike: false,
-    },
-    {
-      id: '2',
-      user: 'Mr.Mewing',
-      content: '50 years challenge!',
-      image: 'https://i.ytimg.com/vi/Hlf18AIRg8Y/mqdefault.jpg',
-      avatar: 'https://steamuserimages-a.akamaihd.net/ugc/2494510408099943078/F01916FFB56B797146821623A1E2811C03229A66/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true',
-      time: '2 giờ trước',
-      like: 6969,
-      comment: 666,
-      share: 1945,
-      isLike: false,
-    },
-    {
-      id: '3',
-      user: 'Yi Long Ma',
-      content: 'This is my new Tesla',
-      image: 'https://www.mundodeportivo.com/files/image_449_220/files/fp/uploads/2021/12/17/61bd03fcb8ed6.r_d.493-271-5908.png',
-      avatar: 'https://i1.sndcdn.com/avatars-XpzN0ujJa3iI96PS-hKizHQ-t1080x1080.jpg',
-      time: '1 ngày trước',
-      like: 30,
-      comment: 0,
-      share: 11,
-      isLike: false,
-    },
-    {
-      id: '4',
-      user: 'Phạm Thế Sơn',
-      content: 'Tôi yêu codeblock!',
-      image: 'https://o.rada.vn/data/image/2020/09/15/codeblock-error.png',
-      avatar: 'https://o.rada.vn/data/image/2020/09/15/codeblock-error.png',
-      time: '1 ngày trước',
-      like: 0,
-      comment: 2,
-      share: 1,
-      isLike: false,
-    },
+    }
   ]);
 
 
   const { userProfile, logout, refreshProfile, imageCache } = useContext(UserContext);
-  const [selectedButton, setSelectedButton] = useState("Profile");
 
   useFocusEffect(
     useCallback(() => {
@@ -141,12 +103,14 @@ const ProfileScreen = ({ navigation }) => {
     // Console log Navigation
   };
 
-  // Cần thay thế label bằng biểu tượng
+  const [selectedButton, setSelectedButton] = useState('Profile'); // State trang hiện tại
+
+  // Biểu tượng điều hướng
   const navigationButtons = [
-    { name: "Home", label: "Home" },
-    { name: "Post", label: "Post" },
-    { name: "Video", label: "Video" },
-    { name: "Profile", label: "Profile" },
+    { name: 'Home', label: <Home width={35} height={35} /> },
+    { name: 'Post', label: <Post width={35} height={35} /> },
+    { name: 'Video', label: <Video width={35} height={35} /> },
+    { name: 'Profile', label: <Image source={{ uri: userProfile.avatar_url }} style={styles.profileIcon} /> },
   ];
 
   const renderFriendItem = ({ item }) => (
@@ -178,6 +142,7 @@ const ProfileScreen = ({ navigation }) => {
               <HeaderNavigationComponent
                 navigationButtons={navigationButtons}
                 onButtonPress={handleButtonPress}
+                selectedButton={selectedButton}
               />
             </View>
             {/* Header */}
@@ -503,6 +468,14 @@ const styles = StyleSheet.create({
     marginTop: 200,
     marginLeft: 10,
   },
+  profileIcon: {
+    height: 35,
+    width: 35,
+    borderRadius: 25,
+    resizeMode: 'cover',
+    borderWidth: 3,
+    borderColor: '#316ff6',
+  }
 });
 
 export default ProfileScreen;

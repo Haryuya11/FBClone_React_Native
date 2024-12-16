@@ -1,5 +1,5 @@
 // Tạm thời giống như Home
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import {
     View,
     Text,
@@ -18,6 +18,7 @@ import Post from '../../assets/svg/post_outline.svg'
 import Video from '../../assets/svg/video_blue.svg'
 import Profile from '../../assets/svg/profile_outline.svg'
 import LikeReaction from '../../assets/svg/like_reaction.svg'
+import { UserContext } from "../../context/UserContext";
 
 // Chiều cao của Header
 const HEADER_HEIGHT = 55;
@@ -70,6 +71,8 @@ const posts = [
 ];
 
 const VideoScreen = ({ navigation }) => {
+     const { userProfile } = useContext(UserContext);
+    
 
     const [selectedButton, setSelectedButton] = useState('Video');
     const handleButtonPress = (name) => {
@@ -79,12 +82,12 @@ const VideoScreen = ({ navigation }) => {
     };
 
     // Biểu tượng trên Navigation
-    const navigationButtons = [
-        { name: 'Home', label: <Home width={50} height={50} /> },
-        { name: 'Post', label: <Post width={50} height={50} /> },
-        { name: 'Video', label: <Video width={50} height={50} /> },
-        { name: 'Profile', label: <Profile width={50} height={50} /> },
-    ];
+  const navigationButtons = [
+    { name: 'Home', label: <Home width={35} height={35} /> },
+    { name: 'Post', label: <Post width={35} height={35} /> },
+    { name: 'Video', label: <Video width={35} height={35} /> },
+    { name: 'Profile', label: <Image source={{ uri: userProfile.avatar_url }} style={styles.profileIcon} /> },
+  ];
 
     // Làm basic tạm thời
     const renderPost = ({ item }) => (
@@ -266,6 +269,12 @@ const styles = StyleSheet.create({
         color: 'black',
         marginLeft: 5,
     },
+    profileIcon: {
+        height: 35,
+        width: 35,
+        borderRadius: 25,
+        resizeMode: 'cover',
+    }
 });
 
 export default VideoScreen;

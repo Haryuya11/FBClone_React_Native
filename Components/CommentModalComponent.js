@@ -1,22 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { View, Text, FlatList, TextInput, TouchableOpacity, StyleSheet, Modal, Image } from 'react-native';
 import Send from '../assets/svg/send.svg';
 import LikeReaction from '../assets/svg/like_reaction.svg';
+import { UserContext } from "../context/UserContext";
 
 const CommentModalComponent = ({ visible, onClose }) => {
     const [comments, setComments] = useState([]); // Danh sách comment
     const [newComment, setNewComment] = useState(''); // Comment mới
     const [replyCommentId, setReplyCommentId] = useState(null); // ID của comment đang trả lời
 
+    const { userProfile } = useContext(UserContext);
+
     const handleAddComment = () => {
         if (newComment.trim()) {
             const newCommentData = {
                 id: Date.now().toString(),
                 text: newComment,
-                user: {
-                    name: 'User',
-                    avatar: 'https://cdn-icons-png.flaticon.com/512/6858/6858504.png',
-                },
+                user: (userProfile?.first_name || "") + " " + (userProfile?.last_name || ""),
+                avatar: userProfile.avatar_url,
                 like: 0,
                 time: new Date().toLocaleTimeString(), // Thời gian comment hiện tại
                 isLike: false,
@@ -67,9 +68,9 @@ const CommentModalComponent = ({ visible, onClose }) => {
     };
     const renderCommentItem = ({ item }) => (
         <View style={styles.commentItem}>
-            <Image source={{ uri: item.user.avatar }} style={styles.avatar} />
+            <Image source={{ uri: item.avatar }} style={styles.avatar} />
             <View style={styles.commentContent}>
-                <Text style={styles.userName}>{item.user.name}</Text>
+                <Text style={styles.userName}>{item.user}</Text>
                 <Text style={styles.commentText}>{item.text}</Text>
                 <View style={styles.commentFooter}>
                     <Text style={styles.commentTime}>{item.time}</Text>
@@ -101,9 +102,9 @@ const CommentModalComponent = ({ visible, onClose }) => {
     const renderReplies = (replies, parentId) => {
         return replies.map((reply) => (
             <View key={reply.id} style={styles.replyItem}>
-                <Image source={{ uri: reply.user.avatar }} style={styles.avatar} />
+                <Image source={{ uri: reply.avatar }} style={styles.avatar} />
                 <View style={styles.commentContent}>
-                    <Text style={styles.userName}>{reply.user.name}</Text>
+                    <Text style={styles.userName}>{reply.user}</Text>
                     <Text style={styles.commentText}>{reply.text}</Text>
                     <View style={styles.commentFooter}>
                         <Text style={styles.commentTime}>{reply.time}</Text>
@@ -113,7 +114,7 @@ const CommentModalComponent = ({ visible, onClose }) => {
                                 reply.isLike && styles.likeButtonActive,
                             ]}> Thích </Text>
                         </TouchableOpacity>                        
-                        <TouchableOpacity onPress={() => handleReply(parentId, reply.user.name)}>
+                        <TouchableOpacity onPress={() => handleReply(parentId, reply.user)}>
                             <Text style={styles.replyButton}>Trả lời</Text>
                         </TouchableOpacity>
                         <View style={styles.likeContainer}>
@@ -145,7 +146,7 @@ const CommentModalComponent = ({ visible, onClose }) => {
                     <View style={styles.replyingToContainer}>
                         <Text style={styles.replyingToText}>
                             Đang trả lời bình luận của: <Text style={styles.replyingToUser}>{
-                                comments.find(comment => comment.id === replyCommentId)?.user.name
+                                comments.find(comment => comment.id === replyCommentId)?.user
                             }</Text>
                         </Text>
                         <TouchableOpacity onPress={() => setReplyCommentId(null)}>
@@ -182,6 +183,7 @@ const styles = StyleSheet.create({
         fontSize: 20,
         fontWeight: 'bold',
         marginBottom: 20,
+        textAlign: 'center',
     },
     commentItem: {
         flexDirection: 'row',

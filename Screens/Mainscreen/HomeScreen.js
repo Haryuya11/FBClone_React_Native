@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useContext } from 'react';
 import {
   View,
   Text,
@@ -14,16 +14,17 @@ import HeaderNavigationComponent from '../../Components/HeaderNavigationComponen
 import Home from '../../assets/svg/home_blue.svg'
 import Post from '../../assets/svg/post_outline.svg'
 import Video from '../../assets/svg/video_outline.svg'
-import Profile from '../../assets/svg/profile_outline.svg'
 import Search from '../../assets/svg/search.svg'
 import Chat from '../../assets/svg/chat.svg'
 import PostComponent from '../../Components/PostComponent';
 import PostCreationComponent from '../../Components/PostCreationComponent';
+import { UserContext } from "../../context/UserContext";
 
 // Chiều cao của Header
 const HEADER_HEIGHT = 100;
 
 const HomeScreen = ({ navigation }) => {
+  const { userProfile } = useContext(UserContext);
 
   // Temp post để làm mẫu
   const [posts, setPosts] = useState([
@@ -113,10 +114,10 @@ const HomeScreen = ({ navigation }) => {
 
   // Biểu tượng trên Navigation
   const navigationButtons = [
-    { name: 'Home', label: <Home width={50} height={50} /> },
-    { name: 'Post', label: <Post width={50} height={50} /> },
-    { name: 'Video', label: <Video width={50} height={50} /> },
-    { name: 'Profile', label: <Profile width={50} height={50} /> },
+    { name: 'Home', label: <Home width={35} height={35} /> },
+    { name: 'Post', label: <Post width={35} height={35} /> },
+    { name: 'Video', label: <Video width={35} height={35} /> },
+    { name: 'Profile', label: <Image source={{ uri: userProfile.avatar_url }} style={styles.profileIcon} /> },
   ];
 
   // Hàm xử lý khi bài viết mới được đăng
@@ -164,7 +165,7 @@ const HomeScreen = ({ navigation }) => {
         // Component tạo bài viết 
         ListHeaderComponent={
           <View style={styles.newPost}>
-            <PostCreationComponent onPostSubmit={handlePostSubmit} />
+            <PostCreationComponent onPostSubmit={handlePostSubmit} navigation={navigation} />
           </View>
         }
       />
@@ -216,6 +217,12 @@ const styles = StyleSheet.create({
   newPost: {
     paddingTop: 105,
   },
+  profileIcon: {
+    height: 35,
+    width: 35,
+    borderRadius: 25,
+    resizeMode: 'cover',
+  }
 });
 
 export default HomeScreen;

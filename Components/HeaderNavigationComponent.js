@@ -1,12 +1,13 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, } from 'react-native';
+
 
 const HeaderNavigationComponent = ({ navigationButtons, onButtonPress, selectedButton }) => {
   return (
     <View style={styles.headerBottom}>
       {navigationButtons.map((button, index) => (
-        <TouchableOpacity 
-          key={index} 
+        <TouchableOpacity
+          key={index}
           style={styles.headerButton}
           onPress={() => onButtonPress(button.name)}
         >
@@ -32,37 +33,38 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     alignItems: 'center',
     height: 50,
-    
+
   },
   headerButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    position: 'relative', 
+    position: 'relative',
+
   },
   buttonLabelContainer: {
-    position: 'relative', 
+    position: 'relative',
   },
   headerButtonText: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#333',
-    textAlign: 'center', 
-    
+    textAlign: 'center',
+    bottom: 0,
+    position: 'relative',
+
   },
   underlineContainer: {
-    position: 'absolute', 
-    bottom: 0, 
-    left: 0,
-    alignItems: 'center', 
+    position: 'absolute',
+    bottom: -8,
+    left: -23,
+    alignItems: 'center',
   },
   selectedButton: {
     fontSize: 16,
-    color: '#316ff6', 
+    color: '#316ff6',
     fontWeight: 'bold',
-    marginTop: 5, 
+    marginTop: 5,
     top: 0,
-    width: 80, 
-    textAlign: 'center', 
+    width: 80,
+    textAlign: 'center',
   },
 });
 
