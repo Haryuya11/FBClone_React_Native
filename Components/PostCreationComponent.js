@@ -2,16 +2,17 @@ import React, { useState } from 'react';
 import { View, TextInput, TouchableOpacity, Text, Image, StyleSheet } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import MediaPicker from '../assets/svg/mediapicker.svg';
+import { Video } from 'expo-av';  // Import Video component
 
 const PostCreationComponent = ({ onPostSubmit }) => {
     const [content, setContent] = useState('');
     const [image, setImage] = useState(null);
+    const [video, setVideo] = useState(null);
 
     // Chọn ảnh từ thư viện
     const pickImage = async () => {
-
         let result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ['images', 'videos'],
+            mediaTypes: ImagePicker.MediaTypeOptions.All, // Hỗ trợ cả ảnh và video
             allowsEditing: true,
             aspect: [4, 3],
             quality: 1,
@@ -20,13 +21,18 @@ const PostCreationComponent = ({ onPostSubmit }) => {
         console.log(result);
 
         if (!result.canceled) {
-            setImage(result.assets[0].uri);
+            if (result.assets[0].type === 'video') {
+                setImage(null); // Xóa ảnh nếu đã chọn video
+                setVideo(result.assets[0].uri);
+            } else {
+                setVideo(null); // Xóa video nếu đã chọn ảnh
+                setImage(result.assets[0].uri);
+            }
         }
     };
-
     // Gửi bài viết
     const handleSubmit = () => {
-        if (!content.trim() && !image) {
+        if (!content.trim() && !image && !video) {
             alert('Vui lòng nhập nội dung hoặc chọn ảnh!');
             return;
         }
@@ -37,6 +43,7 @@ const PostCreationComponent = ({ onPostSubmit }) => {
             user: 'User',
             content,
             image,
+            video,
             avatar: 'https://cdn-icons-png.flaticon.com/512/6858/6858504.png', // Ảnh đại diện mặc định
             time: 'Vừa xong',
             like: 0,
@@ -48,6 +55,7 @@ const PostCreationComponent = ({ onPostSubmit }) => {
         onPostSubmit(newPost); // Truyền bài viết lên component cha
         setContent('');
         setImage(null);
+        setVideo(null);
     };
 
     return (
@@ -70,6 +78,14 @@ const PostCreationComponent = ({ onPostSubmit }) => {
             {/* Hiển thị ảnh nếu có */}
             {image && (
                 <Image source={{ uri: image }} style={styles.imagePreview} />
+            )}
+            {video && (
+                <Video
+                    source={{ uri: video }}
+                    style={styles.videoPreview}
+                    useNativeControls
+                    resizeMode="contain"
+                />
             )}
 
             {/* Các nút hành động */}
@@ -139,6 +155,12 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: 10,
 
+    },
+    videoPreview: {
+        width: '100%',
+        height: 200,
+        borderRadius: 8,
+        marginBottom: 10,
     },
 });
 

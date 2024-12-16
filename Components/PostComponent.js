@@ -6,6 +6,7 @@ import LikeReaction from '../assets/svg/like_reaction.svg';
 import Comment from '../assets/svg/comment.svg';
 import Share from '../assets/svg/share.svg';
 import CommentModalComponent from './CommentModalComponent';
+import { Video } from 'expo-av';
 
 const PostComponent = ({ post, setPosts }) => {
     const [isCommentVisible, setCommentVisible] = useState(false); // Trạng thái mở/đóng modal bình luận
@@ -51,10 +52,22 @@ const PostComponent = ({ post, setPosts }) => {
             </View>
 
             {/* Content */}
-            <Text style={styles.content}>{post.content}</Text>
+            {post.content && <Text style={styles.content}>{post.content}</Text>}
 
             {/* Post image */}
-            <Image source={{ uri: post.image }} style={styles.postImage} />
+            {post.image && (
+                <Image source={{ uri: post.image }} style={styles.postImage} />
+            )}
+            {post.video && (
+                <Video
+                    source={{ uri: post.video }}
+                    style={styles.postVideo}
+                    useNativeControls
+                    resizeMode="contain"
+                    isLooping
+                />
+            )}
+            {/* Reaction */}
             {(post.like > 0 || post.comment > 0 || post.share > 0) && (
                 <View style={styles.reaction}>
                     {post.like > 0 && (
@@ -138,6 +151,12 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         marginVertical: 10,
     },
+    postVideo: {
+        width: '100%',
+        height: 200,
+        borderRadius: 10,
+        marginVertical: 10,
+    },
     reaction: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -168,6 +187,7 @@ const styles = StyleSheet.create({
         color: 'black',
         marginLeft: 5,
     },
+
 });
 
 
