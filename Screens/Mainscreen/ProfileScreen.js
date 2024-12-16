@@ -1,6 +1,4 @@
 import React, {
-  useEffect,
-  useRef,
   useState,
   useContext,
   useCallback,
@@ -13,57 +11,19 @@ import {
   TouchableOpacity,
   StyleSheet,
   StatusBar,
-  Animated,
-  Easing,
 } from "react-native";
-import AntDesign from "@expo/vector-icons/AntDesign";
-import FontAwesome from "@expo/vector-icons/FontAwesome";
-import SimpleLineIcons from "@expo/vector-icons/SimpleLineIcons";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import HeaderNavigationComponent from "../../Components/HeaderNavigationComponent";
-import { ScrollView } from "react-native-gesture-handler";
 import Entypo from "@expo/vector-icons/Entypo";
+import Home from '../../assets/svg/home_outline.svg'
+import Post from '../../assets/svg/post_outline.svg'
+import Video from '../../assets/svg/video_outline.svg'
 import { UserContext } from "../../context/UserContext";
 import { useFocusEffect } from "@react-navigation/native";
-// Chiều cao của Header
-const HEADER_HEIGHT = 0;
+import PostComponent from '../../Components/PostComponent';
+import PostCreationComponent from '../../Components/PostCreationComponent';
 
-const posts = [
-  {
-    id: "1",
-    user: "Nguyễn Tấn Cầm",
-    content: "de nhat tien si!",
-    image: "https://inseclab.uit.edu.vn/upload/2018/04/mrCam.png",
-    avatarInPost:
-      "https://nc.uit.edu.vn/wp-content/uploads/2022/11/80299-NguyenTanCam-Cam-Nguyen-Tan-272x300.jpg",
-    time: "2 giờ trước",
-  },
-  {
-    id: "2",
-    user: "Nguyễn Tấn Cầm",
-    content: "de nhat tien si!",
-    image: "https://inseclab.uit.edu.vn/upload/2018/04/mrCam.png",
-    avatarInPost:
-      "https://nc.uit.edu.vn/wp-content/uploads/2022/11/80299-NguyenTanCam-Cam-Nguyen-Tan-272x300.jpg",
-    time: "2 giờ trước",
-  },
-  {
-    id: "3",
-    user: "Phạm Thế Sơn",
-    content: "codeblock!",
-    image: "https://o.rada.vn/data/image/2020/09/15/codeblock-error.png",
-    avatarInPost: "https://o.rada.vn/data/image/2020/09/15/codeblock-error.png",
-    time: "1 ngày trước",
-  },
-  {
-    id: "4",
-    user: "Phạm Thế Sơn",
-    content: "codeblock!",
-    image: "https://o.rada.vn/data/image/2020/09/15/codeblock-error.png",
-    avatarInPost: "https://o.rada.vn/data/image/2020/09/15/codeblock-error.png",
-    time: "1 ngày trước",
-  },
-];
+// Chiều cao của Header
+
 const friends = [
   {
     id: "1",
@@ -104,8 +64,24 @@ const friends = [
 ];
 
 const ProfileScreen = ({ navigation }) => {
+  // Temp post để làm mẫu
+  const [posts, setPosts] = useState([
+    {
+      id: '1',
+      user: 'Nguyễn Tấn Cầm',
+      content: 'de nhat tien si!',
+      image: 'https://inseclab.uit.edu.vn/upload/2018/04/mrCam.png',
+      avatar: 'https://nc.uit.edu.vn/wp-content/uploads/2022/11/80299-NguyenTanCam-Cam-Nguyen-Tan-272x300.jpg',
+      time: '2 giờ trước',
+      like: 9,
+      comment: 0,
+      share: 0,
+      isLike: false,
+    }
+  ]);
+
+
   const { userProfile, logout, refreshProfile, imageCache } = useContext(UserContext);
-  const [selectedButton, setSelectedButton] = useState("Profile");
 
   useFocusEffect(
     useCallback(() => {
@@ -127,47 +103,16 @@ const ProfileScreen = ({ navigation }) => {
     // Console log Navigation
   };
 
-  // Cần thay thế label bằng biểu tượng
+  const [selectedButton, setSelectedButton] = useState('Profile'); // State trang hiện tại
+
+  // Biểu tượng điều hướng
   const navigationButtons = [
-    { name: "Home", label: "Home" },
-    { name: "Post", label: "Post" },
-    { name: "Video", label: "Video" },
-    { name: "Profile", label: "Profile" },
+    { name: 'Home', label: <Home width={35} height={35} /> },
+    { name: 'Post', label: <Post width={35} height={35} /> },
+    { name: 'Video', label: <Video width={35} height={35} /> },
+    { name: 'Profile', label: <Image source={{ uri: userProfile.avatar_url }} style={styles.profileIcon} /> },
   ];
 
-  const renderPost = ({ item }) => (
-    <View style={styles.post}>
-      <View style={styles.header}>
-        <Image
-          source={{ uri: item.avatarInPost }}
-          style={styles.avatarInPost}
-        />
-        <View style={styles.headerText}>
-          <Text style={styles.username}>{item.user}</Text>
-          <Text style={styles.time}>{item.time}</Text>
-        </View>
-      </View>
-
-      <Text style={styles.content}>{item.content}</Text>
-
-      <Image source={{ uri: item.image }} style={styles.postImage} />
-
-      <View style={styles.actions}>
-        <TouchableOpacity style={styles.actionButton}>
-          <AntDesign name="like2" size={24} color="black" />
-          <Text style={styles.actionText}>Like</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.actionButton}>
-          <FontAwesome name="comment-o" size={24} color="black" />
-          <Text style={styles.actionText}>Comment</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.actionButton}>
-          <SimpleLineIcons name="share" size={24} color="black" />
-          <Text style={styles.actionText}>Share</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
   const renderFriendItem = ({ item }) => (
     <TouchableOpacity style={styles.friendItem}>
       <Image source={{ uri: item.avatar }} style={styles.friendAvatar} />
@@ -176,14 +121,19 @@ const ProfileScreen = ({ navigation }) => {
       </Text>
     </TouchableOpacity>
   );
+
+  // Hàm xử lý khi bài viết mới được đăng
+  const handlePostSubmit = (newPost) => {
+    setPosts((prevPosts) => [newPost, ...prevPosts]); // Thêm bài mới vào đầu danh sách
+  };
+
   return (
     <View style={{ flex: 1 }}>
       {/* Post List */}
       <FlatList
         data={posts}
-        renderItem={renderPost}
+        renderItem={({ item }) => <PostComponent post={item} setPosts={setPosts} />}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={{ paddingTop: HEADER_HEIGHT }}
         ListHeaderComponent={
           <>
             <StatusBar barStyle="dark-content" backgroundColor="#fff" />
@@ -192,6 +142,7 @@ const ProfileScreen = ({ navigation }) => {
               <HeaderNavigationComponent
                 navigationButtons={navigationButtons}
                 onButtonPress={handleButtonPress}
+                selectedButton={selectedButton}
               />
             </View>
             {/* Header */}
@@ -270,24 +221,7 @@ const ProfileScreen = ({ navigation }) => {
                   contentContainerStyle={styles.friendList}
                 />
               </View>
-              <View style={styles.postBox}>
-                <Text style={{ fontSize: 20 }}>Bài viết</Text>
-                <View style={styles.postBoxBtn}>
-                  <View style={styles.avatarContainerPost}>
-                    <View style={styles.borderAvatarPost}>
-                      <Image
-                        style={styles.avatarPost}
-                        source={{
-                          uri: "https://cdn-icons-png.flaticon.com/512/6858/6858504.png",
-                        }}
-                      />
-                    </View>
-                  </View>
-                  <TouchableOpacity style={{ marginLeft: 15 }}>
-                    <Text style={{ fontSize: 18 }}>Bạn đang nghĩ gì ?</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
+              <PostCreationComponent onPostSubmit={handlePostSubmit} />
             </View>
           </>
         }
@@ -534,6 +468,14 @@ const styles = StyleSheet.create({
     marginTop: 200,
     marginLeft: 10,
   },
+  profileIcon: {
+    height: 35,
+    width: 35,
+    borderRadius: 25,
+    resizeMode: 'cover',
+    borderWidth: 3,
+    borderColor: '#316ff6',
+  }
 });
 
 export default ProfileScreen;
