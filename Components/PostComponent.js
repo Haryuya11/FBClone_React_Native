@@ -1,41 +1,43 @@
-import React from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, Image, TouchableOpacity, Modal, FlatList, TextInput, StyleSheet } from 'react-native';
 import LikeBlue from '../assets/svg/like_blue.svg';
 import LikeOutline from '../assets/svg/like_outline.svg';
 import LikeReaction from '../assets/svg/like_reaction.svg';
 import Comment from '../assets/svg/comment.svg';
 import Share from '../assets/svg/share.svg';
+import CommentModalComponent from './CommentModalComponent';
 
 const PostComponent = ({ post, setPosts }) => {
+    const [isCommentVisible, setCommentVisible] = useState(false); // Trạng thái mở/đóng modal bình luận
 
-    // Hàm xử lý like
     const handleLike = () => {
         setPosts((prevPosts) =>
-          prevPosts.map((p) =>
-            p.id === post.id
-              ? { ...p, isLike: !p.isLike, like: post.isLike ? post.like - 1 : post.like + 1 }
-              : p
-          )
+            prevPosts.map((p) =>
+                p.id === post.id
+                    ? { ...p, isLike: !p.isLike, like: post.isLike ? post.like - 1 : post.like + 1 }
+                    : p
+            )
         );
-      };
-    
-      // Hàm xử lý comment
-      const handleComment = () => {
+    };
+
+    // Hàm xử lý comment
+    const handleComment = () => {
         setPosts((prevPosts) =>
-          prevPosts.map((p) =>
-            p.id === post.id ? { ...p, comment: post.comment + 1 } : p
-          )
+            prevPosts.map((p) =>
+                p.id === post.id ? { ...p, comment: post.comment + 1 } : p
+            )
         );
-      };
-    
-      // Hàm xử lý share
-      const handleShare = () => {
+        setCommentVisible(true);
+    };
+
+    // Hàm xử lý share
+    const handleShare = () => {
         setPosts((prevPosts) =>
-          prevPosts.map((p) =>
-            p.id === post.id ? { ...p, share: post.share + 1 } : p
-          )
+            prevPosts.map((p) =>
+                p.id === post.id ? { ...p, share: post.share + 1 } : p
+            )
         );
-      };
+    };
 
     return (
         /* Post info*/
@@ -51,7 +53,7 @@ const PostComponent = ({ post, setPosts }) => {
             {/* Content */}
             <Text style={styles.content}>{post.content}</Text>
 
-            {/* Post image */}   
+            {/* Post image */}
             <Image source={{ uri: post.image }} style={styles.postImage} />
             {(post.like > 0 || post.comment > 0 || post.share > 0) && (
                 <View style={styles.reaction}>
@@ -69,7 +71,11 @@ const PostComponent = ({ post, setPosts }) => {
                     )}
                 </View>
             )}
-            
+            {/* Modal hiển thị danh sách bình luận */}
+            <CommentModalComponent
+                visible={isCommentVisible}
+                onClose={() => setCommentVisible(false)}
+            />
             {/* Action button*/}
             <View style={styles.actions}>
                 <TouchableOpacity style={styles.actionButton} onPress={handleLike}>
@@ -137,7 +143,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
         marginHorizontal: 5,
-        height: 25,
+        height: 35,
     },
     reactionComment: {
         marginInlineStart: -85,
