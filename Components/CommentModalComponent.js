@@ -3,6 +3,7 @@ import { View, Text, FlatList, TextInput, TouchableOpacity, StyleSheet, Modal, I
 import Send from '../assets/svg/send.svg';
 import LikeReaction from '../assets/svg/like_reaction.svg';
 import { UserContext } from "../context/UserContext";
+import NoComment from '../assets/svg/no_comment.svg';
 
 const CommentModalComponent = ({ visible, onClose }) => {
     const [comments, setComments] = useState([]); // Danh sách comment
@@ -66,46 +67,91 @@ const CommentModalComponent = ({ visible, onClose }) => {
 
         setComments((prevComments) => updateLikes(prevComments));
     };
-    const renderCommentItem = ({ item }) => (
-        <View style={styles.commentItem}>
-            <Image source={{ uri: item.avatar }} style={styles.avatar} />
-            <View style={styles.commentContent}>
-                <Text style={styles.userName}>{item.user}</Text>
-                <Text style={styles.commentText}>{item.text}</Text>
-                <View style={styles.commentFooter}>
-                    <Text style={styles.commentTime}>{item.time}</Text>
-                    <TouchableOpacity onPress={() => handleLikeComment(item.id)}>
-                        <Text style={[
-                            styles.likeButton,
-                            item.isLike && styles.likeButtonActive,
-                        ]}> Thích </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => handleReply(item.id)}>
-                        <Text style={styles.replyButton}>Trả lời</Text>
-                    </TouchableOpacity>
-                    <View style={styles.likeContainer}>
-                        {(item.like > 0) && (
-                            <>
-                                <Text style={styles.likeCount}>{item.like}</Text>
-                                <LikeReaction width={22} height={19} />
-                            </>
-                        )
-                        }
-                    </View>
-                </View>
-                {/* Hiển thị các câu trả lời */}
-                {item.replies.length > 0 && renderReplies(item.replies, item.id)}
-            </View>
-        </View>
-    );
 
-    const renderReplies = (replies, parentId) => {
-        return replies.map((reply) => (
-            <View key={reply.id} style={styles.replyItem}>
+    const CommentItem = ({ item }) => {
+        const [isExpanded, setIsExpanded] = useState(false); // State xem thêm
+
+        const toggleExpand = () => {
+            setIsExpanded((prev) => !prev);
+        };
+
+        return (
+            <View style={styles.commentItem}>
+                <Image source={{ uri: item.avatar }} style={styles.avatar} />
+                <View style={styles.commentContent}>
+                    <Text style={styles.userName}>{item.user}</Text>
+                    <Text
+                        style={[
+                            styles.commentText,
+                            !isExpanded && styles.collapsedText,
+                        ]}
+                        numberOfLines={isExpanded ? null : 4}
+                    >
+                        {item.text}
+                    </Text>
+                    {item.text.split("\n").length > 4 && (
+                        <TouchableOpacity onPress={toggleExpand}>
+                            <Text style={styles.expandButton}>
+                                {isExpanded ? "Thu gọn" : "Xem thêm"}
+                            </Text>
+                        </TouchableOpacity>
+                    )}
+                    <View style={styles.commentFooter}>
+                        <Text style={styles.commentTime}>{item.time}</Text>
+                        <TouchableOpacity onPress={() => handleLikeComment(item.id)}>
+                            <Text style={[
+                                styles.likeButton,
+                                item.isLike && styles.likeButtonActive,
+                            ]}> Thích </Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => handleReply(item.id)}>
+                            <Text style={styles.replyButton}>Trả lời</Text>
+                        </TouchableOpacity>
+                        <View style={styles.likeContainer}>
+                            {(item.like > 0) && (
+                                <>
+                                    <Text style={styles.likeCount}>{item.like}</Text>
+                                    <LikeReaction width={22} height={19} />
+                                </>
+                            )
+                            }
+                        </View>
+                    </View>
+                    {/* Hiển thị reply */}
+                    {item.replies.length > 0 && renderReplies(item.replies, item.id)}
+                </View>
+            </View>
+        );
+    };
+
+    const renderCommentItem = ({ item }) => {
+        return <CommentItem item={item} />;
+    };
+
+    const ReplyItem = ({ reply, parentId }) => {
+        const [isExpanded, setIsExpanded] = useState(false);
+
+        const toggleExpand = () => {
+            setIsExpanded((prev) => !prev);
+        };
+        return (
+            <View style={styles.replyItem}>
                 <Image source={{ uri: reply.avatar }} style={styles.avatar} />
                 <View style={styles.commentContent}>
                     <Text style={styles.userName}>{reply.user}</Text>
-                    <Text style={styles.commentText}>{reply.text}</Text>
+                    <Text
+                        style={styles.commentText}
+                        numberOfLines={isExpanded ? null : 4}
+                    >
+                        {reply.text}
+                    </Text>
+                    {reply.text.split("\n").length > 4 && (
+                        <TouchableOpacity onPress={toggleExpand}>
+                            <Text style={styles.expandButton}>
+                                {isExpanded ? "Thu gọn" : "Xem thêm"}
+                            </Text>
+                        </TouchableOpacity>
+                    )}
                     <View style={styles.commentFooter}>
                         <Text style={styles.commentTime}>{reply.time}</Text>
                         <TouchableOpacity onPress={() => handleLikeComment(reply.id)}>
@@ -113,8 +159,8 @@ const CommentModalComponent = ({ visible, onClose }) => {
                                 styles.likeButton,
                                 reply.isLike && styles.likeButtonActive,
                             ]}> Thích </Text>
-                        </TouchableOpacity>                        
-                        <TouchableOpacity onPress={() => handleReply(parentId, reply.user)}>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => handleReply(parentId, reply.id)}>
                             <Text style={styles.replyButton}>Trả lời</Text>
                         </TouchableOpacity>
                         <View style={styles.likeContainer}>
@@ -129,6 +175,12 @@ const CommentModalComponent = ({ visible, onClose }) => {
                     </View>
                 </View>
             </View>
+        );
+    }
+
+    const renderReplies = (replies, parentId) => {
+        return replies.map((reply) => (
+            <ReplyItem key={reply.id} reply={reply} parentId={parentId} />
         ));
     };
 
@@ -136,11 +188,19 @@ const CommentModalComponent = ({ visible, onClose }) => {
         <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
             <View style={styles.modalContainer}>
                 <Text style={styles.modalTitle}>Bình luận</Text>
-                <FlatList
-                    data={comments}
-                    keyExtractor={(item) => item.id}
-                    renderItem={renderCommentItem}
-                />
+                {comments.length === 0 ? (
+                    <View style={styles.noCommentContainer}>
+                        <NoComment width={100} height={100} />
+                        <Text style={styles.noCommentText}>Chưa có bình luận nào</Text>
+                    </View>
+                ) : (
+                    <FlatList
+                        data={comments}
+                        keyExtractor={(item) => item.id}
+                        renderItem={renderCommentItem}
+                    />
+                )}
+
                 {/* Hiển thị trạng thái đang trả lời */}
                 {replyCommentId && (
                     <View style={styles.replyingToContainer}>
@@ -154,6 +214,7 @@ const CommentModalComponent = ({ visible, onClose }) => {
                         </TouchableOpacity>
                     </View>
                 )}
+                {/* Input comment */}
                 <View style={styles.inputContainer}>
                     <TextInput
                         style={styles.input}
@@ -162,6 +223,7 @@ const CommentModalComponent = ({ visible, onClose }) => {
                         }
                         value={newComment}
                         onChangeText={setNewComment}
+                        multiline
                     />
                     <TouchableOpacity onPress={handleAddComment}>
                         <Send width={35} height={35} />
@@ -279,6 +341,21 @@ const styles = StyleSheet.create({
         color: 'red',
         marginLeft: 10,
     },
+    noCommentContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: 20,
+    },
+    noCommentText: {
+        marginTop: 10,
+        fontSize: 16,
+        color: '#888',
+    },
+    expandButton: {
+        color: '#888',
+    },
+
 });
 
 export default CommentModalComponent;

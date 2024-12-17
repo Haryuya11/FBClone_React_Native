@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
-import { View, Text, Image, TouchableOpacity, Modal, FlatList, TextInput, StyleSheet } from 'react-native';
+import { View, Text, Image, TouchableOpacity, Modal, FlatList, TextInput, StyleSheet, Share } from 'react-native';
 import LikeBlue from '../assets/svg/like_blue.svg';
 import LikeOutline from '../assets/svg/like_outline.svg';
 import LikeReaction from '../assets/svg/like_reaction.svg';
 import Comment from '../assets/svg/comment.svg';
-import Share from '../assets/svg/share.svg';
+import ShareIcon from '../assets/svg/share.svg';
 import CommentModalComponent from './CommentModalComponent';
 import { Video } from 'expo-av';
 
 const PostComponent = ({ post, setPosts }) => {
     const [isCommentVisible, setCommentVisible] = useState(false); // Trạng thái mở/đóng modal bình luận
+    const [isExpanded, setExpanded] = useState(false); // Trạng thái xem thêm
 
     const handleLike = () => {
         setPosts((prevPosts) =>
@@ -32,13 +33,40 @@ const PostComponent = ({ post, setPosts }) => {
     };
 
     // Hàm xử lý share
-    const handleShare = () => {
-        setPosts((prevPosts) =>
-            prevPosts.map((p) =>
-                p.id === post.id ? { ...p, share: post.share + 1 } : p
-            )
-        );
+    const handleShare = async () => {
+        try {
+            const result = await Share.share({
+                title: `Được chia sẻ từ Facenote`,
+                message:
+                    `${post.user} \n\n ${post.content}`,
+            });
+            if (result.action === Share.sharedAction) {
+                if (result.activityType) {
+                    console.log("activity type");
+                } else {
+                    // Nếu dùng android thì luôn mặc định là người dùng đã share dù dismiss
+                    console.log("shared");
+
+                    setPosts((prevPosts) =>
+                        prevPosts.map((p) =>
+                            p.id === post.id ? { ...p, share: post.share + 1 } : p
+                        )
+                    );
+                }
+            } else if (result.action === Share.dismissedAction) {
+                // dismissed
+                console.log("User dismissed the share action");
+
+            }
+        } catch (error) {
+            Alert.alert(error.message);
+        }
     };
+
+    // Hàm xử lý xem thêm
+    const toggleExpand = () => {
+        setExpanded(!isExpanded);
+    }
 
     return (
         /* Post info*/
@@ -52,7 +80,20 @@ const PostComponent = ({ post, setPosts }) => {
             </View>
 
             {/* Content */}
-            {post.content && <Text style={styles.content}>{post.content}</Text>}
+            {post.content &&
+                <Text
+                    style={styles.content}
+                    numberOfLines={isExpanded ? null : 5} ellipsizeMode='tail'
+                >
+                    {post.content}
+                </Text>}
+            {post.content.split("\n").length > 5 && (
+                <TouchableOpacity onPress={toggleExpand}>
+                    <Text style={styles.expandButton}>
+                        {isExpanded ? "Thu gọn" : "Xem thêm"}
+                    </Text>
+                </TouchableOpacity>
+            )}
 
             {/* Post image */}
             {post.image && (
@@ -100,7 +141,7 @@ const PostComponent = ({ post, setPosts }) => {
                     <Text style={styles.actionText}>Bình luận</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.actionButton} onPress={handleShare}>
-                    <Share width={28} height={28} />
+                    <ShareIcon width={28} height={28} />
                     <Text style={styles.actionText}>Chia sẻ</Text>
                 </TouchableOpacity>
             </View>
@@ -196,6 +237,9 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: 'black',
         marginLeft: 5,
+    },
+    expandButton: {
+        color: '#888',
     },
 
 });
