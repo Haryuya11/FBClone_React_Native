@@ -221,7 +221,7 @@ const ProfileScreen = ({ navigation }) => {
                   contentContainerStyle={styles.friendList}
                 />
               </View>
-              <PostCreationComponent onPostSubmit={handlePostSubmit} />
+              <PostCreationComponent onPostSubmit={handlePostSubmit} navigation={navigation} />
             </View>
           </>
         }

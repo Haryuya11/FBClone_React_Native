@@ -31,7 +31,7 @@ const HomeScreen = ({ navigation }) => {
     {
       id: '1',
       user: 'Nguyễn Tấn Cầm',
-      content: 'de nhat tien si!',
+      content: 'de nhat tien si!\n toi la ng tan cam \n sadas \n dasdsa\n dasdad\nssadsada',
       image: 'https://inseclab.uit.edu.vn/upload/2018/04/mrCam.png',
       avatar: 'https://nc.uit.edu.vn/wp-content/uploads/2022/11/80299-NguyenTanCam-Cam-Nguyen-Tan-272x300.jpg',
       time: '2 giờ trước',

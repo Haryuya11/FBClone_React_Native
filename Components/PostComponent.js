@@ -10,6 +10,7 @@ import { Video } from 'expo-av';
 
 const PostComponent = ({ post, setPosts }) => {
     const [isCommentVisible, setCommentVisible] = useState(false); // Trạng thái mở/đóng modal bình luận
+    const [isExpanded, setExpanded] = useState(false); // Trạng thái xem thêm
 
     const handleLike = () => {
         setPosts((prevPosts) =>
@@ -40,6 +41,11 @@ const PostComponent = ({ post, setPosts }) => {
         );
     };
 
+    // Hàm xử lý xem thêm
+    const toggleExpand = () => {
+        setExpanded(!isExpanded);
+    }
+
     return (
         /* Post info*/
         <View style={styles.post}>
@@ -52,7 +58,20 @@ const PostComponent = ({ post, setPosts }) => {
             </View>
 
             {/* Content */}
-            {post.content && <Text style={styles.content}>{post.content}</Text>}
+            {post.content &&
+                <Text 
+                style={styles.content}
+                numberOfLines={isExpanded? null : 5} ellipsizeMode='tail'
+                >
+                    {post.content}
+                </Text>}
+                    {post.content.split("\n").length > 5 && (
+                        <TouchableOpacity onPress={toggleExpand}>
+                            <Text style={styles.expandButton}>
+                                {isExpanded ? "Thu gọn" : "Xem thêm"}
+                            </Text>
+                        </TouchableOpacity>
+                    )}
 
             {/* Post image */}
             {post.image && (
@@ -196,6 +215,9 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: 'black',
         marginLeft: 5,
+    },
+    expandButton: {
+        color: '#888',
     },
 
 });
