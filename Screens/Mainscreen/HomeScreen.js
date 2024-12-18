@@ -142,7 +142,7 @@ const HomeScreen = ({ navigation }) => {
             <TouchableOpacity>
               <Search width={35} height={35} />
             </TouchableOpacity>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={() => navigation.navigate('Chat')}>
               <Chat width={35} height={35} />
             </TouchableOpacity>
           </View>

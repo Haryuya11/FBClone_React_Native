@@ -1,7 +1,7 @@
-import {createStackNavigator} from "@react-navigation/stack";
-import {NavigationContainer} from "@react-navigation/native";
+import { createStackNavigator } from "@react-navigation/stack";
+import { NavigationContainer } from "@react-navigation/native";
 
-import React, {useContext} from "react";
+import React, { useContext } from "react";
 // LoginScreen
 import LoginScreen from "./Screens/LoginScreen/LoginScreen";
 // RegisterScreen
@@ -26,9 +26,12 @@ import ProfileScreen from "./Screens/MainScreen/ProfileScreen";
 import VideoScreen from "./Screens/MainScreen/VideoScreen";
 
 // import TopTabNavigator from "./navigation/TopTabNavigator";
-import {RegisterProvider} from "./context/RegisterContext";
-import {UserContext, UserProvider} from "./context/UserContext";
-import {ActivityIndicator} from "react-native";
+import { RegisterProvider } from "./context/RegisterContext";
+import { UserContext, UserProvider } from "./context/UserContext";
+import { ActivityIndicator } from "react-native";
+import DirectMessageScreen from "./Screens/ChatScreen/DirectMessageScreen";
+import ChatMenuScreen from "./Screens/ChatScreen/ChatMenuScreen";
+
 
 const authStack = createStackNavigator();
 const profileStack = createStackNavigator();
@@ -36,8 +39,8 @@ const mainStack = createStackNavigator();
 
 const AuthStack = () => {
     return (
-        <authStack.Navigator screenOptions={{headerShown: false}}>
-            <authStack.Screen name="Login" component={LoginScreen}/>
+        <authStack.Navigator screenOptions={{ headerShown: false }}>
+            <authStack.Screen name="Login" component={LoginScreen} />
             <authStack.Screen
                 name="Register_Step1"
                 component={RegisterScreen_Step1}
@@ -114,28 +117,48 @@ const AuthStack = () => {
 
 const ProfileStack = () => {
     return (
-        <profileStack.Navigator screenOptions={{headerShown: false}}>
-            <profileStack.Screen name="ProfileScreen" component={ProfileScreen}/>
-            <profileStack.Screen name="FriendList" component={FriendListScreen}/>
-            <profileStack.Screen name="EditProfile" component={EditProfileScreen}/>
-            <profileStack.Screen name="PostArticles" component={PostArticlesScreen}/>
+        <profileStack.Navigator screenOptions={{ headerShown: false }}>
+            <profileStack.Screen name="ProfileScreen" component={ProfileScreen} />
+            <profileStack.Screen name="FriendList" component={FriendListScreen} />
+            <profileStack.Screen name="EditProfile" component={EditProfileScreen} />
+            <profileStack.Screen name="PostArticles" component={PostArticlesScreen} />
         </profileStack.Navigator>
     );
 };
 
 const MainStack = () => {
     return (
-        <mainStack.Navigator screenOptions={{headerShown: false}}>
-            <mainStack.Screen name="Home" component={HomeScreen}/>
-            <mainStack.Screen name="Post" component={PostScreen}/>
-            <mainStack.Screen name="Video" component={VideoScreen}/>
-            <mainStack.Screen name="Profile" component={ProfileStack}/>
+        <mainStack.Navigator screenOptions={{ headerShown: false }}>
+            <mainStack.Screen name="Home" component={HomeScreen} />
+            <mainStack.Screen name="Post" component={PostScreen} />
+            <mainStack.Screen name="Video" component={VideoScreen} />
+            <mainStack.Screen name="Profile" component={ProfileStack} />
+            <mainStack.Screen name="Chat" component={ChatStack} />
+        </mainStack.Navigator>
+    );
+};
+
+const ChatStack = () => {
+    return (
+        <mainStack.Navigator screenOptions={{ headerShown: true }}>
+            <mainStack.Screen name="ChatMenu" component={ChatMenuScreen} options={{
+                title: 'Message',
+                headerStyle: {
+                    backgroundColor: '#fff',
+                },
+                headerTintColor: '#316ff6',
+                headerTitleStyle: {
+                    fontWeight: 'bold',
+                }
+            }} />
+
+            <mainStack.Screen name="DirectMessage" options={{ headerShown: false }} component={DirectMessageScreen} />
         </mainStack.Navigator>
     );
 };
 
 const MainApp = () => {
-    const {isAuthenticated, isLoading} = useContext(UserContext);
+    const { isAuthenticated, isLoading } = useContext(UserContext);
 
     if (isLoading) {
         <ActivityIndicator size="large" />
@@ -143,7 +166,7 @@ const MainApp = () => {
 
     return (
         <NavigationContainer>
-            {isAuthenticated ? <MainStack/> : <AuthStack/>}
+            {isAuthenticated ? <MainStack /> : <AuthStack />}
         </NavigationContainer>
     );
 };
@@ -151,7 +174,7 @@ export default function App() {
     return (
         <UserProvider>
             <RegisterProvider>
-                <MainApp/>
+                <MainApp />
             </RegisterProvider>
         </UserProvider>
     );
