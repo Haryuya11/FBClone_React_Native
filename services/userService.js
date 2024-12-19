@@ -124,28 +124,16 @@ export const updateProfile = async (userId, updateData) => {
 
       const { error: uploadError } = await supabase.storage
         .from("avatars")
-        .upload(
-          fileName,
-          {
-            uri: updateData.avatar.uri,
-            type: "image/" + fileExt,
-            name: fileName,
-          },
-          {
-            upsert: true,
-          }
-        );
+        .upload(fileName, updateData.avatar, {
+          upsert: true,
+        });
 
       if (uploadError) {
-        alert("Có lỗi xảy ra khi tải ảnh đại diện", uploadError.message);
         throw uploadError;
       }
 
-      const { data: fileData } = supabase.storage
-        .from("avatars")
-        .getPublicUrl(fileName);
-
-      avatarUrl = fileData.publicUrl;
+      const { data } = supabase.storage.from("avatars").getPublicUrl(fileName);
+      avatarUrl = data.publicUrl;
     }
 
     const { data, error } = await supabase
@@ -153,15 +141,16 @@ export const updateProfile = async (userId, updateData) => {
       .update({
         ...updateData,
         avatar_url: avatarUrl,
-        updated_at: new Date().toISOString(),
+        updated_at: new Date(),
       })
       .eq("id", userId)
+      .select()
       .single();
 
     if (error) {
-      alert("Có lỗi xảy ra khi cập nhật thông tin cá nhân", error.message);
       throw error;
     }
+
     return data;
   } catch (error) {
     throw error;

@@ -1,0 +1,281 @@
+import { supabase } from "../lib/supabase";
+
+export const getPosts = async () => {
+  try {
+    const { data, error } = await supabase
+      .from("posts")
+      .select(
+        `
+        *,
+        profiles:user_id (*),
+        post_media (*),
+        post_likes (*),
+        comments (*)
+      `
+      )
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      alert("Có lỗi xảy ra khi lấy bài viết", error.message);
+      throw error;
+    }
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const createPost = async (
+  userId,
+  content,
+  medias,
+  privacy = "public"
+) => {
+  try {
+
+    const mediaFiles = [];
+    if (medias && medias.length > 0) {
+      for (const media of medias) {
+        try {
+          const fileExt = media.uri.split(".").pop();
+          const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+          const filePath = `${userId}/${fileName}`;
+
+          const { data: uploadData, error: uploadError } =
+            await supabase.storage.from("post-media").upload(
+              filePath,
+              {
+                uri: media.uri,
+                type: media.type,
+                name: fileName,
+              },
+              {
+                contentType: media.type,
+                upsert: false,
+              }
+            );
+
+          if (uploadError) {
+            console.error("Upload error:", uploadError.message);
+            throw uploadError;
+          }
+
+          mediaFiles.push({
+            media_url: uploadData.path,
+            media_type: media.type.startsWith("image") ? "image" : "video",
+          });
+        } catch (mediaError) {
+          console.error("Error processing media:", mediaError);
+          throw mediaError;
+        }
+      }
+    }
+
+    // Create post
+    const { data: postData, error: postError } = await supabase
+      .from("posts")
+      .insert({
+        user_id: userId,
+        content,
+        privacy,
+      })
+      .select()
+      .single();
+
+    if (postError) throw postError;
+
+    // Add media files to post
+    if (mediaFiles.length > 0) {
+      const { error: mediaError } = await supabase.from("post_media").insert(
+        mediaFiles.map((file) => ({
+          post_id: postData.id,
+          ...file,
+        }))
+      );
+
+      if (mediaError) throw mediaError;
+    }
+
+    return postData;
+  } catch (error) {
+    console.error("Create post error:", error.message);
+    console.error("Detailed error:", error.message);
+    throw error;
+  }
+};
+
+export const updatePost = async (postId, userId, content, medias) => {
+  try {
+    const { data: postData, error: postError } = await supabase
+      .from("posts")
+      .update({ content })
+      .eq("id", postId)
+      .eq("user_id", userId)
+      .select(
+        `
+        *,
+        user:profiles(*),
+        media:post_media(*),
+        likes:post_likes(count),
+        comments:comments(count)
+      `
+      )
+      .single();
+    return postData;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const deletePost = async (postId, userId) => {
+  try {
+    const { data: postData, error: postError } = await supabase
+      .from("posts")
+      .delete()
+      .eq("id", postId)
+      .eq("user_id", userId);
+
+    if (postError) {
+      alert("Có lỗi xảy ra khi xóa bài viết", postError.message);
+      throw postError;
+    }
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const toggleLikePost = async (postId, userId) => {
+  try {
+    // Kiểm tra xem đã like chưa
+    const { data: isLiked, error: checkError } = await supabase
+      .from("post_likes")
+      .select("*")
+      .eq("post_id", postId)
+      .eq("user_id", userId)
+      .single();
+
+    if (checkError && checkError.code !== "PGRST116") {
+      throw checkError;
+    }
+
+    if (isLiked) {
+      const { error: deleteError } = await supabase
+        .from("post_likes")
+        .delete()
+        .eq("post_id", postId)
+        .eq("user_id", userId);
+
+      if (deleteError) throw deleteError;
+
+      return {
+        action: "unlike",
+        success: true,
+      };
+    } else {
+      const { error: insertError } = await supabase.from("post_likes").insert([
+        {
+          post_id: postId,
+          user_id: userId,
+        },
+      ]);
+
+      if (insertError) throw insertError;
+
+      return {
+        action: "like",
+        success: true,
+      };
+    }
+  } catch (error) {
+    console.error("Toggle like error:", error);
+    throw error;
+  }
+};
+
+export const subscribeToPosts = (callback) => {
+  return supabase
+    .channel("public:posts")
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "posts",
+      },
+      callback
+    )
+    .subscribe();
+};
+
+export const subscribeToPostLikes = (postId, callback) => {
+  return supabase
+    .channel(`public:post_likes:post_id=eq.${postId}`)
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "post_likes",
+        filter: `post_id=eq.${postId}`,
+      },
+      callback
+    )
+    .subscribe();
+};
+
+export const subscribeToPostComments = (postId, callback) => {
+  return supabase
+    .channel(`public:comments:post_id=eq.${postId}`)
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "comments",
+        filter: `post_id=eq.${postId}`,
+      },
+      async (payload) => {
+        // Lấy lại tất cả comments bao gồm cả replies
+        const { data: comments, error } = await supabase
+          .from("comments")
+          .select(`
+            *,
+            profiles:user_id (*)
+          `)
+          .eq("post_id", postId);
+
+        if (!error) {
+          // Chuyển đổi dữ liệu phẳng thành cấu trúc cây
+          const transformComments = (comments) => {
+            const commentMap = {};
+            const rootComments = [];
+
+            comments.forEach((comment) => {
+              commentMap[comment.id] = {
+                ...comment,
+                replies: [],
+              };
+            });
+
+            comments.forEach((comment) => {
+              if (comment.parent_id) {
+                if (commentMap[comment.parent_id]) {
+                  commentMap[comment.parent_id].replies.push(commentMap[comment.id]);
+                }
+              } else {
+                rootComments.push(commentMap[comment.id]);
+              }
+            });
+
+            return comments; // Trả về tất cả comments để đếm tổng số
+          };
+
+          callback({
+            ...payload,
+            comments: transformComments(comments),
+          });
+        }
+      }
+    )
+    .subscribe();
+};
