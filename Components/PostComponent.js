@@ -8,6 +8,9 @@ import {
   Text,
   TouchableOpacity,
   View,
+  TouchableWithoutFeedback,
+  ActivityIndicator,
+  Alert,
 } from "react-native";
 import LikeBlue from "../assets/svg/like_blue.svg";
 import LikeOutline from "../assets/svg/like_outline.svg";
@@ -20,7 +23,7 @@ import { UserContext } from "../context/UserContext";
 import * as postService from "../services/postService";
 import { supabase } from "../lib/supabase";
 import { formatTimeAgo } from "../utils/dateUtils";
-
+import Ionicons from "@expo/vector-icons/Ionicons";
 const getMediaUrl = (path) => {
   if (!path) return null;
   const {
@@ -44,6 +47,39 @@ const PostComponent = ({ post: initialPost, onRefresh }) => {
   const maxHeight = Dimensions.get("window").height * 0.8; // 80% chiều cao màn hình
   const [isUpdating, setIsUpdating] = useState(false);
   const [isCommentModalVisible, setIsCommentModalVisible] = useState(false);
+  const [showOptionsModal, setShowOptionsModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDeletePost = async () => {
+    Alert.alert(
+      "Xóa bài viết",
+      "Bạn có chắc chắn muốn xóa bài viết này không?",
+      [
+        {
+          text: "Xóa",
+          onPress: async () => {
+            try {
+              setIsDeleting(true);
+              await postService.deletePost(post.id, user.id);
+              setShowOptionsModal(false);
+              if (onRefresh) {
+                onRefresh();
+              }
+            } catch (error) {
+              alert("Không thể xóa bài viết. Vui lòng thử lại sau.");
+              throw error;
+            } finally {
+              setIsDeleting(false);
+            }
+          },
+        },
+        {
+          text: "Hủy",
+          style: "cancel",
+        },
+      ]
+    );
+  };
 
   // Tạo các biến computed
   const userLiked = useMemo(() => {
@@ -67,7 +103,7 @@ const PostComponent = ({ post: initialPost, onRefresh }) => {
         return total + count;
       }, 0);
     };
-    
+
     return countAllComments(post?.comments);
   }, [post?.comments]);
 
@@ -585,6 +621,16 @@ const PostComponent = ({ post: initialPost, onRefresh }) => {
             <Text style={styles.time}>{formatTimeAgo(post.created_at)}</Text>
           </View>
         </View>
+        {post.user_id === user.id && (
+          <View style={styles.settingsBtn}>
+            <Ionicons
+              name="ellipsis-horizontal-outline"
+              size={24}
+              color="black"
+              onPress={() => setShowOptionsModal(true)}
+            />
+          </View>
+        )}
       </View>
 
       {/* Content */}
@@ -670,6 +716,41 @@ const PostComponent = ({ post: initialPost, onRefresh }) => {
           <Text style={styles.actionText}>Chia sẻ</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Options Modal */}
+      <Modal
+        visible={showOptionsModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowOptionsModal(false)}
+      >
+        <TouchableWithoutFeedback onPress={() => setShowOptionsModal(false)}>
+          <View style={styles.modalOverlay}>
+            <TouchableWithoutFeedback>
+              <View style={styles.modalContent}>
+                <TouchableOpacity
+                  style={styles.modalOption}
+                  onPress={() => {
+                    handleDeletePost();
+                  }}
+                  disabled={isDeleting}
+                >
+                  {isDeleting ? (
+                    <ActivityIndicator color="red" />
+                  ) : (
+                    <>
+                      <Ionicons name="trash-outline" size={24} color="red" />
+                      <Text style={[styles.modalOptionText, { color: "red" }]}>
+                        Xóa bài viết
+                      </Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
     </View>
   );
 };
@@ -695,6 +776,11 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 20,
     marginRight: 10,
+  },
+  settingsBtn: {
+    position: "absolute",
+    right: 10,
+    top: 5,
   },
   headerText: {
     flexDirection: "column",
@@ -910,6 +996,33 @@ const styles = StyleSheet.create({
   },
   actionButtonDisabled: {
     opacity: 0.7,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContent: {
+    width: "80%",
+    backgroundColor: "white",
+    borderRadius: 10,
+    padding: 15,
+  },
+  modalOption: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 15,
+  },
+  modalOptionText: {
+    fontSize: 16,
+    marginLeft: 10,
+  },
+  deletePostBtn: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    padding: 5,
   },
 });
 

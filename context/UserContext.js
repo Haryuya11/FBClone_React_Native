@@ -108,31 +108,6 @@ export const UserProvider = ({ children }) => {
     }
   };
 
-  const updateProfile = async (updateData) => {
-    try {
-      setIsLoading(true);
-      const updatedProfile = await userService.updateProfile(
-        user.id,
-        updateData
-      );
-
-      // Cập nhật userProfile ngay sau khi có dữ liệu mới
-      setUserProfile(updatedProfile);
-
-      // Cập nhật AsyncStorage
-      await AsyncStorage.setItem(
-        "user_profile",
-        JSON.stringify(updatedProfile)
-      );
-
-      setIsLoading(false);
-      return updatedProfile;
-    } catch (error) {
-      setIsLoading(false);
-      throw error;
-    }
-  };
-
   const getImageUrlWithTimestamp = (url) => {
     if (!url) return null;
     return `${url}?t=${new Date().getTime()}`;

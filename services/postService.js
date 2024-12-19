@@ -32,7 +32,6 @@ export const createPost = async (
   privacy = "public"
 ) => {
   try {
-
     const mediaFiles = [];
     if (medias && medias.length > 0) {
       for (const media of medias) {
@@ -129,6 +128,33 @@ export const updatePost = async (postId, userId, content, medias) => {
 
 export const deletePost = async (postId, userId) => {
   try {
+    const { data: mediaData, error: mediaError } = await supabase
+      .from("post_media")
+      .select("media_url")
+      .eq("post_id", postId);
+
+    if (mediaError) {
+      alert("Có lỗi xảy ra khi xóa bài viết", mediaError.message);
+      throw mediaError;
+    }
+
+    if (mediaData && mediaData.length > 0) {
+      for (const media of mediaData) {
+        const filePath = media.media_url.split("/").pop();
+        const { error: deleteError } = await supabase.storage
+          .from("post-media")
+          .remove([filePath]);
+
+        if (deleteError) {
+          alert(
+            "Có lỗi xảy ra khi xóa các file ảnh/video của bài viết",
+            deleteError.message
+          );
+          throw deleteError;
+        }
+      }
+    }
+
     const { data: postData, error: postError } = await supabase
       .from("posts")
       .delete()
@@ -238,10 +264,12 @@ export const subscribeToPostComments = (postId, callback) => {
         // Lấy lại tất cả comments bao gồm cả replies
         const { data: comments, error } = await supabase
           .from("comments")
-          .select(`
+          .select(
+            `
             *,
             profiles:user_id (*)
-          `)
+          `
+          )
           .eq("post_id", postId);
 
         if (!error) {
@@ -260,7 +288,9 @@ export const subscribeToPostComments = (postId, callback) => {
             comments.forEach((comment) => {
               if (comment.parent_id) {
                 if (commentMap[comment.parent_id]) {
-                  commentMap[comment.parent_id].replies.push(commentMap[comment.id]);
+                  commentMap[comment.parent_id].replies.push(
+                    commentMap[comment.id]
+                  );
                 }
               } else {
                 rootComments.push(commentMap[comment.id]);
@@ -278,4 +308,96 @@ export const subscribeToPostComments = (postId, callback) => {
       }
     )
     .subscribe();
+};
+
+// Lấy bài viết theo media type, nếu bài viết có cả ảnh và video thì lấy cả 2
+// chỉ không hiện phần media_type không được chọn
+// Ví dự như 1 post có 2 ảnh 1 video
+// Khi Vô PostScreen thì nó vẫn hiện post đó và chỉ không hiện video thôi, nó cũng tương tự như với VideoScreen
+
+// export const getPostsByMediaType = async (mediaType) => {
+//   try {
+//     const { data, error } = await supabase
+//       .from("posts")
+//       .select(
+//         `
+//       *,
+//       profiles:user_id (*),
+//       post_media!inner(*),
+//       post_likes(*),
+//       comments(*)
+//     `
+//       )
+//       .eq("post_media.media_type", mediaType)
+//       .order("created_at", { ascending: false });
+
+//     if (error) {
+//       alert("Có lỗi xảy ra khi lấy bài viết", error.message);
+//       throw error;
+//     }
+//     return data;
+//   } catch (error) {
+//     throw error;
+//   }
+// };
+
+export const getPostsByMediaType = async (mediaType) => {
+  try {
+    const { data: posts, error } = await supabase
+      .from("posts")
+      .select(
+        `
+        *,
+        profiles:user_id (*),
+        post_media (*),
+        post_likes (*),
+        comments (*)
+      `
+      )
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      alert("Có lỗi xảy ra khi lấy bài viết", error.message);
+      throw error;
+    }
+
+    const filteredPosts = posts.filter((post) => {
+      const medias = post.post_media || [];
+      return (
+        medias.length > 0 &&
+        medias.every((media) => media.media_type === mediaType)
+      );
+    });
+
+    return filteredPosts;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getPostsByUserId = async (userId) => {
+  try {
+    const { data, error } = await supabase
+      .from("posts")
+      .select(
+        `
+        *,
+        profiles:user_id (*),
+        post_media (*),
+        post_likes (*),
+        comments (*)
+      `
+      )
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      alert("Có lỗi xảy ra khi lấy bài viết", error.message);
+      throw error;
+    }
+
+    return data;
+  } catch (error) {
+    throw error;
+  }
 };
