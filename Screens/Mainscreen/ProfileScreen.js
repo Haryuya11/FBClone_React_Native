@@ -1,8 +1,4 @@
-import React, {
-  useState,
-  useContext,
-  useCallback,
-} from "react";
+import React, { useState, useContext, useCallback, useEffect } from "react";
 import {
   View,
   Text,
@@ -14,14 +10,15 @@ import {
 } from "react-native";
 import HeaderNavigationComponent from "../../Components/HeaderNavigationComponent";
 import Entypo from "@expo/vector-icons/Entypo";
-import Home from '../../assets/svg/home_outline.svg'
-import Post from '../../assets/svg/post_outline.svg'
-import Video from '../../assets/svg/video_outline.svg'
+import Home from "../../assets/svg/home_outline.svg";
+import Post from "../../assets/svg/post_outline.svg";
+import Video from "../../assets/svg/video_outline.svg";
 import { UserContext } from "../../context/UserContext";
 import { useFocusEffect } from "@react-navigation/native";
-import PostComponent from '../../Components/PostComponent';
-import PostCreationComponent from '../../Components/PostCreationComponent';
-
+import PostComponent from "../../Components/PostComponent";
+import PostCreationComponent from "../../Components/PostCreationComponent";
+import * as postService from "../../services/postService";
+import Ionicons from "@expo/vector-icons/Ionicons";
 // Chiều cao của Header
 
 const friends = [
@@ -64,30 +61,37 @@ const friends = [
 ];
 
 const ProfileScreen = ({ navigation }) => {
-  // Temp post để làm mẫu
-  const [posts, setPosts] = useState([
-    {
-      id: '1',
-      user: 'Nguyễn Tấn Cầm',
-      content: 'de nhat tien si!',
-      image: 'https://inseclab.uit.edu.vn/upload/2018/04/mrCam.png',
-      avatar: 'https://nc.uit.edu.vn/wp-content/uploads/2022/11/80299-NguyenTanCam-Cam-Nguyen-Tan-272x300.jpg',
-      time: '2 giờ trước',
-      like: 9,
-      comment: 0,
-      share: 0,
-      isLike: false,
-    }
-  ]);
+  const [posts, setPosts] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-
-  const { userProfile, logout, refreshProfile, imageCache } = useContext(UserContext);
+  const { userProfile, logout, refreshProfile, imageCache } =
+    useContext(UserContext);
 
   useFocusEffect(
     useCallback(() => {
       refreshProfile();
     }, [])
   );
+
+  const loadPosts = async () => {
+    try {
+      const postsData = await postService.getPostsByUserId(userProfile.id);
+      setPosts(postsData);
+    } catch (error) {
+      console.error("Error loading posts:", error);
+    }
+  };
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await loadPosts();
+    setIsRefreshing(false);
+  };
+
+  useEffect(() => {
+    loadPosts();
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -103,14 +107,22 @@ const ProfileScreen = ({ navigation }) => {
     // Console log Navigation
   };
 
-  const [selectedButton, setSelectedButton] = useState('Profile'); // State trang hiện tại
+  const [selectedButton, setSelectedButton] = useState("Profile"); // State trang hiện tại
 
   // Biểu tượng điều hướng
   const navigationButtons = [
-    { name: 'Home', label: <Home width={35} height={35} /> },
-    { name: 'Post', label: <Post width={35} height={35} /> },
-    { name: 'Video', label: <Video width={35} height={35} /> },
-    { name: 'Profile', label: <Image source={{ uri: userProfile.avatar_url }} style={styles.profileIcon} /> },
+    { name: "Home", label: <Home width={35} height={35} /> },
+    { name: "Post", label: <Post width={35} height={35} /> },
+    { name: "Video", label: <Video width={35} height={35} /> },
+    {
+      name: "Profile",
+      label: (
+        <Image
+          source={{ uri: userProfile.avatar_url }}
+          style={styles.profileIcon}
+        />
+      ),
+    },
   ];
 
   const renderFriendItem = ({ item }) => (
@@ -132,8 +144,12 @@ const ProfileScreen = ({ navigation }) => {
       {/* Post List */}
       <FlatList
         data={posts}
-        renderItem={({ item }) => <PostComponent post={item} setPosts={setPosts} />}
+        renderItem={({ item }) => (
+          <PostComponent post={item} onRefresh={handleRefresh} />
+        )}
         keyExtractor={(item) => item.id}
+        refreshing={isRefreshing}
+        onRefresh={handleRefresh}
         ListHeaderComponent={
           <>
             <StatusBar barStyle="dark-content" backgroundColor="#fff" />
@@ -150,7 +166,10 @@ const ProfileScreen = ({ navigation }) => {
               <Image
                 style={styles.backgroundImageProfile}
                 source={{
-                  uri: imageCache.background || userProfile?.background_image || "default_background_url"
+                  uri:
+                    imageCache.background ||
+                    userProfile?.background_image ||
+                    "default_background_url",
                 }}
               />
               <View style={styles.avatarBox}>
@@ -159,7 +178,10 @@ const ProfileScreen = ({ navigation }) => {
                     <Image
                       style={styles.avatar}
                       source={{
-                        uri: imageCache.avatar || userProfile?.avatar_url || "default_avatar_url"
+                        uri:
+                          imageCache.avatar ||
+                          userProfile?.avatar_url ||
+                          "default_avatar_url",
                       }}
                     />
                   </View>
@@ -177,7 +199,17 @@ const ProfileScreen = ({ navigation }) => {
               >
                 <Entypo name="edit" size={24} color="black" />
                 <Text style={styles.textEditProfileBtn}>
-                  Chỉnh sửa thông tin cá nhân
+                  Chỉnh sửa trang cá nhân
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.settingBtn}
+                onPress={handleLogout}
+              >
+                <Ionicons name="log-out-outline" size={24} color="black" />
+                <Text style={styles.textSettingBtn}>
+                  Đăng xuất
                 </Text>
               </TouchableOpacity>
             </View>
@@ -221,7 +253,10 @@ const ProfileScreen = ({ navigation }) => {
                   contentContainerStyle={styles.friendList}
                 />
               </View>
-              <PostCreationComponent onPostSubmit={handlePostSubmit} navigation={navigation} />
+              <PostCreationComponent
+                onPostSubmit={handlePostSubmit}
+                navigation={navigation}
+              />
             </View>
           </>
         }
@@ -277,6 +312,8 @@ const styles = StyleSheet.create({
     borderBottomWidth: 15,
     borderColor: "#CACED0",
     paddingBottom: 22,
+    flexDirection: "row",
+    justifyContent: "space-between", 
   },
   editProfileBtn: {
     flexDirection: "row",
@@ -293,9 +330,31 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
     justifyContent: "center",
+    width: "65%",
   },
   textEditProfileBtn: {
-    fontSize: 17,
+    fontSize: 15,
+    marginLeft: 10,
+  },
+  settingBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "white",
+    borderRadius: 5,
+    borderWidth: 0.5,
+    paddingVertical: 10,
+    paddingRight: 18,
+    borderColor: "gray",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3.84,
+    elevation: 5,
+    justifyContent: "center",
+    width: "32%",
+  },
+  textSettingBtn: {
+    fontSize: 15,
     marginLeft: 10,
   },
   botContent: {},
@@ -472,10 +531,10 @@ const styles = StyleSheet.create({
     height: 35,
     width: 35,
     borderRadius: 25,
-    resizeMode: 'cover',
+    resizeMode: "cover",
     borderWidth: 3,
-    borderColor: '#316ff6',
-  }
+    borderColor: "#316ff6",
+  },
 });
 
 export default ProfileScreen;

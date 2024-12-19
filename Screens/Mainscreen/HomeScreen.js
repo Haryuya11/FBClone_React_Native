@@ -28,7 +28,6 @@ const HomeScreen = ({navigation}) => {
     const {userProfile} = useContext(UserContext);
 
     const [posts, setPosts] = useState([]);
-    const [isLoading, setIsLoading] = useState(false);
     const [isRefreshing, setIsRefreshing] = useState(false);
 
     const loadPosts = async () => {
