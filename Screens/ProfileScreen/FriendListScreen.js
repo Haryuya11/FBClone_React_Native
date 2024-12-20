@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import {
   View,
   Text,
@@ -7,46 +7,101 @@ import {
   Image,
   TextInput,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
+import { UserContext } from "../../context/UserContext";
+import * as friendshipService from "../../services/friendshipService";
+import AntDesign from "@expo/vector-icons/AntDesign";
 
-const friends = [
-  { id: '1', name: 'Nguyễn Văn A', avatar: 'https://img.freepik.com/photos-premium/planete-montagnes-planetes-arriere-plan_746764-103.jpg' },
-  { id: '2', name: 'Trần Thị B', avatar: 'https://gratisography.com/wp-content/uploads/2024/10/gratisography-cool-cat-800x525.jpg' },
-  { id: '3', name: 'Lê Văn C', avatar: 'https://letsenhance.io/static/8f5e523ee6b2479e26ecc91b9c25261e/1015f/MainAfter.jpg' },
-  { id: '4', name: 'Phạm Văn D', avatar: 'https://img.freepik.com/photos-premium/image-planete-lune-etoiles_469760-4288.jpg' },
-  { id: '5', name: 'Hoàng Thị E', avatar: 'https://cdn.pixabay.com/photo/2023/03/15/20/46/background-7855413_640.jpg' },
-  { id: '6', name: 'Vũ Văn F', avatar: 'https://img.freepik.com/photos-premium/homme-regarde-planete-montagnes-au-sommet_7023-8807.jpg' },
-];
+const FriendListScreen = ({ navigation, route }) => {
+  const { userProfile } = useContext(UserContext);
+  const [friends, setFriends] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const userId = route.params?.userId || userProfile?.id;
+  const isOwnProfile = userId === userProfile?.id;
 
-const FriendListScreen = ({ navigation }) => {
+  useEffect(() => {
+    loadFriends();
+  }, [userId]);
+
+  const loadFriends = async () => {
+    try {
+      const friendsList = await friendshipService.getFriendsList(userId);
+      setFriends(friendsList);
+    } catch (error) {
+      console.error("Lỗi khi tải danh sách bạn bè:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleFriendAction = async (friendId) => {
+    try {
+      const isFriend = await friendshipService.checkFriendship(friendId);
+      if (isFriend) {
+        await friendshipService.removeFriend(friendId);
+      } else {
+        await friendshipService.addFriend(friendId);
+      }
+      loadFriends(); // Tải lại danh sách bạn bè
+    } catch (error) {
+      console.error("Lỗi khi thực hiện hành động bạn bè:", error);
+    }
+  };
+
   const renderFriendItem = ({ item }) => (
-    <TouchableOpacity style={styles.friendItem}>
-      <Image source={{ uri: item.avatar }} style={styles.avatar} />
-      <Text style={styles.friendName} numberOfLines={1}>
-        {item.name}
-      </Text>
+    <TouchableOpacity 
+      style={styles.friendItem}
+      onPress={() => {
+        alert("Đang bị lỗi");
+        navigation.navigate("Profile", { userId: item.id });
+      }}
+    >
+      <Image source={{ uri: item.avatar_url }} style={styles.avatar} />
+      <View style={styles.friendInfo}>
+        <Text style={styles.friendName} numberOfLines={1}>
+          {`${item.first_name} ${item.last_name}`}
+        </Text>
+        {!isOwnProfile && item.id !== userProfile?.id && (
+          <FriendButton 
+            userId={item.id}
+            style={styles.friendActionButton}
+            onFriendshipChange={loadFriends}
+          />
+        )}
+      </View>
     </TouchableOpacity>
   );
 
+  const filteredFriends = friends.filter(friend => 
+    `${friend.first_name} ${friend.last_name}`
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase())
+  );
+
+  if (isLoading) {
+    return <ActivityIndicator size="large" color="#316ff6" />;
+  }
+
   return (
     <View style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Text style={styles.backButton}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>Bạn bè</Text>
+        <Text style={styles.title}>Bạn bè ({friends.length})</Text>
       </View>
 
-      {/* Search Bar */}
       <TextInput
         style={styles.searchBar}
         placeholder="Tìm kiếm bạn bè..."
+        value={searchQuery}
+        onChangeText={setSearchQuery}
       />
 
-      {/* Friend List */}
       <FlatList
-        data={friends}
+        data={filteredFriends}
         renderItem={renderFriendItem}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.friendList}
@@ -104,6 +159,25 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: 'center',
     marginLeft: 20
+  },
+  friendInfo: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginLeft: 20,
+  },
+  friendActionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f0f0f0',
+    padding: 8,
+    borderRadius: 20,
+  },
+  friendActionText: {
+    marginLeft: 5,
+    color: 'red',
+    fontSize: 14,
   },
 });
 
