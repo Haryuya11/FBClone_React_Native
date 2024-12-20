@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   StatusBar,
+  ActivityIndicator,
 } from "react-native";
 import HeaderNavigationComponent from "../../Components/HeaderNavigationComponent";
 import Entypo from "@expo/vector-icons/Entypo";
@@ -19,6 +20,9 @@ import PostComponent from "../../Components/PostComponent";
 import PostCreationComponent from "../../Components/PostCreationComponent";
 import * as postService from "../../services/postService";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import FontAwesome from "@expo/vector-icons/FontAwesome";
+import AntDesign from "@expo/vector-icons/AntDesign";
+import * as userService from "../../services/userService";
 // Chiều cao của Header
 
 const friends = [
@@ -60,45 +64,122 @@ const friends = [
   },
 ];
 
-const ProfileScreen = ({ navigation }) => {
-  const [posts, setPosts] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-
+const ProfileScreen = ({ route, navigation }) => {
   const { userProfile, logout, refreshProfile, imageCache } =
     useContext(UserContext);
+  const [profile, setProfile] = useState(null);
+  const [posts, setPosts] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  useFocusEffect(
-    useCallback(() => {
-      refreshProfile();
-    }, [])
-  );
-
-  const loadPosts = async () => {
+  const userId = route.params?.userId || userProfile?.id;
+  const isOwnProfile = userId === userProfile?.id;
+  
+  const loadProfile = async () => {
     try {
-      const postsData = await postService.getPostsByUserId(userProfile.id);
-      setPosts(postsData);
+      if (userId) {
+        const [profileData, postsData] = await Promise.all([
+          userService.loadUserProfile(userId),
+          postService.getPostsByUserId(userId)
+        ]);
+        
+        if (profileData && postsData) {
+          setProfile(profileData);
+          const postsWithProfiles = postsData.map(post => ({
+            ...post,
+            profiles: profileData
+          }));
+          setPosts(postsWithProfiles);
+        }
+      }
     } catch (error) {
-      console.error("Error loading posts:", error);
+      console.error("Error loading profile:", error);
+    } finally {
+      setIsLoading(false);
     }
+  };
+
+  useEffect(() => {
+    loadProfile();
+  }, [userId]);
+
+  useEffect(() => {
+    if (!userId || !profile) return;
+    
+    const subscription = postService.subscribeToUserPosts(userId, async (payload) => {
+      try {
+        if (payload.eventType === 'INSERT') {
+          setPosts(prev => [{...payload.new, profiles: profile}, ...prev]);
+        } else if (payload.eventType === 'DELETE') {
+          setPosts(prev => prev.filter(post => post.id !== payload.old.id));
+        } else if (payload.eventType === 'UPDATE') {
+          setPosts(prev => prev.map(post =>
+            post.id === payload.new.id ? {...payload.new, profiles: profile} : post
+          ));
+        }
+      } catch (error) {
+        console.error("Error handling realtime update:", error);
+      }
+    });
+
+    return () => {
+      if (subscription?.unsubscribe) {
+        subscription.unsubscribe();
+      }
+    };
+  }, [userId, profile]);
+
+  const handleAddFriend = async () => {
+    alert("Tính năng đang phát triển");
+  };
+
+  const handleMessage = () => {
+    navigation.navigate("DirectMessage", { user: profile });
+  };
+
+  // Render buttons dựa vào isOwnProfile
+  const renderActionButtons = () => {
+    if (userId === userProfile?.id) {
+      return (
+        <View style={styles.midContent}>
+          <TouchableOpacity
+            style={styles.editProfileBtn}
+            onPress={() => navigation.navigate("EditProfile")}
+          >
+            <FontAwesome name="pencil" size={20} color="black" />
+            <Text style={styles.textEditProfileBtn}>
+              Chỉnh sửa trang cá nhân
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.settingBtn} onPress={logout}>
+            <Ionicons name="log-out-outline" size={20} color="black" />
+            <Text style={styles.textSettingBtn}>Đăng xuất</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+
+    return (
+      <View style={styles.midContent}>
+        <TouchableOpacity
+          style={styles.editProfileBtn}
+          onPress={handleAddFriend}
+        >
+          <AntDesign name="adduser" size={20} color="black" />
+          <Text style={styles.textEditProfileBtn}>Kết bạn</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.settingBtn} onPress={handleMessage}>
+          <AntDesign name="message1" size={20} color="black" />
+          <Text style={styles.textSettingBtn}>Nhắn tin</Text>
+        </TouchableOpacity>
+      </View>
+    );
   };
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
-    await loadPosts();
+    await loadProfile();
     setIsRefreshing(false);
-  };
-
-  useEffect(() => {
-    loadPosts();
-  }, []);
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-    } catch (error) {
-      alert("Đăng xuất thất bại: " + error.message);
-    }
   };
 
   const handleButtonPress = (name) => {
@@ -139,6 +220,10 @@ const ProfileScreen = ({ navigation }) => {
     setPosts((prevPosts) => [newPost, ...prevPosts]); // Thêm bài mới vào đầu danh sách
   };
 
+  if (isLoading || !profile) {
+    return <ActivityIndicator size="large" color="#316ff6" />;
+  }
+
   return (
     <View style={{ flex: 1 }}>
       {/* Post List */}
@@ -167,7 +252,7 @@ const ProfileScreen = ({ navigation }) => {
                 style={styles.backgroundImageProfile}
                 source={{
                   uri:
-                    imageCache.background ||
+                    profile?.background_image ||
                     userProfile?.background_image ||
                     "default_background_url",
                 }}
@@ -179,7 +264,7 @@ const ProfileScreen = ({ navigation }) => {
                       style={styles.avatar}
                       source={{
                         uri:
-                          imageCache.avatar ||
+                          profile?.avatar_url ||
                           userProfile?.avatar_url ||
                           "default_avatar_url",
                       }}
@@ -187,32 +272,14 @@ const ProfileScreen = ({ navigation }) => {
                   </View>
                 </View>
                 <Text style={styles.userNameAvatarBox}>
-                  {userProfile?.first_name || ""} {userProfile?.last_name || ""}
+                  {profile
+                    ? `${profile.first_name} ${profile.last_name}`
+                    : "Loading..."}
                 </Text>
                 <Text style={styles.numberOfFriends}>100 người bạn</Text>
               </View>
             </View>
-            <View style={styles.midContent}>
-              <TouchableOpacity
-                style={styles.editProfileBtn}
-                onPress={() => navigation.navigate("EditProfile")}
-              >
-                <Entypo name="edit" size={24} color="black" />
-                <Text style={styles.textEditProfileBtn}>
-                  Chỉnh sửa trang cá nhân
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.settingBtn}
-                onPress={handleLogout}
-              >
-                <Ionicons name="log-out-outline" size={24} color="black" />
-                <Text style={styles.textSettingBtn}>
-                  Đăng xuất
-                </Text>
-              </TouchableOpacity>
-            </View>
+            {renderActionButtons()}
             <View style={styles.botContent}>
               <View style={styles.postBtnContainer}>
                 <TouchableOpacity>
@@ -253,10 +320,12 @@ const ProfileScreen = ({ navigation }) => {
                   contentContainerStyle={styles.friendList}
                 />
               </View>
-              <PostCreationComponent
-                onPostSubmit={handlePostSubmit}
-                navigation={navigation}
-              />
+              {isOwnProfile && (
+                <PostCreationComponent
+                  onPostSubmit={handlePostSubmit}
+                  navigation={navigation}
+                />
+              )}
             </View>
           </>
         }
@@ -313,7 +382,7 @@ const styles = StyleSheet.create({
     borderColor: "#CACED0",
     paddingBottom: 22,
     flexDirection: "row",
-    justifyContent: "space-between", 
+    justifyContent: "space-between",
   },
   editProfileBtn: {
     flexDirection: "row",
@@ -333,7 +402,7 @@ const styles = StyleSheet.create({
     width: "65%",
   },
   textEditProfileBtn: {
-    fontSize: 15,
+    fontSize: 17,
     marginLeft: 10,
   },
   settingBtn: {
@@ -351,10 +420,10 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
     justifyContent: "center",
-    width: "32%",
+    width: "30%",
   },
   textSettingBtn: {
-    fontSize: 15,
+    fontSize: 17,
     marginLeft: 10,
   },
   botContent: {},

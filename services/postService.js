@@ -401,3 +401,19 @@ export const getPostsByUserId = async (userId) => {
     throw error;
   }
 };
+
+export const subscribeToUserPosts = (userId, callback) => {
+  return supabase
+    .channel(`public:posts:user_id=eq.${userId}`)
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'posts',
+        filter: `user_id=eq.${userId}`,
+      },
+      callback
+    )
+    .subscribe();
+};

@@ -118,7 +118,11 @@ const AuthStack = () => {
 const ProfileStack = () => {
     return (
         <profileStack.Navigator screenOptions={{ headerShown: false }}>
-            <profileStack.Screen name="ProfileScreen" component={ProfileScreen} />
+            <profileStack.Screen
+                name="ProfileScreen"
+                component={ProfileScreen}
+                initialParams={{ userId: null }}
+            />
             <profileStack.Screen name="FriendList" component={FriendListScreen} />
             <profileStack.Screen name="EditProfile" component={EditProfileScreen} />
             <profileStack.Screen name="PostArticles" component={PostArticlesScreen} />

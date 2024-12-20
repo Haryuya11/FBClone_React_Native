@@ -16,8 +16,10 @@ import { UserContext } from "../context/UserContext";
 import NoComment from "../assets/svg/no_comment.svg";
 import { formatTimeAgo } from "../utils/dateUtils";
 import * as commentService from "../services/commentService";
+import { useNavigation } from '@react-navigation/native';
 
 const CommentModalComponent = ({ visible, onClose, postId }) => {
+  const navigation = useNavigation();
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
   const [replyCommentId, setReplyCommentId] = useState(null);
@@ -60,7 +62,7 @@ const CommentModalComponent = ({ visible, onClose, postId }) => {
             }
           );
 
-          const replyComments = (comment.replies || []).map((reply) => 
+          const replyComments = (comment.replies || []).map((reply) =>
             commentService.subscribeToCommentLikes(reply.id, (payload) => {
               if (payload.eventType === "INSERT") {
                 loadComments();
@@ -201,7 +203,10 @@ const CommentModalComponent = ({ visible, onClose, postId }) => {
                   )
                 : [
                     ...(comment.comment_likes || []),
-                    { user_id: userProfile.id, created_at: new Date().toISOString() },
+                    {
+                      user_id: userProfile.id,
+                      created_at: new Date().toISOString(),
+                    },
                   ],
             };
           }
@@ -221,7 +226,10 @@ const CommentModalComponent = ({ visible, onClose, postId }) => {
                         )
                       : [
                           ...(reply.comment_likes || []),
-                          { user_id: userProfile.id, created_at: new Date().toISOString() },
+                          {
+                            user_id: userProfile.id,
+                            created_at: new Date().toISOString(),
+                          },
                         ],
                   };
                 }
@@ -246,16 +254,32 @@ const CommentModalComponent = ({ visible, onClose, postId }) => {
     }
   };
 
+  const handleAvatarPress = (userId) => {
+    navigation.navigate('Profile', {
+      screen: 'ProfileScreen',
+      params: {
+        userId: userId
+      }
+    });
+  };
+
   const CommentItem = ({ item }) => {
     const [isExpanded, setIsExpanded] = useState(false);
 
-    const userLiked = Array.isArray(item.comment_likes) && item.comment_likes.some(
-      (like) => like.user_id === userProfile.id
-    );
+    const userLiked =
+      Array.isArray(item.comment_likes) &&
+      item.comment_likes.some((like) => like.user_id === userProfile.id);
 
     return (
       <View style={styles.commentItem}>
-        <Image source={{ uri: item.user?.avatar_url }} style={styles.avatar} />
+        <TouchableOpacity
+          onPress={() => handleAvatarPress(item.user?.id)}
+        >
+          <Image
+            source={{ uri: item.user?.avatar_url }}
+            style={styles.avatar}
+          />
+        </TouchableOpacity>
         <View style={styles.commentContent}>
           <Text style={styles.userName}>
             {`${item.user?.first_name} ${item.user?.last_name}`}
@@ -301,7 +325,9 @@ const CommentModalComponent = ({ visible, onClose, postId }) => {
             </TouchableOpacity>
             {item.comment_likes?.length > 0 && (
               <View style={styles.likeContainer}>
-                <Text style={styles.likeCount}>{item.comment_likes.length}</Text>
+                <Text style={styles.likeCount}>
+                  {item.comment_likes.length}
+                </Text>
                 <LikeReaction width={22} height={19} />
               </View>
             )}
@@ -310,9 +336,11 @@ const CommentModalComponent = ({ visible, onClose, postId }) => {
             <View style={styles.repliesContainer}>
               {item.replies.map((reply) => {
                 // Kiểm tra kỹ hơn cho reply likes
-                const replyUserLiked = Array.isArray(reply.comment_likes) && reply.comment_likes.some(
-                  (like) => like.user_id === userProfile.id
-                );
+                const replyUserLiked =
+                  Array.isArray(reply.comment_likes) &&
+                  reply.comment_likes.some(
+                    (like) => like.user_id === userProfile.id
+                  );
 
                 return (
                   <View key={reply.id} style={styles.commentItem}>

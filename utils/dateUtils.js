@@ -9,7 +9,6 @@ export const formatTimeAgo = (createdAt) => {
   const diffInMonths = Math.floor(diffInDays / 30);
 
   if (diffInMonths > 0) {
-    // Nếu quá 1 tháng, hiển thị ngày tháng năm
     return created.toLocaleDateString('vi-VN', {
       day: '2-digit',
       month: '2-digit',

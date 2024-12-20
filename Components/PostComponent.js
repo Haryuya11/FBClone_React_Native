@@ -24,6 +24,7 @@ import * as postService from "../services/postService";
 import { supabase } from "../lib/supabase";
 import { formatTimeAgo } from "../utils/dateUtils";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { useNavigation } from '@react-navigation/native';
 const getMediaUrl = (path) => {
   if (!path) return null;
   const {
@@ -33,7 +34,8 @@ const getMediaUrl = (path) => {
 };
 
 const PostComponent = ({ post: initialPost, onRefresh }) => {
-  const { user } = useContext(UserContext);
+  const navigation = useNavigation();
+  const { userProfile } = useContext(UserContext);
   const [post, setPost] = useState(initialPost);
   const [postUser, setPostUser] = useState(post?.profiles || null);
   const [isExpanded, setIsExpanded] = useState(false); // Trạng thái xem thêm
@@ -60,7 +62,7 @@ const PostComponent = ({ post: initialPost, onRefresh }) => {
           onPress: async () => {
             try {
               setIsDeleting(true);
-              await postService.deletePost(post.id, user.id);
+              await postService.deletePost(post.id, userProfile.id);
               setShowOptionsModal(false);
               if (onRefresh) {
                 onRefresh();
@@ -83,8 +85,8 @@ const PostComponent = ({ post: initialPost, onRefresh }) => {
 
   // Tạo các biến computed
   const userLiked = useMemo(() => {
-    return post?.post_likes?.some((like) => like.user_id === user.id) || false;
-  }, [post?.post_likes, user.id]);
+    return post?.post_likes?.some((like) => like.user_id === userProfile.id) || false;
+  }, [post?.post_likes, userProfile.id]);
 
   const totalLikes = useMemo(() => {
     return post?.post_likes?.length || 0;
@@ -132,7 +134,7 @@ const PostComponent = ({ post: initialPost, onRefresh }) => {
               return {
                 ...prevPost,
                 post_likes: prevLikes.filter(
-                  (like) => like.user_id !== user.id
+                  (like) => like.user_id !== userProfile.id
                 ),
               };
             } else {
@@ -143,7 +145,7 @@ const PostComponent = ({ post: initialPost, onRefresh }) => {
                   ...prevLikes,
                   {
                     post_id: post.id,
-                    user_id: user.id,
+                    user_id: userProfile.id,
                     created_at: new Date().toISOString(),
                   },
                 ],
@@ -158,7 +160,7 @@ const PostComponent = ({ post: initialPost, onRefresh }) => {
               return {
                 ...prevPost,
                 post_likes: prevLikes.filter(
-                  (like) => like.user_id !== user.id
+                  (like) => like.user_id !== userProfile.id
                 ),
               };
             } else {
@@ -221,7 +223,7 @@ const PostComponent = ({ post: initialPost, onRefresh }) => {
   useEffect(() => {
     if (post?.post_likes) {
     }
-  }, [post?.post_likes, user.id]);
+  }, [post?.post_likes, userProfile.id]);
 
   // Hàm xử lý share
   const handleShare = async () => {
@@ -529,15 +531,15 @@ const PostComponent = ({ post: initialPost, onRefresh }) => {
     setIsUpdating(true);
 
     try {
-      await postService.toggleLikePost(post.id, user.id);
+      await postService.toggleLikePost(post.id, userProfile.id);
 
       setPost((prevPost) => {
         const prevLikes = prevPost.post_likes || [];
 
-        if (prevLikes.some((like) => like.user_id === user.id)) {
+        if (prevLikes.some((like) => like.user_id === userProfile.id)) {
           return {
             ...prevPost,
-            post_likes: prevLikes.filter((like) => like.user_id !== user.id),
+            post_likes: prevLikes.filter((like) => like.user_id !== userProfile.id),
           };
         } else {
           return {
@@ -546,7 +548,7 @@ const PostComponent = ({ post: initialPost, onRefresh }) => {
               ...prevLikes,
               {
                 post_id: post.id,
-                user_id: user.id,
+                user_id: userProfile.id,
                 created_at: new Date().toISOString(),
               },
             ],
@@ -566,8 +568,8 @@ const PostComponent = ({ post: initialPost, onRefresh }) => {
       post.id,
       (payload) => {
         if (
-          payload.new?.user_id === user.id ||
-          payload.old?.user_id === user.id
+          payload.new?.user_id === userProfile.id ||
+          payload.old?.user_id === userProfile.id
         ) {
           return;
         }
@@ -596,21 +598,30 @@ const PostComponent = ({ post: initialPost, onRefresh }) => {
     return () => {
       subscription.unsubscribe();
     };
-  }, [post.id, user.id]);
+  }, [post.id, userProfile.id]);
 
   const handleCommentPress = () => {
     setIsCommentModalVisible(true);
   };
 
+  const handleAvatarPress = () => {
+    navigation.navigate('Profile', {
+      screen: 'ProfileScreen',
+      params: {
+        userId: postUser.id
+      }
+    });
+  };
+
   return (
     <View style={styles.post}>
       <View style={styles.header}>
-        <Image
-          source={{
-            uri: postUser?.avatar_url || "https://via.placeholder.com/150",
-          }}
-          style={styles.avatar}
-        />
+        <TouchableOpacity onPress={handleAvatarPress}>
+          <Image
+            style={styles.avatar}
+            source={{ uri: post.profiles.avatar_url }}
+          />
+        </TouchableOpacity>
         <View style={styles.headerText}>
           <Text style={styles.username}>
             {postUser
@@ -621,7 +632,7 @@ const PostComponent = ({ post: initialPost, onRefresh }) => {
             <Text style={styles.time}>{formatTimeAgo(post.created_at)}</Text>
           </View>
         </View>
-        {post.user_id === user.id && (
+        {post.user_id === userProfile.id && (
           <View style={styles.settingsBtn}>
             <Ionicons
               name="ellipsis-horizontal-outline"
@@ -681,6 +692,7 @@ const PostComponent = ({ post: initialPost, onRefresh }) => {
         visible={isCommentModalVisible}
         onClose={() => setIsCommentModalVisible(false)}
         postId={post.id}
+        navigation={navigation}
       />
       {/* Action button*/}
       <View style={styles.actions}>

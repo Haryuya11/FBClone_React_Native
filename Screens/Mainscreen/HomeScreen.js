@@ -153,6 +153,7 @@ const HomeScreen = ({navigation}) => {
                 renderItem={({item}) => (
                     <PostComponent
                         post={item}
+                        navigation={navigation}
                         onRefresh={handleRefresh}
                     />
                 )}
