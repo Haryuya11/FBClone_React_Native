@@ -131,7 +131,7 @@ const PostCreationComponent = ({ onPostCreated, navigation }) => {
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.navigate("Profile")}>
             <Image
-              source={{ uri: userProfile.avatar_url }}
+              source={{ uri: userProfile?.avatar_url || 'https://www.pngkey.com/png/full/114-1149878_setting-user-avatar-in-specific-size-without-breaking.png' }}
               style={styles.avatar}
             />
           </TouchableOpacity>
@@ -162,7 +162,7 @@ const PostCreationComponent = ({ onPostCreated, navigation }) => {
             {/* Hiển thị avatar và tên người dùng */}
             <View style={styles.headerModal}>
               <Image
-                source={{ uri: userProfile.avatar_url }}
+                source={{ uri: userProfile?.avatar_url || 'https://www.pngkey.com/png/full/114-1149878_setting-user-avatar-in-specific-size-without-breaking.png'}}
                 style={styles.avatarModal}
               />
               <Text style={styles.username}>
