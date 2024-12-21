@@ -68,7 +68,6 @@ const EditProfileScreen = ({ navigation }) => {
 
         avatarUrl = fileData.publicUrl;
       }
-      console.log("Cập nhật avatar thành công");
 
       if (!background.uri.includes("supabase.co")) {
         const fileExt = background.uri.split(".").pop();
@@ -102,7 +101,6 @@ const EditProfileScreen = ({ navigation }) => {
 
         backgroundUrl = fileData.publicUrl;
       }
-      console.log("Cập nhật background thành công");
 
       updateImageCache(avatarUrl, backgroundUrl);
 

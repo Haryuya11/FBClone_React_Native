@@ -1,8 +1,4 @@
-import React, {
-  useState,
-  useContext,
-  useCallback,
-} from "react";
+import React, { useState, useContext, useCallback, useEffect } from "react";
 import {
   View,
   Text,
@@ -11,146 +7,252 @@ import {
   TouchableOpacity,
   StyleSheet,
   StatusBar,
+  ActivityIndicator,
 } from "react-native";
 import HeaderNavigationComponent from "../../Components/HeaderNavigationComponent";
 import Entypo from "@expo/vector-icons/Entypo";
-import Home from '../../assets/svg/home_outline.svg'
-import Post from '../../assets/svg/post_outline.svg'
-import Video from '../../assets/svg/video_outline.svg'
+import Home from "../../assets/svg/home_outline.svg";
+import Post from "../../assets/svg/post_outline.svg";
+import Video from "../../assets/svg/video_outline.svg";
 import { UserContext } from "../../context/UserContext";
-import { useFocusEffect } from "@react-navigation/native";
-import PostComponent from '../../Components/PostComponent';
-import PostCreationComponent from '../../Components/PostCreationComponent';
+import PostComponent from "../../Components/PostComponent";
+import PostCreationComponent from "../../Components/PostCreationComponent";
+import * as postService from "../../services/postService";
+import * as friendshipService from "../../services/friendshipService";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import FontAwesome from "@expo/vector-icons/FontAwesome";
+import AntDesign from "@expo/vector-icons/AntDesign";
+import * as userService from "../../services/userService";
+import FriendButton from "../../Components/FriendButton";
 
-// Chiều cao của Header
+const ProfileScreen = ({ route, navigation }) => {
+  const { userProfile, logout } = useContext(UserContext);
+  const [profile, setProfile] = useState(null);
+  const [posts, setPosts] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [friendCount, setFriendCount] = useState(0);
+  const [friends, setFriends] = useState([]);
 
-const friends = [
-  {
-    id: "1",
-    name: "Nguyễn Văn A",
-    avatar:
-      "https://img.freepik.com/photos-premium/planete-montagnes-planetes-arriere-plan_746764-103.jpg",
-  },
-  {
-    id: "2",
-    name: "Trần Thị B",
-    avatar:
-      "https://gratisography.com/wp-content/uploads/2024/10/gratisography-cool-cat-800x525.jpg",
-  },
-  {
-    id: "3",
-    name: "Lê Văn C",
-    avatar:
-      "https://letsenhance.io/static/8f5e523ee6b2479e26ecc91b9c25261e/1015f/MainAfter.jpg",
-  },
-  {
-    id: "4",
-    name: "Phạm Văn D",
-    avatar:
-      "https://img.freepik.com/photos-premium/image-planete-lune-etoiles_469760-4288.jpg",
-  },
-  {
-    id: "5",
-    name: "Hoàng Thị E",
-    avatar:
-      "https://cdn.pixabay.com/photo/2023/03/15/20/46/background-7855413_640.jpg",
-  },
-  {
-    id: "6",
-    name: "Vũ Văn F",
-    avatar:
-      "https://img.freepik.com/photos-premium/homme-regarde-planete-montagnes-au-sommet_7023-8807.jpg",
-  },
-];
+  const userId = route.params?.userId || userProfile?.id;
+  const isOwnProfile = userId === userProfile?.id;
 
-const ProfileScreen = ({ navigation }) => {
-  // Temp post để làm mẫu
-  const [posts, setPosts] = useState([
-    {
-      id: '1',
-      user: 'Nguyễn Tấn Cầm',
-      content: 'de nhat tien si!',
-      image: 'https://inseclab.uit.edu.vn/upload/2018/04/mrCam.png',
-      avatar: 'https://nc.uit.edu.vn/wp-content/uploads/2022/11/80299-NguyenTanCam-Cam-Nguyen-Tan-272x300.jpg',
-      time: '2 giờ trước',
-      like: 9,
-      comment: 0,
-      share: 0,
-      isLike: false,
-    }
-  ]);
-
-
-  const { userProfile, logout, refreshProfile, imageCache } = useContext(UserContext);
-
-  useFocusEffect(
-    useCallback(() => {
-      refreshProfile();
-    }, [])
-  );
-
-  const handleLogout = async () => {
+  // Load profile và posts
+  const loadProfile = async () => {
     try {
-      await logout();
+      if (userId) {
+        const [profileData, postsData] = await Promise.all([
+          userService.loadUserProfile(userId),
+          postService.getPostsByUserId(userId),
+        ]);
+
+        if (profileData && postsData) {
+          setProfile(profileData);
+          const postsWithProfiles = postsData.map((post) => ({
+            ...post,
+            profiles: profileData,
+          }));
+          setPosts(postsWithProfiles);
+        }
+      }
     } catch (error) {
-      alert("Đăng xuất thất bại: " + error.message);
+      console.error("Lỗi khi tải profile:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleButtonPress = (name) => {
-    console.log(name);
-    navigation.navigate(name);
-    // Console log Navigation
+  // Load danh sách bạn bè
+  const loadFriends = async () => {
+    try {
+      const friendsList = await friendshipService.getFriendsList(userId);
+      setFriends(friendsList.slice(0, 6)); // Chỉ lấy 6 người bạn để hiển thị
+    } catch (error) {
+      console.error("Lỗi khi tải danh sách bạn bè:", error);
+    }
   };
 
-  const [selectedButton, setSelectedButton] = useState('Profile'); // State trang hiện tại
+  // Load số lượng bạn bè
+  const loadFriendCount = async () => {
+    try {
+      const count = await friendshipService.getFriendsCount(userId);
+      setFriendCount(count);
+    } catch (error) {
+      console.error("Lỗi khi lấy số lượng bạn bè:", error);
+    }
+  };
 
-  // Biểu tượng điều hướng
-  const navigationButtons = [
-    { name: 'Home', label: <Home width={35} height={35} /> },
-    { name: 'Post', label: <Post width={35} height={35} /> },
-    { name: 'Video', label: <Video width={35} height={35} /> },
-    { name: 'Profile', label: <Image source={{ uri: userProfile.avatar_url }} style={styles.profileIcon} /> },
-  ];
+  useEffect(() => {
+    loadProfile();
+    loadFriends();
+    loadFriendCount();
+  }, [userId]);
+
+  // Subscribe to realtime updates for posts
+  useEffect(() => {
+    if (!userId || !profile) return;
+
+    const subscription = postService.subscribeToUserPosts(
+      userId,
+      async (payload) => {
+        try {
+          if (payload.eventType === "INSERT") {
+            setPosts((prev) => [
+              { ...payload.new, profiles: profile },
+              ...prev,
+            ]);
+          } else if (payload.eventType === "DELETE") {
+            setPosts((prev) =>
+              prev.filter((post) => post.id !== payload.old.id)
+            );
+          } else if (payload.eventType === "UPDATE") {
+            setPosts((prev) =>
+              prev.map((post) =>
+                post.id === payload.new.id
+                  ? { ...payload.new, profiles: profile }
+                  : post
+              )
+            );
+          }
+        } catch (error) {
+          console.error("Lỗi khi xử lý cập nhật realtime:", error);
+        }
+      }
+    );
+
+    return () => {
+      if (subscription?.unsubscribe) {
+        subscription.unsubscribe();
+      }
+    };
+  }, [userId, profile]);
+
+  // Subscribe to friendship changes
+  useEffect(() => {
+    if (!userId) return;
+
+    const subscription = friendshipService.subscribeFriendships(userId, () => {
+      loadFriendCount();
+      loadFriends();
+    });
+
+    return () => {
+      if (subscription?.unsubscribe) {
+        subscription.unsubscribe();
+      }
+    };
+  }, [userId]);
+
+  const handleMessage = () => {
+    navigation.navigate("DirectMessage", { user: profile });
+  };
+
+  const renderActionButtons = () => {
+    if (isOwnProfile) {
+      return (
+        <View style={styles.midContent}>
+          <TouchableOpacity
+            style={styles.editProfileBtn}
+            onPress={() => navigation.navigate("EditProfile")}
+          >
+            <FontAwesome name="pencil" size={20} color="black" />
+            <Text style={styles.textEditProfileBtn}>
+              Chỉnh sửa trang cá nhân
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.settingBtn} onPress={logout}>
+            <Ionicons name="log-out-outline" size={20} color="black" />
+            <Text style={styles.textSettingBtn}>Đăng xuất</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+
+    return (
+      <View style={styles.midContent}>
+        <FriendButton
+          userId={userId}
+          style={styles.editProfileBtn}
+          onFriendshipChange={loadFriendCount}
+        />
+        <TouchableOpacity style={styles.settingBtn} onPress={handleMessage}>
+          <AntDesign name="message1" size={20} color="black" />
+          <Text style={styles.textSettingBtn}>Nhắn tin</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
 
   const renderFriendItem = ({ item }) => (
-    <TouchableOpacity style={styles.friendItem}>
-      <Image source={{ uri: item.avatar }} style={styles.friendAvatar} />
+    <TouchableOpacity
+      style={styles.friendItem}
+      onPress={() => {
+        alert("Đang bị lỗi");
+        navigation.navigate("Profile", { userId: item.id });
+      }}
+    >
+      <Image
+        source={{ uri: item.avatar_url || "default_avatar_url" }}
+        style={styles.friendAvatar}
+      />
       <Text style={styles.friendName} numberOfLines={1}>
-        {item.name}
+        {`${item.first_name} ${item.last_name}`}
       </Text>
     </TouchableOpacity>
   );
 
-  // Hàm xử lý khi bài viết mới được đăng
-  const handlePostSubmit = (newPost) => {
-    setPosts((prevPosts) => [newPost, ...prevPosts]); // Thêm bài mới vào đầu danh sách
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await Promise.all([loadProfile(), loadFriends(), loadFriendCount()]);
+    setIsRefreshing(false);
   };
+
+  const [selectedButton, setSelectedButton] = useState("Profile");
+
+  const navigationButtons = [
+    { name: "Home", label: <Home width={35} height={35} /> },
+    { name: "Post", label: <Post width={35} height={35} /> },
+    { name: "Video", label: <Video width={35} height={35} /> },
+    {
+      name: "Profile",
+      label: (
+        <Image
+          source={{ uri: userProfile.avatar_url }}
+          style={styles.profileIcon}
+        />
+      ),
+    },
+  ];
+
+  if (isLoading || !profile) {
+    return <ActivityIndicator size="large" color="#316ff6" />;
+  }
 
   return (
     <View style={{ flex: 1 }}>
-      {/* Post List */}
       <FlatList
         data={posts}
-        renderItem={({ item }) => <PostComponent post={item} setPosts={setPosts} />}
+        renderItem={({ item }) => (
+          <PostComponent post={item} onRefresh={handleRefresh} />
+        )}
         keyExtractor={(item) => item.id}
+        refreshing={isRefreshing}
+        onRefresh={handleRefresh}
         ListHeaderComponent={
           <>
             <StatusBar barStyle="dark-content" backgroundColor="#fff" />
             <View style={styles.headerContainer}>
-              {/* Header Navigation Component */}
               <HeaderNavigationComponent
                 navigationButtons={navigationButtons}
-                onButtonPress={handleButtonPress}
+                onButtonPress={(name) => navigation.navigate(name)}
                 selectedButton={selectedButton}
               />
             </View>
-            {/* Header */}
             <View style={styles.topContent}>
               <Image
                 style={styles.backgroundImageProfile}
                 source={{
-                  uri: imageCache.background || userProfile?.background_image || "default_background_url"
+                  uri: profile?.background_image || "default_background_url",
                 }}
               />
               <View style={styles.avatarBox}>
@@ -159,70 +261,48 @@ const ProfileScreen = ({ navigation }) => {
                     <Image
                       style={styles.avatar}
                       source={{
-                        uri: imageCache.avatar || userProfile?.avatar_url || "default_avatar_url"
+                        uri: profile?.avatar_url || "default_avatar_url",
                       }}
                     />
                   </View>
                 </View>
                 <Text style={styles.userNameAvatarBox}>
-                  {userProfile?.first_name || ""} {userProfile?.last_name || ""}
+                  {profile
+                    ? `${profile.first_name} ${profile.last_name}`
+                    : "Loading..."}
                 </Text>
-                <Text style={styles.numberOfFriends}>100 người bạn</Text>
-              </View>
-            </View>
-            <View style={styles.midContent}>
-              <TouchableOpacity
-                style={styles.editProfileBtn}
-                onPress={() => navigation.navigate("EditProfile")}
-              >
-                <Entypo name="edit" size={24} color="black" />
-                <Text style={styles.textEditProfileBtn}>
-                  Chỉnh sửa thông tin cá nhân
+                <Text style={styles.numberOfFriends}>
+                  {friendCount} người bạn
                 </Text>
-              </TouchableOpacity>
+              </View>
             </View>
-            <View style={styles.botContent}>
-              <View style={styles.postBtnContainer}>
-                <TouchableOpacity>
-                  <Text style={styles.postBtn}>Bài viết</Text>
-                </TouchableOpacity>
-                <TouchableOpacity>
-                  <Text style={styles.postBtn}>Ảnh</Text>
-                </TouchableOpacity>
-                <TouchableOpacity>
-                  <Text style={styles.postBtn}>Video</Text>
+            {renderActionButtons()}
+            <View style={styles.friendContainer}>
+              <View style={styles.friendHeader}>
+                <Text style={styles.friendTitle}>Bạn bè</Text>
+                <TouchableOpacity
+                  onPress={() => navigation.navigate("FriendList", { userId })}
+                >
+                  <Text style={styles.friendSeeAll}>Xem tất cả</Text>
                 </TouchableOpacity>
               </View>
-              <Text style={styles.detail}>Chi tiết</Text>
-              <View style={styles.detailContainer}>
-                <Text>Thông tin người dùng</Text>
-                <TouchableOpacity>
-                  <Text>Xem thông tin giới thiệu của bạn</Text>
-                </TouchableOpacity>
-              </View>
-              <View style={styles.friendContainer}>
-                {/* Tiêu đề danh sách bạn bè */}
-                <View style={styles.friendHeader}>
-                  <Text style={styles.friendTitle}>Bạn bè</Text>
-                  <TouchableOpacity
-                    onPress={() => navigation.navigate("FriendList")}
-                  >
-                    <Text style={styles.friendSeeAll}>Xem tất cả</Text>
-                  </TouchableOpacity>
-                </View>
-
-                {/* Danh sách bạn bè dạng lưới */}
-                <FlatList
-                  data={friends}
-                  renderItem={renderFriendItem}
-                  keyExtractor={(item) => item.id}
-                  numColumns={3} // Hiển thị lưới với 3 cột
-                  scrollEnabled={false} // Không cuộn trong danh sách bạn bè (để giữ gọn)
-                  contentContainerStyle={styles.friendList}
-                />
-              </View>
-              <PostCreationComponent onPostSubmit={handlePostSubmit} navigation={navigation} />
+              <FlatList
+                data={friends}
+                renderItem={renderFriendItem}
+                keyExtractor={(item) => item.id}
+                numColumns={3}
+                scrollEnabled={false}
+                contentContainerStyle={styles.friendList}
+              />
             </View>
+            {isOwnProfile && (
+              <PostCreationComponent
+                onPostSubmit={(newPost) =>
+                  setPosts((prev) => [newPost, ...prev])
+                }
+                navigation={navigation}
+              />
+            )}
           </>
         }
       />
@@ -277,6 +357,8 @@ const styles = StyleSheet.create({
     borderBottomWidth: 15,
     borderColor: "#CACED0",
     paddingBottom: 22,
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   editProfileBtn: {
     flexDirection: "row",
@@ -293,8 +375,30 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
     justifyContent: "center",
+    width: "65%",
   },
   textEditProfileBtn: {
+    fontSize: 17,
+    marginLeft: 10,
+  },
+  settingBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "white",
+    borderRadius: 5,
+    borderWidth: 0.5,
+    paddingVertical: 10,
+    paddingRight: 18,
+    borderColor: "gray",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3.84,
+    elevation: 5,
+    justifyContent: "center",
+    width: "30%",
+  },
+  textSettingBtn: {
     fontSize: 17,
     marginLeft: 10,
   },
@@ -472,10 +576,10 @@ const styles = StyleSheet.create({
     height: 35,
     width: 35,
     borderRadius: 25,
-    resizeMode: 'cover',
+    resizeMode: "cover",
     borderWidth: 3,
-    borderColor: '#316ff6',
-  }
+    borderColor: "#316ff6",
+  },
 });
 
 export default ProfileScreen;

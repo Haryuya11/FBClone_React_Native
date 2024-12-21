@@ -12,7 +12,7 @@ export const UserProvider = ({ children }) => {
   const [userProfile, setUserProfile] = useState(null);
   const [imageCache, setImageCache] = useState({
     avatar: null,
-    background: null
+    background: null,
   });
 
   useEffect(() => {
@@ -79,6 +79,7 @@ export const UserProvider = ({ children }) => {
   };
 
   const handleUpdateProfile = async (userData) => {
+    setIsLoading(true);
     try {
       const updatedProfile = await userService.updateProfile(user.id, userData);
       setUserProfile(updatedProfile);
@@ -86,8 +87,12 @@ export const UserProvider = ({ children }) => {
         "user_profile",
         JSON.stringify(updatedProfile)
       );
+      setIsLoading(false);
+      return updatedProfile;
     } catch (error) {
       throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -98,26 +103,6 @@ export const UserProvider = ({ children }) => {
       setUserProfile(null);
       setIsAuthenticated(false);
       await AsyncStorage.removeItem("user_profile");
-    } catch (error) {
-      throw error;
-    }
-  };
-
-  const updateProfile = async (updateData) => {
-    try {
-      const { data, error } = await supabase
-        .from("profiles")
-        .update(updateData)
-        .eq("id", updateData.id)
-        .single();
-
-      if (error) throw error;
-
-      setUserProfile(updateData);
-
-      await AsyncStorage.setItem("user_profile", JSON.stringify(updateData));
-
-      return data;
     } catch (error) {
       throw error;
     }
@@ -159,7 +144,7 @@ export const UserProvider = ({ children }) => {
   const updateImageCache = (avatarUrl, backgroundUrl) => {
     setImageCache({
       avatar: avatarUrl,
-      background: backgroundUrl
+      background: backgroundUrl,
     });
   };
 
