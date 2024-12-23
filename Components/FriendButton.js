@@ -7,8 +7,7 @@ import {
 } from "react-native";
 import { UserContext } from "../context/UserContext";
 import * as friendshipService from "../services/friendshipService";
-import AntDesign from "@expo/vector-icons/AntDesign";
-
+import Ionicons from "@expo/vector-icons/Ionicons";
 const FriendButton = ({ userId, style, onFriendshipChange }) => {
   const { userProfile } = useContext(UserContext);
   const [isFriend, setIsFriend] = useState(false);
@@ -63,15 +62,15 @@ const FriendButton = ({ userId, style, onFriendshipChange }) => {
         <ActivityIndicator size="small" color={isFriend ? "#000" : "#fff"} />
       ) : (
         <>
-          <AntDesign
-            name={isFriend ? "deleteuser" : "adduser"}
+          <Ionicons
+            name={isFriend ? "person-remove-outline" : "person-add-outline"}
             size={20}
             color={isFriend ? "#000" : "#fff"}
           />
           <Text
             style={[
               styles.buttonText,
-              isFriend ? styles.unfriendText : styles.addFriendText,
+              styles.buttonFriendText,
             ]}
           >
             {isFriend ? "Hủy kết bạn" : "Kết bạn"}
@@ -102,10 +101,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "500",
   },
-  addFriendText: {
-    color: "#FFFFFF",
-  },
-  unfriendText: {
+  buttonFriendText: {
     color: "#000000",
   },
 });
