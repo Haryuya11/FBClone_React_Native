@@ -61,7 +61,8 @@ const PostScreen = ({ navigation }) => {
         { name: 'Home', label: <Home width={35} height={35} /> },
         { name: 'Post', label: <Post width={35} height={35} /> },
         { name: 'Video', label: <Video width={35} height={35} /> },
-        { name: 'Profile', label: <Image source={{ uri: userProfile.avatar_url }} style={styles.profileIcon} /> },
+        { name: 'Profile', label: <Image source={{ uri: userProfile?.avatar_url || 'https://www.pngkey.com/png/full/114-1149878_setting-user-avatar-in-specific-size-without-breaking.png'
+        }} style={styles.profileIcon} /> },
     ];
 
     return (
