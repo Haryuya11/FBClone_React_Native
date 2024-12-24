@@ -1,17 +1,19 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useContext } from 'react';
 import { GiftedChat, Send } from 'react-native-gifted-chat';
 import { View, Text, Image, StyleSheet } from 'react-native';
 import SendIcon from '../../assets/svg/send.svg';
+import { UserContext } from '../../context/UserContext';
 
 const DirectMessageScreen = ({ route }) => {
   const [messages, setMessages] = useState([]);
-  const { user } = route.params; // Lấy thông tin người dùng từ navigation
+  const { user } = route.params;
+  const { userProfile } = useContext(UserContext);
 
   useEffect(() => {
     setMessages([
       {
         _id: 1,
-        text: 'Đây là khởi đầu cuộc trò chuyện của bạn với ' + user.name,
+        text: 'Đây là khởi đầu cuộc trò chuyện của bạn với ' + `${user.name}`,
         createdAt: new Date(),
         system: true,
       },
@@ -38,7 +40,12 @@ const DirectMessageScreen = ({ route }) => {
     <View style={styles.container}>
       {/* Header hiển thị avatar và tên */}
       <View style={styles.header}>
-        <Image source={{ uri: user.avatar }} style={styles.avatar} />
+        <Image 
+          source={{ 
+            uri: user?.avatar || 'https://www.pngkey.com/png/full/114-1149878_setting-user-avatar-in-specific-size-without-breaking.png'
+          }} 
+          style={styles.avatar} 
+        />
         <Text style={styles.name}>{user.name}</Text>
       </View>
       {/* GiftedChat */}
@@ -46,9 +53,9 @@ const DirectMessageScreen = ({ route }) => {
         messages={messages}
         onSend={(messages) => onSend(messages)}
         user={{
-          _id: 1, // ID của người dùng hiện tại
-          name: 'User',
-          avatar: 'https://i.pravatar.cc/150?img=3',
+          _id: userProfile.id,
+          name: `${userProfile.first_name} ${userProfile.last_name}`,
+          avatar: userProfile.avatar_url
         }}
         placeholder={`Nhập tin nhắn của bạn tới ${user.name}`}
         renderSend={renderSend}

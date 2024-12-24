@@ -1,30 +1,48 @@
-import React from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { UserContext } from "../../context/UserContext";
+import * as friendshipService from "../../services/friendshipService";
 
 const ChatMenuScreen = ({ navigation }) => {
+  const [friends, setFriends] = useState([]);
+  const { userProfile } = useContext(UserContext);
 
-  const users = [
-    { id: '1', name: 'Anh bảy miền tây', avatar: 'https://img.a.transfermarkt.technology/portrait/big/8198-1694609670.jpg?lm=1' },
-    { id: '2', name: 'Đỗ Nam Trung', avatar: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/56/Donald_Trump_official_portrait.jpg/1200px-Donald_Trump_official_portrait.jpg' },
-    { id: '3', name: 'Kim Chính Ân', avatar: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/Kim_Jong-un_2024.jpg/800px-Kim_Jong-un_2024.jpg' },
-  ];
+  useEffect(() => {
+    loadFriends();
+  }, []);
 
-  // Render từng user trong danh sách
+  const loadFriends = async () => {
+    try {
+      const friendsList = await friendshipService.getFriendsList(userProfile.id);
+      setFriends(friendsList);
+    } catch (error) {
+      console.error("Lỗi khi tải danh sách chat:", error);
+    }
+  };
+
   const renderItem = ({ item }) => (
     <TouchableOpacity
       style={styles.userItem}
-      onPress={() => navigation.navigate('DirectMessage', { user: item })} 
+      onPress={() => navigation.navigate('DirectMessage', { 
+        user: {
+          id: item.id,
+          name: `${item.first_name} ${item.last_name}`,
+          avatar: item.avatar_url
+        }
+      })}
     >
-      <Image source={{ uri: item.avatar }} style={styles.avatar} />
-      <Text style={styles.userName}>{item.name}</Text>
+      <Image 
+        source={{ uri: item?.avatar_url || 'https://www.pngkey.com/png/full/114-1149878_setting-user-avatar-in-specific-size-without-breaking.png' }} 
+        style={styles.avatar} 
+      />
+      <Text style={styles.userName}>{`${item.first_name} ${item.last_name}`}</Text>
     </TouchableOpacity>
   );
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Danh sách bạn bè</Text>
       <FlatList
-        data={users}
+        data={friends}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
       />
@@ -38,11 +56,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     paddingHorizontal: 16,
     paddingTop: 20,
-  },
-  header: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 10,
   },
   userItem: {
     flexDirection: 'row',

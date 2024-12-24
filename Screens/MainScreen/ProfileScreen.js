@@ -144,7 +144,16 @@ const ProfileScreen = ({route, navigation}) => {
     }, [userId]);
 
     const handleMessage = () => {
-        navigation.navigate("DirectMessage", {user: profile});
+        navigation.navigate("Chat", {
+            screen: "DirectMessage",
+            params: {
+                user: {
+                    id: profile.id,
+                    name: `${profile.first_name} ${profile.last_name}`,
+                    avatar: profile.avatar_url,
+                }
+            }
+        });
     };
 
     const renderActionButtons = () => {
@@ -176,7 +185,7 @@ const ProfileScreen = ({route, navigation}) => {
                     onFriendshipChange={loadFriendCount}
                 />
                 <TouchableOpacity style={styles.settingBtn} onPress={handleMessage}>
-                    <AntDesign name="message1" size={20} color="black"/>
+                    <Ionicons name="chatbubble-ellipses-outline" size={20} color="black"/>
                     <Text style={styles.textSettingBtn}>Nhắn tin</Text>
                 </TouchableOpacity>
             </View>
