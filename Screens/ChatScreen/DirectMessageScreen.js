@@ -1,91 +1,129 @@
-import React, { useState, useCallback, useEffect, useContext } from 'react';
-import { GiftedChat, Send } from 'react-native-gifted-chat';
-import { View, Text, Image, StyleSheet } from 'react-native';
-import SendIcon from '../../assets/svg/send.svg';
+import React, { useEffect, useContext, useState } from 'react';
+import { View, StyleSheet, ActivityIndicator, Text, TouchableOpacity } from 'react-native';
+import { Chat, Channel, MessageList, MessageInput } from 'stream-chat-expo';
+import { ChatContext } from '../../context/ChatContext';
 import { UserContext } from '../../context/UserContext';
+import { supabase } from '../../lib/supabase';
 
 const DirectMessageScreen = ({ route }) => {
-  const [messages, setMessages] = useState([]);
-  const { user } = route.params;
+  const { user, existingChannel } = route.params;
+  const { chatClient, clientReady, connectUser } = useContext(ChatContext);
   const { userProfile } = useContext(UserContext);
+  const [channel, setChannel] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  useEffect(() => {
-    setMessages([
-      {
-        _id: 1,
-        text: 'Đây là khởi đầu cuộc trò chuyện của bạn với ' + `${user.name}`,
-        createdAt: new Date(),
-        system: true,
-      },
-    ]);
-  }, [user]);
+  const initializeChannel = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
 
-  const onSend = useCallback((newMessages = []) => {
-    setMessages((previousMessages) =>
-      GiftedChat.append(previousMessages, newMessages)
-    );
-  }, []);
+      if (!clientReady || !chatClient) {
+        await connectUser();
+      }
 
-  const renderSend = (props) => {
-    return (
-      <Send {...props}>
-        <View style={{ marginBottom: 5 }}>
-          <SendIcon height={35} width={35}/>
-        </View>
-      </Send>
-    );
+      // Gọi Supabase Edge Function để tạo/cập nhật người dùng
+      const { data, error: fnError } = await supabase.functions.invoke('manage-stream-chat', {
+        body: {
+          action: 'upsert_users',
+          users: [
+            {
+              id: userProfile.id,
+              name: `${userProfile.first_name} ${userProfile.last_name}`,
+              image: userProfile.avatar_url,
+            },
+            {
+              id: user.id,
+              name: user.name,
+              image: user.avatar_url,
+            }
+          ]
+        }
+      });
+
+      if (fnError) throw fnError;
+
+      // Nếu đã có channel ID từ trước
+      if (existingChannel) {
+        const existingChan = chatClient.channel('messaging', existingChannel);
+        await existingChan.watch();
+        setChannel(existingChan);
+        setIsLoading(false);
+        return;
+      }
+
+      // Tạo channel ID mới
+      const sortedIds = [chatClient.userID, user.id].sort();
+      const channelId = sortedIds.join('-').slice(0, 64);
+
+      const newChannel = chatClient.channel('messaging', channelId, {
+        members: [chatClient.userID, user.id],
+        name: user.name,
+      });
+
+      await newChannel.watch();
+      setChannel(newChannel);
+    } catch (err) {
+      console.error('Lỗi khi khởi tạo channel:', err);
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  return (
-    <View style={styles.container}>
-      {/* Header hiển thị avatar và tên */}
-      <View style={styles.header}>
-        <Image 
-          source={{ 
-            uri: user?.avatar || 'https://www.pngkey.com/png/full/114-1149878_setting-user-avatar-in-specific-size-without-breaking.png'
-          }} 
-          style={styles.avatar} 
-        />
-        <Text style={styles.name}>{user.name}</Text>
+  useEffect(() => {
+    initializeChannel();
+  }, [user.id, chatClient, clientReady]);
+
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#0000ff" />
+        <Text>Đang tải...</Text>
       </View>
-      {/* GiftedChat */}
-      <GiftedChat
-        messages={messages}
-        onSend={(messages) => onSend(messages)}
-        user={{
-          _id: userProfile.id,
-          name: `${userProfile.first_name} ${userProfile.last_name}`,
-          avatar: userProfile.avatar_url
-        }}
-        placeholder={`Nhập tin nhắn của bạn tới ${user.name}`}
-        renderSend={renderSend}
-      />
-    </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text>Có lỗi xảy ra: {error}</Text>
+        <TouchableOpacity onPress={initializeChannel}>
+          <Text>Thử lại</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  if (!channel) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text>Không thể tải cuộc trò chuyện</Text>
+      </View>
+    );
+  }
+
+  return (
+    <Chat client={chatClient}>
+      <Channel channel={channel}>
+        <MessageList />
+        <MessageInput />
+      </Channel>
+    </Chat>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  loadingContainer: {
     flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
+    justifyContent: 'center',
     alignItems: 'center',
-    padding: 10,
-    backgroundColor: '#f5f5f5',
-    borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
   },
-  avatar: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    marginRight: 15,
-  },
-  name: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
   },
 });
 

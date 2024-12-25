@@ -1,6 +1,7 @@
 import { createStackNavigator } from "@react-navigation/stack";
 import { NavigationContainer } from "@react-navigation/native";
-
+import { OverlayProvider } from 'stream-chat-expo';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import React, { useContext } from "react";
 // LoginScreen
 import LoginScreen from "./Screens/LoginScreen/LoginScreen";
@@ -31,6 +32,7 @@ import { UserContext, UserProvider } from "./context/UserContext";
 import { ActivityIndicator } from "react-native";
 import DirectMessageScreen from "./Screens/ChatScreen/DirectMessageScreen";
 import ChatMenuScreen from "./Screens/ChatScreen/ChatMenuScreen";
+import { ChatProvider } from './context/ChatContext';
 
 
 const authStack = createStackNavigator();
@@ -165,21 +167,26 @@ const MainApp = () => {
     const { isAuthenticated, isLoading } = useContext(UserContext);
 
     if (isLoading) {
-        <ActivityIndicator size="large" />
+        return <ActivityIndicator size="large" />;
     }
 
-    return (
-        <NavigationContainer>
-            {isAuthenticated ? <MainStack /> : <AuthStack />}
-        </NavigationContainer>
-    );
+    return isAuthenticated ? <MainStack /> : <AuthStack />;
 };
+
 export default function App() {
     return (
-        <UserProvider>
-            <RegisterProvider>
-                <MainApp />
-            </RegisterProvider>
-        </UserProvider>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+            <UserProvider>
+                <RegisterProvider>
+                    <ChatProvider>
+                        <OverlayProvider>
+                            <NavigationContainer>
+                                <MainApp />
+                            </NavigationContainer>
+                        </OverlayProvider>
+                    </ChatProvider>
+                </RegisterProvider>
+            </UserProvider>
+        </GestureHandlerRootView>
     );
 };
