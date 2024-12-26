@@ -1,4 +1,4 @@
-import React, { useState, useContext, useCallback, useEffect } from "react";
+import React, { useState, useContext, useEffect, useCallback } from "react";
 import {
     View,
     Text,
@@ -19,9 +19,6 @@ import PostComponent from "../../Components/PostComponent";
 import PostCreationComponent from "../../Components/PostCreationComponent";
 import * as postService from "../../services/postService";
 import * as friendshipService from "../../services/friendshipService";
-import Ionicons from "@expo/vector-icons/Ionicons";
-import FontAwesome from "@expo/vector-icons/FontAwesome";
-import AntDesign from "@expo/vector-icons/AntDesign";
 import * as userService from "../../services/userService";
 import FriendButton from "../../Components/FriendButton";
 import SettingIcon from "../../assets/svg/setting.svg";
@@ -40,111 +37,65 @@ const ProfileScreen = ({ route, navigation }) => {
     const userId = route.params?.userId || userProfile?.id;
     const isOwnProfile = userId === userProfile?.id;
 
-    // Load profile và posts
-    const loadProfile = async () => {
+    // Load all necessary data in parallel
+    const loadData = useCallback(async () => {
+        setIsLoading(true);
         try {
-            if (userId) {
-                const [profileData, postsData] = await Promise.all([
-                    userService.loadUserProfile(userId),
-                    postService.getPostsByUserId(userId),
-                ]);
-
-                if (profileData && postsData) {
-                    setProfile(profileData);
-                    const postsWithProfiles = postsData.map((post) => ({
-                        ...post,
-                        profiles: profileData,
-                    }));
-                    setPosts(postsWithProfiles);
-                }
-            }
+            const [profileData, postsData, friendsList, friendCountData] = await Promise.all([
+                userService.loadUserProfile(userId),
+                postService.getPostsByUserId(userId),
+                friendshipService.getFriendsList(userId),
+                friendshipService.getFriendsCount(userId),
+            ]);
+            setProfile(profileData);
+            setPosts(postsData.map((post) => ({ ...post, profiles: profileData })));
+            setFriends(friendsList.slice(0, 6));
+            setFriendCount(friendCountData);
         } catch (error) {
-            console.error("Lỗi khi tải profile:", error);
+            console.error("Error loading data:", error);
         } finally {
             setIsLoading(false);
         }
-    };
-
-    // Load danh sách bạn bè
-    const loadFriends = async () => {
-        try {
-            const friendsList = await friendshipService.getFriendsList(userId);
-            setFriends(friendsList.slice(0, 6)); // Chỉ lấy 6 người bạn để hiển thị
-        } catch (error) {
-            console.error("Lỗi khi tải danh sách bạn bè:", error);
-        }
-    };
-
-    // Load số lượng bạn bè
-    const loadFriendCount = async () => {
-        try {
-            const count = await friendshipService.getFriendsCount(userId);
-            setFriendCount(count);
-        } catch (error) {
-            console.error("Lỗi khi lấy số lượng bạn bè:", error);
-        }
-    };
-
-    useEffect(() => {
-        loadProfile();
-        loadFriends();
-        loadFriendCount();
     }, [userId]);
 
-    // Subscribe to realtime updates for posts
+    useEffect(() => {
+        if (userId) loadData();
+    }, [userId, loadData]);
+
+    // Real-time updates subscription
     useEffect(() => {
         if (!userId || !profile) return;
 
-        const subscription = postService.subscribeToUserPosts(
-            userId,
-            async (payload) => {
-                try {
-                    if (payload.eventType === "INSERT") {
-                        setPosts((prev) => [
-                            { ...payload.new, profiles: profile },
-                            ...prev,
-                        ]);
-                    } else if (payload.eventType === "DELETE") {
-                        setPosts((prev) =>
-                            prev.filter((post) => post.id !== payload.old.id)
+        const postSubscription = postService.subscribeToUserPosts(userId, async (payload) => {
+            setPosts((prev) => {
+                switch (payload.eventType) {
+                    case "INSERT":
+                        return [{ ...payload.new, profiles: profile }, ...prev];
+                    case "DELETE":
+                        return prev.filter((post) => post.id !== payload.old.id);
+                    case "UPDATE":
+                        return prev.map((post) =>
+                            post.id === payload.new.id ? { ...payload.new, profiles: profile } : post
                         );
-                    } else if (payload.eventType === "UPDATE") {
-                        setPosts((prev) =>
-                            prev.map((post) =>
-                                post.id === payload.new.id
-                                    ? { ...payload.new, profiles: profile }
-                                    : post
-                            )
-                        );
-                    }
-                } catch (error) {
-                    console.error("Lỗi khi xử lý cập nhật realtime:", error);
+                    default:
+                        return prev;
                 }
-            }
-        );
-
-        return () => {
-            if (subscription?.unsubscribe) {
-                subscription.unsubscribe();
-            }
-        };
-    }, [userId, profile]);
-
-    // Subscribe to friendship changes
-    useEffect(() => {
-        if (!userId) return;
-
-        const subscription = friendshipService.subscribeFriendships(userId, () => {
-            loadFriendCount();
-            loadFriends();
+            });
         });
 
+        const friendshipSubscription = friendshipService.subscribeFriendships(userId, loadData);
+
         return () => {
-            if (subscription?.unsubscribe) {
-                subscription.unsubscribe();
-            }
+            postSubscription?.unsubscribe();
+            friendshipSubscription?.unsubscribe();
         };
-    }, [userId]);
+    }, [userId, profile, loadData]);
+
+    const handleRefresh = async () => {
+        setIsRefreshing(true);
+        await loadData();
+        setIsRefreshing(false);
+    };
 
     const handleMessage = () => {
         navigation.navigate("Chat", {
@@ -159,40 +110,32 @@ const ProfileScreen = ({ route, navigation }) => {
         });
     };
 
-    const renderActionButtons = () => {
-        if (isOwnProfile) {
-            return (
-                <View style={styles.midContent}>
+    const renderActionButtons = () => (
+        <View style={styles.midContent}>
+            {isOwnProfile ? (
+                <>
                     <TouchableOpacity
                         style={styles.editProfileBtn}
                         onPress={() => navigation.navigate("EditProfile")}
                     >
                         <PencilIcon width={25} height={25} />
-                        <Text style={styles.textEditProfileBtn}>
-                            Chỉnh sửa trang cá nhân
-                        </Text>
+                        <Text style={styles.textEditProfileBtn}>Chỉnh sửa trang cá nhân</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.settingBtn} onPress={logout}>
                         <SettingIcon width={25} height={25} />
                     </TouchableOpacity>
-                </View>
-            );
-        }
-
-        return (
-            <View style={styles.midContent}>
-                <TouchableOpacity style={styles.chatBtn} onPress={handleMessage}>
-                    <ChatSolidIcon width={22} height={22} />
-                    <Text style={styles.textChatBtn}> Nhắn tin</Text>
-                </TouchableOpacity>
-                <FriendButton
-                    userId={userId}
-                    style={styles.editProfileBtn}
-                    onFriendshipChange={loadFriendCount}
-                />
-            </View>
-        );
-    };
+                </>
+            ) : (
+                <>
+                    <TouchableOpacity style={styles.chatBtn} onPress={handleMessage}>
+                        <ChatSolidIcon width={22} height={22} />
+                        <Text style={styles.textChatBtn}> Nhắn tin</Text>
+                    </TouchableOpacity>
+                    <FriendButton userId={userId} style={styles.editProfileBtn} onFriendshipChange={loadData} />
+                </>
+            )}
+        </View>
+    );
 
     const renderFriendItem = ({ item }) => (
         <TouchableOpacity
@@ -205,7 +148,9 @@ const ProfileScreen = ({ route, navigation }) => {
             }}
         >
             <Image
-                source={{ uri: item?.avatar_url || 'https://www.pngkey.com/png/full/114-1149878_setting-user-avatar-in-specific-size-without-breaking.png' }}
+                source={{
+                    uri: item?.avatar_url || 'https://www.pngkey.com/png/full/114-1149878_setting-user-avatar-in-specific-size-without-breaking.png'
+                }}
                 style={styles.friendAvatar}
             />
             <Text style={styles.friendName} numberOfLines={1}>
@@ -213,14 +158,6 @@ const ProfileScreen = ({ route, navigation }) => {
             </Text>
         </TouchableOpacity>
     );
-
-    const handleRefresh = async () => {
-        setIsRefreshing(true);
-        await Promise.all([loadProfile(), loadFriends(), loadFriendCount()]);
-        setIsRefreshing(false);
-    };
-
-    const [selectedButton, setSelectedButton] = useState("Profile");
 
     const navigationButtons = [
         { name: "Home", label: <Home width={35} height={35} /> },
@@ -247,9 +184,7 @@ const ProfileScreen = ({ route, navigation }) => {
         <View style={{ flex: 1 }}>
             <FlatList
                 data={posts}
-                renderItem={({ item }) => (
-                    <PostComponent post={item} onRefresh={handleRefresh} />
-                )}
+                renderItem={({ item }) => <PostComponent post={item} onRefresh={handleRefresh} />}
                 keyExtractor={(item) => item.id}
                 refreshing={isRefreshing}
                 onRefresh={handleRefresh}
@@ -260,7 +195,7 @@ const ProfileScreen = ({ route, navigation }) => {
                             <HeaderNavigationComponent
                                 navigationButtons={navigationButtons}
                                 onButtonPress={(name) => navigation.navigate(name)}
-                                selectedButton={selectedButton}
+                                selectedButton="Profile"
                             />
                         </View>
                         <View style={styles.topContent}>
@@ -282,9 +217,7 @@ const ProfileScreen = ({ route, navigation }) => {
                                     </View>
                                 </View>
                                 <Text style={styles.userNameAvatarBox}>
-                                    {profile
-                                        ? `${profile.first_name} ${profile.last_name}`
-                                        : "Loading..."}
+                                    {profile ? `${profile.first_name} ${profile.last_name}` : "Loading..."}
                                 </Text>
                             </View>
                         </View>
@@ -292,9 +225,7 @@ const ProfileScreen = ({ route, navigation }) => {
                         <View style={styles.friendContainer}>
                             <View style={styles.friendHeader}>
                                 <Text style={styles.friendTitle}>Bạn bè</Text>
-                                <Text style={styles.numberOfFriends}>
-                                    {friendCount} người bạn
-                                </Text>
+                                <Text style={styles.numberOfFriends}>{friendCount} người bạn</Text>
                                 <TouchableOpacity
                                     onPress={() => navigation.navigate("FriendList", { userId })}
                                 >
@@ -312,9 +243,7 @@ const ProfileScreen = ({ route, navigation }) => {
                         </View>
                         {isOwnProfile && (
                             <PostCreationComponent
-                                onPostSubmit={(newPost) =>
-                                    setPosts((prev) => [newPost, ...prev])
-                                }
+                                onPostSubmit={(newPost) => setPosts((prev) => [newPost, ...prev])}
                                 navigation={navigation}
                             />
                         )}

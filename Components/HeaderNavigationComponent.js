@@ -1,15 +1,22 @@
-import React from 'react';
+import React, {memo, useCallback } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, } from 'react-native';
 
 
 const HeaderNavigationComponent = ({ navigationButtons, onButtonPress, selectedButton }) => {
+  const handlePress = useCallback(
+    (name) => {
+      onButtonPress(name);
+    },
+    [onButtonPress]
+  );
+
   return (
     <View style={styles.headerBottom}>
       {navigationButtons.map((button, index) => (
         <TouchableOpacity
           key={index}
           style={styles.headerButton}
-          onPress={() => onButtonPress(button.name)}
+          onPress={() => handlePress(button.name)}
         >
           <View style={styles.buttonLabelContainer}>
             <Text style={styles.headerButtonText}>
@@ -68,4 +75,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default HeaderNavigationComponent;
+export default memo(HeaderNavigationComponent);
