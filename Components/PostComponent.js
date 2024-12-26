@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useMemo, useRef, useState} from "react";
+import React, {useContext, useEffect, useMemo, memo, useRef, useState } from "react";
 import {
     Dimensions,
     Image,
@@ -34,7 +34,7 @@ const getMediaUrl = (path) => {
     return publicUrl;
 };
 
-const PostComponent = ({post: initialPost, onRefresh}) => {
+const PostComponent  = ({post: initialPost, onRefresh}) => {
     const navigation = useNavigation();
     const {userProfile} = useContext(UserContext);
     const [post, setPost] = useState(initialPost);
@@ -614,6 +614,26 @@ const PostComponent = ({post: initialPost, onRefresh}) => {
         });
     };
 
+    const ReactionBar = memo(({ totalLikes, totalComments, userLiked, handleLike }) => (
+        <View style={styles.reactionBar}>
+        <View style={styles.leftReactions}>
+            {totalLikes > 0 && (
+                <View style={styles.reactionCount}>
+                    <LikeReaction width={22} height={22}/>
+                    <Text style={styles.reactionText}>{totalLikes}</Text>
+                </View>
+            )}
+        </View>
+        <View style={styles.rightReactions}>
+            {totalComments > 0 && (
+                <View style={styles.reactionCount}>
+                    <Text style={styles.reactionText}>{totalComments} bình luận</Text>
+                </View>
+            )}
+        </View>
+    </View>
+    ));
+
     return (
         <View style={styles.post}>
             <View style={styles.header}>
@@ -668,35 +688,15 @@ const PostComponent = ({post: initialPost, onRefresh}) => {
             {renderMedia()}
 
             {/* Reaction counts */}
-            <View style={styles.reactionBar}>
-                <View style={styles.leftReactions}>
-                    {totalLikes > 0 && (
-                        <View style={styles.reactionCount}>
-                            <LikeReaction width={20} height={20}/>
-                            <Text style={styles.reactionText}>{totalLikes}</Text>
-                        </View>
-                    )}
-                </View>
-                <View style={styles.rightReactions}>
-                    {totalComments > 0 && (
-                        <View style={styles.reactionCount}>
-                            <Comment width={20} height={20}/>
-                            <Text style={styles.reactionText}>{totalComments} bình luận</Text>
-                        </View>
-                    )}
-                </View>
-            </View>
+            <ReactionBar
+                totalLikes={totalLikes}
+                totalComments={totalComments}
+                userLiked={userLiked}
+            />
 
             {/* Divider */}
             <View style={styles.divider}/>
 
-            {/* Modal hiển thị danh sách bình luận */}
-            <CommentModalComponent
-                visible={isCommentModalVisible}
-                onClose={() => setIsCommentModalVisible(false)}
-                postId={post.id}
-                navigation={navigation}
-            />
             {/* Action button*/}
             <View style={styles.actions}>
                 <TouchableOpacity
@@ -731,6 +731,14 @@ const PostComponent = ({post: initialPost, onRefresh}) => {
                     <Text style={styles.actionText}>Chia sẻ</Text>
                 </TouchableOpacity>
             </View>
+
+            {/* Modal hiển thị danh sách bình luận */}
+            <CommentModalComponent
+                visible={isCommentModalVisible}
+                onClose={() => setIsCommentModalVisible(false)}
+                postId={post.id}
+                navigation={navigation}
+            />
 
             {/* Options Modal */}
             <Modal
@@ -996,7 +1004,8 @@ const styles = StyleSheet.create({
     },
     reactionText: {
         color: "#65676B",
-        fontSize: 14,
+        fontSize: 16,
+        marginLeft: 0,
     },
     divider: {
         height: 1,
@@ -1041,4 +1050,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default PostComponent;
+export default memo(PostComponent);
