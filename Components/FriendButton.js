@@ -8,6 +8,10 @@ import {
 import { UserContext } from "../context/UserContext";
 import * as friendshipService from "../services/friendshipService";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import AddFriendIcon from "../assets/svg/add_friend.svg";
+import RemoveFriendIcon from "../assets/svg/remove_friend.svg";
+
+
 const FriendButton = ({ userId, style, onFriendshipChange }) => {
   const { userProfile } = useContext(UserContext);
   const [isFriend, setIsFriend] = useState(false);
@@ -53,7 +57,6 @@ const FriendButton = ({ userId, style, onFriendshipChange }) => {
       style={[
         styles.button,
         isFriend ? styles.unfriendButton : styles.addFriendButton,
-        style,
       ]}
       onPress={handleFriendAction}
       disabled={isLoading}
@@ -62,15 +65,12 @@ const FriendButton = ({ userId, style, onFriendshipChange }) => {
         <ActivityIndicator size="small" color={isFriend ? "#000" : "#fff"} />
       ) : (
         <>
-          <Ionicons
-            name={isFriend ? "person-remove-outline" : "person-add-outline"}
-            size={20}
-            color={isFriend ? "#000" : "#fff"}
-          />
+        {isFriend ? (<RemoveFriendIcon width={23} height={23}/>) : (<AddFriendIcon width={23} height={23}/>)}
           <Text
             style={[
               styles.buttonText,
               styles.buttonFriendText,
+              isFriend ? styles.buttonUnfriendText : null,
             ]}
           >
             {isFriend ? "Hủy kết bạn" : "Kết bạn"}
@@ -87,14 +87,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 15,
     paddingVertical: 8,
-    borderRadius: 20,
+    borderRadius: 5,
     justifyContent: "center",
+    width: "40%",
   },
   addFriendButton: {
-    backgroundColor: "#1877F2",
+    backgroundColor: "#316ff6",
   },
   unfriendButton: {
-    backgroundColor: "#E4E6EB",
+    backgroundColor: "#E2E5E9",
+    color: "#fff",
   },
   buttonText: {
     marginLeft: 8,
@@ -102,7 +104,10 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   buttonFriendText: {
-    color: "#000000",
+    color: "#fff",
+  },
+  buttonUnfriendText: {
+    color: "black",
   },
 });
 

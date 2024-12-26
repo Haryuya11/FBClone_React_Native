@@ -672,7 +672,7 @@ const PostComponent = ({post: initialPost, onRefresh}) => {
                 <View style={styles.leftReactions}>
                     {totalLikes > 0 && (
                         <View style={styles.reactionCount}>
-                            <LikeReaction width={20} height={20}/>
+                            <LikeReaction width={22} height={22}/>
                             <Text style={styles.reactionText}>{totalLikes}</Text>
                         </View>
                     )}
@@ -680,7 +680,6 @@ const PostComponent = ({post: initialPost, onRefresh}) => {
                 <View style={styles.rightReactions}>
                     {totalComments > 0 && (
                         <View style={styles.reactionCount}>
-                            <Comment width={20} height={20}/>
                             <Text style={styles.reactionText}>{totalComments} bình luận</Text>
                         </View>
                     )}
@@ -996,7 +995,8 @@ const styles = StyleSheet.create({
     },
     reactionText: {
         color: "#65676B",
-        fontSize: 14,
+        fontSize: 16,
+        marginLeft: 0,
     },
     divider: {
         height: 1,

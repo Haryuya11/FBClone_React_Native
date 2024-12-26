@@ -1,4 +1,4 @@
-import React, {useState, useContext, useCallback, useEffect} from "react";
+import React, { useState, useContext, useCallback, useEffect } from "react";
 import {
     View,
     Text,
@@ -14,7 +14,7 @@ import Entypo from "@expo/vector-icons/Entypo";
 import Home from "../../assets/svg/home_outline.svg";
 import Post from "../../assets/svg/post_outline.svg";
 import Video from "../../assets/svg/video_outline.svg";
-import {UserContext} from "../../context/UserContext";
+import { UserContext } from "../../context/UserContext";
 import PostComponent from "../../Components/PostComponent";
 import PostCreationComponent from "../../Components/PostCreationComponent";
 import * as postService from "../../services/postService";
@@ -24,9 +24,12 @@ import FontAwesome from "@expo/vector-icons/FontAwesome";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import * as userService from "../../services/userService";
 import FriendButton from "../../Components/FriendButton";
+import SettingIcon from "../../assets/svg/setting.svg";
+import PencilIcon from "../../assets/svg/pencil.svg";
+import ChatSolidIcon from "../../assets/svg/chat_solid.svg";
 
-const ProfileScreen = ({route, navigation}) => {
-    const {userProfile, logout} = useContext(UserContext);
+const ProfileScreen = ({ route, navigation }) => {
+    const { userProfile, logout } = useContext(UserContext);
     const [profile, setProfile] = useState(null);
     const [posts, setPosts] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -98,7 +101,7 @@ const ProfileScreen = ({route, navigation}) => {
                 try {
                     if (payload.eventType === "INSERT") {
                         setPosts((prev) => [
-                            {...payload.new, profiles: profile},
+                            { ...payload.new, profiles: profile },
                             ...prev,
                         ]);
                     } else if (payload.eventType === "DELETE") {
@@ -109,7 +112,7 @@ const ProfileScreen = ({route, navigation}) => {
                         setPosts((prev) =>
                             prev.map((post) =>
                                 post.id === payload.new.id
-                                    ? {...payload.new, profiles: profile}
+                                    ? { ...payload.new, profiles: profile }
                                     : post
                             )
                         );
@@ -164,14 +167,13 @@ const ProfileScreen = ({route, navigation}) => {
                         style={styles.editProfileBtn}
                         onPress={() => navigation.navigate("EditProfile")}
                     >
-                        <FontAwesome name="pencil" size={20} color="black"/>
+                        <PencilIcon width={25} height={25} />
                         <Text style={styles.textEditProfileBtn}>
                             Chỉnh sửa trang cá nhân
                         </Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.settingBtn} onPress={logout}>
-                        <Ionicons name="log-out-outline" size={20} color="black"/>
-                        <Text style={styles.textSettingBtn}>Đăng xuất</Text>
+                        <SettingIcon width={25} height={25} />
                     </TouchableOpacity>
                 </View>
             );
@@ -179,31 +181,31 @@ const ProfileScreen = ({route, navigation}) => {
 
         return (
             <View style={styles.midContent}>
+                <TouchableOpacity style={styles.chatBtn} onPress={handleMessage}>
+                    <ChatSolidIcon width={22} height={22} />
+                    <Text style={styles.textChatBtn}> Nhắn tin</Text>
+                </TouchableOpacity>
                 <FriendButton
                     userId={userId}
                     style={styles.editProfileBtn}
                     onFriendshipChange={loadFriendCount}
                 />
-                <TouchableOpacity style={styles.settingBtn} onPress={handleMessage}>
-                    <Ionicons name="chatbubble-ellipses-outline" size={20} color="black"/>
-                    <Text style={styles.textSettingBtn}>Nhắn tin</Text>
-                </TouchableOpacity>
             </View>
         );
     };
 
-    const renderFriendItem = ({item}) => (
+    const renderFriendItem = ({ item }) => (
         <TouchableOpacity
             style={styles.friendItem}
             onPress={() => {
                 navigation.navigate("Profile", {
                     screen: 'ProfileScreen',
-                    params: {userId: item.id},
+                    params: { userId: item.id },
                 });
             }}
         >
             <Image
-                source={{uri: item?.avatar_url || 'https://www.pngkey.com/png/full/114-1149878_setting-user-avatar-in-specific-size-without-breaking.png'}}
+                source={{ uri: item?.avatar_url || 'https://www.pngkey.com/png/full/114-1149878_setting-user-avatar-in-specific-size-without-breaking.png' }}
                 style={styles.friendAvatar}
             />
             <Text style={styles.friendName} numberOfLines={1}>
@@ -221,9 +223,9 @@ const ProfileScreen = ({route, navigation}) => {
     const [selectedButton, setSelectedButton] = useState("Profile");
 
     const navigationButtons = [
-        {name: "Home", label: <Home width={35} height={35}/>},
-        {name: "Post", label: <Post width={35} height={35}/>},
-        {name: "Video", label: <Video width={35} height={35}/>},
+        { name: "Home", label: <Home width={35} height={35} /> },
+        { name: "Post", label: <Post width={35} height={35} /> },
+        { name: "Video", label: <Video width={35} height={35} /> },
         {
             name: "Profile",
             label: (
@@ -238,22 +240,22 @@ const ProfileScreen = ({route, navigation}) => {
     ];
 
     if (isLoading || !profile) {
-        return <ActivityIndicator size="large" color="#316ff6"/>;
+        return <ActivityIndicator size="large" color="#316ff6" />;
     }
 
     return (
-        <View style={{flex: 1}}>
+        <View style={{ flex: 1 }}>
             <FlatList
                 data={posts}
-                renderItem={({item}) => (
-                    <PostComponent post={item} onRefresh={handleRefresh}/>
+                renderItem={({ item }) => (
+                    <PostComponent post={item} onRefresh={handleRefresh} />
                 )}
                 keyExtractor={(item) => item.id}
                 refreshing={isRefreshing}
                 onRefresh={handleRefresh}
                 ListHeaderComponent={
                     <>
-                        <StatusBar barStyle="dark-content" backgroundColor="#fff"/>
+                        <StatusBar barStyle="dark-content" backgroundColor="#fff" />
                         <View style={styles.headerContainer}>
                             <HeaderNavigationComponent
                                 navigationButtons={navigationButtons}
@@ -284,17 +286,17 @@ const ProfileScreen = ({route, navigation}) => {
                                         ? `${profile.first_name} ${profile.last_name}`
                                         : "Loading..."}
                                 </Text>
-                                <Text style={styles.numberOfFriends}>
-                                    {friendCount} người bạn
-                                </Text>
                             </View>
                         </View>
                         {renderActionButtons()}
                         <View style={styles.friendContainer}>
                             <View style={styles.friendHeader}>
                                 <Text style={styles.friendTitle}>Bạn bè</Text>
+                                <Text style={styles.numberOfFriends}>
+                                    {friendCount} người bạn
+                                </Text>
                                 <TouchableOpacity
-                                    onPress={() => navigation.navigate("FriendList", {userId})}
+                                    onPress={() => navigation.navigate("FriendList", { userId })}
                                 >
                                     <Text style={styles.friendSeeAll}>Xem tất cả</Text>
                                 </TouchableOpacity>
@@ -350,6 +352,7 @@ const styles = StyleSheet.create({
         borderRadius: 200,
         alignItems: "center",
         justifyContent: "center",
+        elevation: 10,
     },
     avatar: {
         height: "100%",
@@ -357,7 +360,7 @@ const styles = StyleSheet.create({
         borderRadius: 200,
     },
     userNameAvatarBox: {
-        fontSize: 20,
+        fontSize: 28,
         fontWeight: "bold",
     },
     numberOfFriends: {
@@ -376,23 +379,26 @@ const styles = StyleSheet.create({
     editProfileBtn: {
         flexDirection: "row",
         alignItems: "center",
-        backgroundColor: "white",
+        backgroundColor: "#316ff6",
         borderRadius: 5,
         borderWidth: 0.5,
         paddingVertical: 10,
         paddingRight: 18,
         borderColor: "gray",
         shadowColor: "#000",
-        shadowOffset: {width: 0, height: 2},
+        shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.2,
         shadowRadius: 3.84,
-        elevation: 5,
+        elevation: 8,
         justifyContent: "center",
-        width: "65%",
+        width: "85%",
+
     },
     textEditProfileBtn: {
         fontSize: 17,
         marginLeft: 10,
+        color: "white",
+        fontWeight: "bold",
     },
     settingBtn: {
         flexDirection: "row",
@@ -401,19 +407,35 @@ const styles = StyleSheet.create({
         borderRadius: 5,
         borderWidth: 0.5,
         paddingVertical: 10,
-        paddingRight: 18,
         borderColor: "gray",
         shadowColor: "#000",
-        shadowOffset: {width: 0, height: 2},
+        shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.2,
         shadowRadius: 3.84,
-        elevation: 5,
+        elevation: 8,
         justifyContent: "center",
-        width: "30%",
+        width: "13%",
     },
-    textSettingBtn: {
+    chatBtn: {
+        flexDirection: "row",
+        alignItems: "center",
+        backgroundColor: "#316ff6",
+        borderRadius: 5,
+        borderWidth: 0.5,
+        paddingVertical: 10,
+        borderColor: "gray",
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 3.84,
+        elevation: 8,
+        justifyContent: "center",
+        width: "58%",
+    },
+    textChatBtn: {
         fontSize: 17,
-        marginLeft: 10,
+        color: "white",
+        fontWeight: "bold",
     },
     botContent: {},
     postBtnContainer: {
@@ -520,7 +542,7 @@ const styles = StyleSheet.create({
         padding: 10,
         borderRadius: 10,
         shadowColor: "#000",
-        shadowOffset: {width: 0, height: 2},
+        shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
         shadowRadius: 2,
         elevation: 3,
@@ -581,13 +603,14 @@ const styles = StyleSheet.create({
         alignItems: "center",
         alignSelf: "center",
         height: 250,
-        width: 200,
+        width: 400,
         marginTop: 200,
         marginLeft: 10,
     },
+
     profileIcon: {
-        height: 35,
-        width: 35,
+        height: 40,
+        width: 40,
         borderRadius: 25,
         resizeMode: "cover",
         borderWidth: 3,
