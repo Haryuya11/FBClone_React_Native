@@ -1,4 +1,4 @@
-import React, {useState, useContext, useEffect} from "react";
+import React, { useState, useContext, useEffect } from "react";
 import {
     View,
     Text,
@@ -12,19 +12,19 @@ import {
 } from "react-native";
 import Send from "../assets/svg/send.svg";
 import LikeReaction from "../assets/svg/like_reaction.svg";
-import {UserContext} from "../context/UserContext";
+import { UserContext } from "../context/UserContext";
 import NoComment from "../assets/svg/no_comment.svg";
-import {formatTimeAgo} from "../utils/dateUtils";
+import { formatTimeAgo } from "../utils/dateUtils";
 import * as commentService from "../services/commentService";
-import {useNavigation} from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 
-const CommentModalComponent = ({visible, onClose, postId}) => {
+const CommentModalComponent = ({ visible, onClose, postId }) => {
     const navigation = useNavigation();
     const [comments, setComments] = useState([]);
     const [newComment, setNewComment] = useState("");
     const [replyCommentId, setReplyCommentId] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
-    const {userProfile} = useContext(UserContext);
+    const { userProfile } = useContext(UserContext);
 
     useEffect(() => {
         if (visible && postId) {
@@ -263,8 +263,9 @@ const CommentModalComponent = ({visible, onClose, postId}) => {
         });
     };
 
-    const CommentItem = ({item}) => {
+    const CommentItem = ({ item }) => {
         const [isExpanded, setIsExpanded] = useState(false);
+        const [isTruncated, setIsTruncated] = useState(false);
 
         const userLiked =
             Array.isArray(item.comment_likes) &&
@@ -276,7 +277,7 @@ const CommentModalComponent = ({visible, onClose, postId}) => {
                     onPress={() => handleAvatarPress(item.user?.id)}
                 >
                     <Image
-                        source={{uri: item.user?.avatar_url || 'https://www.pngkey.com/png/full/114-1149878_setting-user-avatar-in-specific-size-without-breaking.png'}}
+                        source={{ uri: item.user?.avatar_url || 'https://www.pngkey.com/png/full/114-1149878_setting-user-avatar-in-specific-size-without-breaking.png' }}
                         style={styles.avatar}
                     />
                 </TouchableOpacity>
@@ -287,6 +288,10 @@ const CommentModalComponent = ({visible, onClose, postId}) => {
                     <Text
                         style={[styles.commentText, !isExpanded && styles.collapsedText]}
                         numberOfLines={isExpanded ? null : 4}
+                        onTextLayout={(e) => {
+                            const { lines } = e.nativeEvent;
+                            setIsTruncated(lines.length > 4);
+                        }}
                     >
                         {item.content.startsWith("@") ? (
                             <>
@@ -299,7 +304,7 @@ const CommentModalComponent = ({visible, onClose, postId}) => {
                             item.content
                         )}
                     </Text>
-                    {item.content.split("\n").length > 4 && (
+                    {isTruncated && (
                         <TouchableOpacity onPress={() => setIsExpanded(!isExpanded)}>
                             <Text style={styles.expandButton}>
                                 {isExpanded ? "Thu gọn" : "Xem thêm"}
@@ -328,7 +333,7 @@ const CommentModalComponent = ({visible, onClose, postId}) => {
                                 <Text style={styles.likeCount}>
                                     {item.comment_likes.length}
                                 </Text>
-                                <LikeReaction width={22} height={19}/>
+                                <LikeReaction width={22} height={19} />
                             </View>
                         )}
                     </View>
@@ -345,7 +350,7 @@ const CommentModalComponent = ({visible, onClose, postId}) => {
                                 return (
                                     <View key={reply.id} style={styles.commentItem}>
                                         <Image
-                                            source={{uri: reply.user?.avatar_url || 'https://www.pngkey.com/png/full/114-1149878_setting-user-avatar-in-specific-size-without-breaking.png'}}
+                                            source={{ uri: reply.user?.avatar_url || 'https://www.pngkey.com/png/full/114-1149878_setting-user-avatar-in-specific-size-without-breaking.png' }}
                                             style={styles.avatar}
                                         />
                                         <View style={styles.commentContent}>
@@ -400,7 +405,7 @@ const CommentModalComponent = ({visible, onClose, postId}) => {
                                                             <Text style={styles.likeCount}>
                                                                 {reply.comment_likes.length}
                                                             </Text>
-                                                            <LikeReaction width={22} height={19}/>
+                                                            <LikeReaction width={22} height={19} />
                                                         </View>
                                                     )}
                                             </View>
@@ -421,17 +426,17 @@ const CommentModalComponent = ({visible, onClose, postId}) => {
                 <Text style={styles.modalTitle}>Bình luận</Text>
 
                 {isLoading ? (
-                    <ActivityIndicator size="large" color="#0000ff"/>
+                    <ActivityIndicator size="large" color="#0000ff" />
                 ) : comments.length === 0 ? (
                     <View style={styles.noCommentContainer}>
-                        <NoComment width={100} height={100}/>
+                        <NoComment width={100} height={100} />
                         <Text style={styles.noCommentText}>Chưa có bình luận nào</Text>
                     </View>
                 ) : (
                     <FlatList
                         data={comments}
                         keyExtractor={(item) => item.id}
-                        renderItem={({item}) => <CommentItem item={item}/>}
+                        renderItem={({ item }) => <CommentItem item={item} />}
                     />
                 )}
 
@@ -464,7 +469,7 @@ const CommentModalComponent = ({visible, onClose, postId}) => {
                         multiline
                     />
                     <TouchableOpacity onPress={handleAddComment}>
-                        <Send width={35} height={35}/>
+                        <Send width={35} height={35} />
                     </TouchableOpacity>
                 </View>
             </View>
@@ -479,7 +484,7 @@ const styles = StyleSheet.create({
         backgroundColor: "#fff",
     },
     modalTitle: {
-        fontSize: 20,
+        fontSize: 22,
         fontWeight: "bold",
         marginBottom: 20,
         textAlign: "center",
@@ -499,10 +504,10 @@ const styles = StyleSheet.create({
     },
     userName: {
         fontWeight: "bold",
-        fontSize: 16,
+        fontSize: 18,
     },
     commentText: {
-        fontSize: 14,
+        fontSize: 16,
         marginVertical: 5,
     },
     commentFooter: {
@@ -566,7 +571,7 @@ const styles = StyleSheet.create({
     },
     replyingToText: {
         flex: 1,
-        fontSize: 14,
+        fontSize: 16,
         color: "#333",
     },
     replyingToUser: {
@@ -574,7 +579,7 @@ const styles = StyleSheet.create({
         color: "#007BFF",
     },
     cancelReplyButton: {
-        fontSize: 14,
+        fontSize: 18,
         color: "red",
         marginLeft: 10,
     },
@@ -586,7 +591,7 @@ const styles = StyleSheet.create({
     },
     noCommentText: {
         marginTop: 10,
-        fontSize: 16,
+        fontSize: 20,
         color: "#888",
     },
     expandButton: {

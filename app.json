@@ -32,6 +32,13 @@
           "photosPermission": "The app accesses your photos to let you share them with your friends."
         }
       ],
+      "expo-secure-store",
+      [
+        "react-native-localization-settings",
+        {
+          "languages": ["vn", "en"]
+        }
+      ],
       "expo-secure-store"
     ]
   }

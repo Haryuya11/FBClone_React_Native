@@ -134,7 +134,7 @@ const HomeScreen = ({navigation}) => {
                             <Search width={35} height={35}/>
                         </TouchableOpacity>
                         <TouchableOpacity onPress={() => navigation.navigate("Chat")}>
-                            <Chat width={35} height={35}/>
+                            <Chat width={30} height={30}/>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -161,6 +161,9 @@ const HomeScreen = ({navigation}) => {
                 onScroll={handleScroll}
                 refreshing={isRefreshing}
                 onRefresh={handleRefresh}
+                initialNumToRender = {3}
+                maxToRenderPerBatch = {1}
+                updateCellsBatchingPeriod = {1}
                 // Component tạo bài viết
                 ListHeaderComponent={
                     <View style={styles.newPost}>
