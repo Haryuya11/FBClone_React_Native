@@ -506,6 +506,7 @@ const styles = (isDarkMode) =>
         commentItem: {
             flexDirection: "row",
             marginBottom: 15,
+            
         },
         avatar: {
             width: 40,
