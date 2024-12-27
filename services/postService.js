@@ -103,7 +103,7 @@ export const createPost = async (
   }
 };
 
-export const updatePost = async (postId, userId, content, newMedias = [], existingMediaPaths = []) => {
+export const updatePost = async (postId, userId, content, newMedias = [], existingMediaPaths = [], privacy) => {
   try {
     // Upload new media files
     const mediaFiles = [];
@@ -154,7 +154,7 @@ export const updatePost = async (postId, userId, content, newMedias = [], existi
     // Update post content
     const { data: postData, error: postError } = await supabase
       .from("posts")
-      .update({ content })
+      .update({ content, privacy })
       .eq("id", postId)
       .eq("user_id", userId)
       .select()

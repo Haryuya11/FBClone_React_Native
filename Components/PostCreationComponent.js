@@ -16,6 +16,7 @@ import { Video } from "expo-av";
 import MediaPicker from "../assets/svg/mediapicker.svg";
 import { UserContext } from "../context/UserContext";
 import * as postService from "../services/postService";
+import Ionicons from "react-native-vector-icons/Ionicons";
 
 const PostCreationComponent = ({ onPostCreated, navigation }) => {
   const [content, setContent] = useState("");
@@ -23,7 +24,8 @@ const PostCreationComponent = ({ onPostCreated, navigation }) => {
   const [modalVisible, setModalVisible] = useState(false); // State to control the modal visibility
   const [isLoading, setIsLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-
+  const [privacy, setPrivacy] = useState("public");
+  const [showPrivacyDropdown, setShowPrivacyDropdown] = useState(false);
   const { userProfile } = useContext(UserContext);
 
   // Chọn ảnh từ thư viện
@@ -74,7 +76,7 @@ const PostCreationComponent = ({ onPostCreated, navigation }) => {
         userProfile.id,
         content,
         mediaFiles,
-        "public"
+        privacy
       );
       setContent("");
       setMediaFiles([]);
@@ -124,6 +126,65 @@ const PostCreationComponent = ({ onPostCreated, navigation }) => {
     );
   };
 
+  // Thêm component PrivacyDropdown
+  const PrivacyDropdown = () => (
+    <View style={[
+      styles.privacyDropdown,
+      showPrivacyDropdown ? styles.privacyDropdownShow : null
+    ]}>
+      <TouchableOpacity 
+        style={[styles.privacyOption, privacy === 'public' && styles.privacyOptionSelected]}
+        onPress={() => {
+          setPrivacy('public');
+          setShowPrivacyDropdown(false);
+        }}
+      >
+        <Ionicons name="earth" size={16} color={privacy === 'public' ? "#316ff6" : "#666"} />
+        <View style={styles.privacyOptionContent}>
+          <Text style={[
+            styles.privacyOptionTitle,
+            privacy === 'public' && styles.privacyOptionTitleSelected
+          ]}>Công khai</Text>
+          <Text style={styles.privacyOptionDesc}>Tất cả mọi người</Text>
+        </View>
+      </TouchableOpacity>
+
+      <TouchableOpacity 
+        style={[styles.privacyOption, privacy === 'friend' && styles.privacyOptionSelected]}
+        onPress={() => {
+          setPrivacy('friend');
+          setShowPrivacyDropdown(false);
+        }}
+      >
+        <Ionicons name="people" size={16} color={privacy === 'friend' ? "#316ff6" : "#666"} />
+        <View style={styles.privacyOptionContent}>
+          <Text style={[
+            styles.privacyOptionTitle,
+            privacy === 'friend' && styles.privacyOptionTitleSelected
+          ]}>Bạn bè</Text>
+          <Text style={styles.privacyOptionDesc}>Chỉ bạn bè của bạn</Text>
+        </View>
+      </TouchableOpacity>
+
+      <TouchableOpacity 
+        style={[styles.privacyOption, privacy === 'private' && styles.privacyOptionSelected]}
+        onPress={() => {
+          setPrivacy('private');
+          setShowPrivacyDropdown(false);
+        }}
+      >
+        <Ionicons name="lock-closed" size={16} color={privacy === 'private' ? "#316ff6" : "#666"} />
+        <View style={styles.privacyOptionContent}>
+          <Text style={[
+            styles.privacyOptionTitle,
+            privacy === 'private' && styles.privacyOptionTitleSelected
+          ]}>Chỉ mình tôi</Text>
+          <Text style={styles.privacyOptionDesc}>Chỉ bạn mới nhìn thấy</Text>
+        </View>
+      </TouchableOpacity>
+    </View>
+  );
+
   return (
     <View style={styles.container}>
       {/* Nút mở modal (Chỉ làm cảnh, không cần thay đổi) */}
@@ -165,9 +226,40 @@ const PostCreationComponent = ({ onPostCreated, navigation }) => {
                 source={{ uri: userProfile?.avatar_url || 'https://www.pngkey.com/png/full/114-1149878_setting-user-avatar-in-specific-size-without-breaking.png'}}
                 style={styles.avatarModal}
               />
-              <Text style={styles.username}>
-                {userProfile?.first_name || ""} {userProfile?.last_name || ""}
-              </Text>
+              <View style={styles.headerInfo}>
+                <Text style={styles.username}>
+                  {userProfile?.first_name || ""} {userProfile?.last_name || ""}
+                </Text>
+                <TouchableOpacity 
+                  style={styles.privacySelector}
+                  onPress={() => setShowPrivacyDropdown(!showPrivacyDropdown)}
+                >
+                  <View style={styles.privacyContent}>
+                    <Ionicons 
+                      name={
+                        privacy === "public" ? "earth" :
+                        privacy === "private" ? "lock-closed" : "people"
+                      } 
+                      size={16} 
+                      color="#666"
+                    />
+                    <Text style={styles.privacyText}>
+                      {privacy === "public" ? "Công khai" :
+                       privacy === "private" ? "Chỉ mình tôi" : "Bạn bè"}
+                    </Text>
+                    <Ionicons 
+                      name={showPrivacyDropdown ? "chevron-up" : "chevron-down"} 
+                      size={16} 
+                      color="#666" 
+                    />
+                  </View>
+                </TouchableOpacity>
+              </View>
+              {showPrivacyDropdown && (
+                <View style={styles.dropdownContainer}>
+                  <PrivacyDropdown />
+                </View>
+              )}
             </View>
 
             <TextInput
@@ -368,6 +460,69 @@ const styles = StyleSheet.create({
   removeButtonText: {
     color: "white",
     fontSize: 16,
+  },
+  dropdownContainer: {
+    position: 'absolute',
+    top: '100%',
+    left: 0,
+    right: 0,
+    zIndex: 1000,
+  },
+  privacyDropdown: {
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    padding: 8,
+    marginTop: 4,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+    zIndex: 1000,
+  },
+  privacyOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    borderRadius: 8,
+  },
+  privacyOptionSelected: {
+    backgroundColor: '#f0f2f5',
+  },
+  privacyOptionContent: {
+    marginLeft: 12,
+  },
+  privacyOptionTitle: {
+    fontSize: 16,
+    color: '#1c1e21',
+  },
+  privacyOptionTitleSelected: {
+    color: '#316ff6',
+  },
+  privacyOptionDesc: {
+    fontSize: 12,
+    color: '#65676b',
+    marginTop: 2,
+  },
+  privacySelector: {
+    marginTop: 4,
+    zIndex: 999,
+  },
+  privacyContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f0f2f5',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+    alignSelf: 'flex-start',
+  },
+  privacyText: {
+    fontSize: 14,
+    color: '#666',
   },
 });
 

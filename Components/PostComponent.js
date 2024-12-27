@@ -654,23 +654,38 @@ const PostComponent  = ({post: initialPost, onRefresh}) => {
 
     return (
         <View style={styles.post}>
-            <View style={styles.header}>
-                <TouchableOpacity onPress={handleAvatarPress}>
-                    <Image
-                        style={styles.avatar}
-                        source={{
-                            uri: post.profiles?.avatar_url || 'https://www.pngkey.com/png/full/114-1149878_setting-user-avatar-in-specific-size-without-breaking.png'
-                        }}
-                    />
-                </TouchableOpacity>
-                <View style={styles.headerText}>
-                    <Text style={styles.username}>
-                        {postUser
-                            ? `${postUser.first_name} ${postUser.last_name}`
-                            : "Unknown User"}
-                    </Text>
-                    <View style={styles.postInfo}>
-                        <Text style={styles.time}>{formatTimeAgo(post.created_at)}</Text>
+            <View style={styles.postHeader}>
+                <View style={styles.userInfo}>
+                    <TouchableOpacity onPress={() => navigation.navigate("Profile", { userId: post.user_id })}>
+                        <Image
+                            source={{ uri: post.profiles.avatar_url }}
+                            style={styles.avatar}
+                        />
+                    </TouchableOpacity>
+                    <View style={styles.headerText}>
+                        <TouchableOpacity onPress={() => navigation.navigate("Profile", { userId: post.user_id })}>
+                            <Text style={styles.username}>
+                                {post.profiles.first_name} {post.profiles.last_name}
+                            </Text>
+                        </TouchableOpacity>
+                        <View style={styles.postMetadata}>
+                            <Text style={styles.timestamp}>{formatTimeAgo(post.created_at)}</Text>
+                            <Text style={styles.dot}> · </Text>
+                            <View style={styles.privacyIndicator}>
+                                <Ionicons 
+                                    name={
+                                        post.privacy === "public" ? "earth" :
+                                        post.privacy === "private" ? "lock-closed" : "people"
+                                    } 
+                                    size={12} 
+                                    color="#666" 
+                                />
+                                <Text style={styles.privacyText}>
+                                    {post.privacy === "public" ? "Công khai" :
+                                     post.privacy === "private" ? "Chỉ mình tôi" : "Bạn bè"}
+                                </Text>
+                            </View>
+                        </View>
                     </View>
                 </View>
                 {post.user_id === userProfile.id && (
@@ -828,7 +843,11 @@ const styles = StyleSheet.create({
         shadowRadius: 2,
         elevation: 3,
     },
-    header: {
+    postHeader: {
+        flexDirection: "row",
+        alignItems: "center",
+    },
+    userInfo: {
         flexDirection: "row",
         alignItems: "center",
     },
@@ -1014,11 +1033,25 @@ const styles = StyleSheet.create({
         color: "white",
         fontSize: 14,
     },
-    postInfo: {
+    postMetadata: {
         flexDirection: "row",
         alignItems: "center",
     },
-    time: {
+    timestamp: {
+        color: "#65676B",
+        fontSize: 12,
+    },
+    dot: {
+        color: "#65676B",
+        fontSize: 12,
+        marginHorizontal: 5,
+    },
+    privacyIndicator: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 5,
+    },
+    privacyText: {
         color: "#65676B",
         fontSize: 12,
     },
@@ -1138,3 +1171,4 @@ const styles = StyleSheet.create({
 });
 
 export default memo(PostComponent);
+
