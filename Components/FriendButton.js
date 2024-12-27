@@ -13,7 +13,7 @@ import RemoveFriendIcon from "../assets/svg/remove_friend.svg";
 
 
 const FriendButton = ({ userId, style, onFriendshipChange }) => {
-  const { userProfile } = useContext(UserContext);
+  const { userProfile, language } = useContext(UserContext);
   const [isFriend, setIsFriend] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -65,7 +65,7 @@ const FriendButton = ({ userId, style, onFriendshipChange }) => {
         <ActivityIndicator size="small" color={isFriend ? "#000" : "#fff"} />
       ) : (
         <>
-        {isFriend ? (<RemoveFriendIcon width={23} height={23}/>) : (<AddFriendIcon width={23} height={23}/>)}
+          {isFriend ? (<RemoveFriendIcon width={23} height={23} />) : (<AddFriendIcon width={23} height={23} />)}
           <Text
             style={[
               styles.buttonText,
@@ -73,7 +73,9 @@ const FriendButton = ({ userId, style, onFriendshipChange }) => {
               isFriend ? styles.buttonUnfriendText : null,
             ]}
           >
-            {isFriend ? "Hủy kết bạn" : "Kết bạn"}
+            {isFriend
+              ? (language === "vn" ? "Hủy kết bạn" : "Unfriend")
+              : (language === "vn" ? "Kết bạn" : "Add friend")}
           </Text>
         </>
       )}

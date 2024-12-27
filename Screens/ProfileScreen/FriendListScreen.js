@@ -93,12 +93,12 @@ const FriendListScreen = ({ navigation, route }) => {
                 <TouchableOpacity onPress={() => navigation.goBack()}>
                     <Text style={styles(isDarkMode).backButton}>←</Text>
                 </TouchableOpacity>
-                <Text style={styles(isDarkMode).title}>Bạn bè ({friends.length})</Text>
+                <Text style={styles(isDarkMode).title}>{language === "vn" ? "Bạn bè" : "Friends"} ({friends.length})</Text>
             </View>
 
             <TextInput
                 style={styles(isDarkMode).searchBar}
-                placeholder="Tìm kiếm bạn bè..."
+                placeholder={language === "vn" ? "Tìm kiếm bạn bè" : "Search friends"}
                 placeholderTextColor={isDarkMode ? "#fff" : "#888"}
                 value={searchQuery}
                 onChangeText={setSearchQuery}

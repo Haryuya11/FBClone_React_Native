@@ -40,7 +40,11 @@ const SettingScreen = () => {
                 </TouchableOpacity>
             </View>
             <View>
-                <Button title="Đăng xuất" onPress={logout} />
+            <TouchableOpacity onPress={logout}>
+                    <Text style={[styles.text, { color: isDarkMode ? '#FFF' : '#000' }]}>
+                        {language === 'vn' ? 'Đăng xuất' : 'Log out'}
+                    </Text>
+                </TouchableOpacity>
             </View>
         </View>
     );

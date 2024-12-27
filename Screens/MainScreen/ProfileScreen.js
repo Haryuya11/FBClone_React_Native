@@ -124,7 +124,9 @@ const ProfileScreen = ({ route, navigation }) => {
                         onPress={() => navigation.navigate("EditProfile")}
                     >
                         <PencilIcon width={25} height={25} />
-                        <Text style={styles(isDarkMode).textEditProfileBtn}>Chỉnh sửa trang cá nhân</Text>
+                        <Text style={styles(isDarkMode).textEditProfileBtn}>
+                            {language === "vn" ? "Chỉnh sửa trang cá nhân" : "Change your profile"}
+                        </Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles(isDarkMode).settingBtn} onPress={() => navigation.navigate("Setting")}>
                         {isDarkMode ? <SettingIconDark width={25} height={25} /> : <SettingIcon width={25} height={25} />}
@@ -134,7 +136,7 @@ const ProfileScreen = ({ route, navigation }) => {
                 <>
                     <TouchableOpacity style={styles(isDarkMode).chatBtn} onPress={handleMessage}>
                         <ChatSolidIcon width={22} height={22} />
-                        <Text style={styles(isDarkMode).textChatBtn}> Nhắn tin</Text>
+                        <Text style={styles(isDarkMode).textChatBtn}> {language === "vn" ? "Nhắn tin" : "Message"}</Text>
                     </TouchableOpacity>
                     <FriendButton userId={userId} style={styles(isDarkMode).editProfileBtn} onFriendshipChange={loadData} />
                 </>
@@ -230,13 +232,14 @@ const ProfileScreen = ({ route, navigation }) => {
                         <View style={styles(isDarkMode).friendContainer}>
                             <View>
                                 <View style={styles(isDarkMode).friendHeader}>
-                                    <Text style={styles(isDarkMode).friendTitle}>Bạn bè</Text>
-                                    <Text style={styles(isDarkMode).numberOfFriends}>({friendCount} người bạn)</Text>
+                                    <Text style={styles(isDarkMode).friendTitle}>{language === "vn" ? "Bạn bè" : "Friends"}</Text>
+                                    <Text style={styles(isDarkMode).numberOfFriends}> ({friendCount} {language === "vn" ? "người bạn" : "friends"})
+                                    </Text>
                                 </View>
                                 <TouchableOpacity
                                     onPress={() => navigation.navigate("FriendList", { userId })}
                                 >
-                                    <Text style={styles(isDarkMode).friendSeeAll}>Xem tất cả</Text>
+                                    <Text style={styles(isDarkMode).friendSeeAll}>{language === "vn" ? "Xem tất cả" : "View all friends"}</Text>
                                 </TouchableOpacity>
                             </View>
                             <FlatList
@@ -360,7 +363,6 @@ const styles = (isDarkMode) => StyleSheet.create({
     },
     numberOfFriends: {
         color: isDarkMode ? "white" : "black",
-        right: 305,
         fontSize: 16,
     },
     chatBtn: {
@@ -402,13 +404,13 @@ const styles = (isDarkMode) => StyleSheet.create({
     friendSeeAll: {
         color: "#007bff",
         fontWeight: "bold",
-        fontSize: 14,
+        fontSize: 16,
     },
     friendHeader: {
-        flexDirection: "row", 
-        alignItems: "center", 
-        justifyContent: "flex-start", 
-        marginBottom: 10,
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "flex-start",
+        marginBottom: 3,
     },
     friendList: {
         display: "flex",
@@ -416,7 +418,7 @@ const styles = (isDarkMode) => StyleSheet.create({
         flexWrap: "wrap",
         alignItems: "flex-start",
         justifyContent: "flex-start",
-        
+
     },
     friendItem: {
         width: 110,

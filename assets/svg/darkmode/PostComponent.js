@@ -627,7 +627,7 @@ const PostComponent  = ({post: initialPost, onRefresh}) => {
         <View style={styles(isDarkMode).rightReactions}>
             {totalComments > 0 && (
                 <View style={styles(isDarkMode).reactionCount}>
-                    <Text style={styles(isDarkMode).reactionText}>{totalComments} bình luận</Text>
+                    <Text style={styles(isDarkMode).reactionText}>{totalComments} {language === "vn" ? "bình luận" : "comments"}</Text>
                 </View>
             )}
         </View>
@@ -716,7 +716,7 @@ const PostComponent  = ({post: initialPost, onRefresh}) => {
                     <Text
                         style={[styles(isDarkMode).actionText, userLiked && styles(isDarkMode).actionTextLiked]}
                     >
-                        Thích
+                        {language === "vn" ? "Thích" : "Like"}
                     </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -724,11 +724,11 @@ const PostComponent  = ({post: initialPost, onRefresh}) => {
                     onPress={handleCommentPress}
                 >
                     <Comment width={28} height={28}/>
-                    <Text style={styles(isDarkMode).actionText}>Bình luận</Text>
+                    <Text style={styles(isDarkMode).actionText}>{language === "vn" ? "Bình luận" : "Comment"}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles(isDarkMode).actionButton} onPress={handleShare}>
                     <ShareIcon width={28} height={28}/>
-                    <Text style={styles(isDarkMode).actionText}>Chia sẻ</Text>
+                    <Text style={styles(isDarkMode).actionText}>{language === "vn" ? "Chia sẻ" : "Share"}</Text>
                 </TouchableOpacity>
             </View>
 

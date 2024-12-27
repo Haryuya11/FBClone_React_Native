@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useContext, useEffect, useMemo } from "react";
 import {
     View,
     Text,
@@ -46,6 +46,8 @@ const CommentModalComponent = ({ visible, onClose, postId }) => {
             };
         }
     }, [visible, postId]);
+
+
 
     useEffect(() => {
         if (visible && postId && comments.length > 0) {
@@ -267,9 +269,13 @@ const CommentModalComponent = ({ visible, onClose, postId }) => {
         const [isExpanded, setIsExpanded] = useState(false);
         const [isTruncated, setIsTruncated] = useState(false);
 
-        const userLiked =
-            Array.isArray(item.comment_likes) &&
-            item.comment_likes.some((like) => like.user_id === userProfile.id);
+
+        const userLiked = useMemo(
+            () =>
+                Array.isArray(item.comment_likes) &&
+                item.comment_likes.some((like) => like.user_id === userProfile.id),
+            [item.comment_likes, userProfile.id]
+        );
 
         return (
             <View style={styles(isDarkMode).commentItem}>
@@ -322,11 +328,11 @@ const CommentModalComponent = ({ visible, onClose, postId }) => {
                                     userLiked && styles(isDarkMode).likeButtonActive,
                                 ]}
                             >
-                                Thích
+                                {language === "vn" ? "Thích" : "Like"}
                             </Text>
                         </TouchableOpacity>
                         <TouchableOpacity onPress={() => handleReply(item.id)}>
-                            <Text style={styles(isDarkMode).replyButton}>Trả lời</Text>
+                            <Text style={styles(isDarkMode).replyButton}>{language === "vn" ? "Trả lời" : "Reply"}</Text>
                         </TouchableOpacity>
                         {item.comment_likes?.length > 0 && (
                             <View style={styles(isDarkMode).likeContainer}>
@@ -391,13 +397,13 @@ const CommentModalComponent = ({ visible, onClose, postId }) => {
                                                             replyUserLiked && styles(isDarkMode).likeButtonActive,
                                                         ]}
                                                     >
-                                                        Thích
+                                                        {language === "vn" ? "Thích" : "Like"}
                                                     </Text>
                                                 </TouchableOpacity>
                                                 <TouchableOpacity
                                                     onPress={() => handleReply(reply.id, item.id)}
                                                 >
-                                                    <Text style={styles(isDarkMode).replyButton}>Trả lời</Text>
+                                                    <Text style={styles(isDarkMode).replyButton}>{language === "vn" ? "Trả lời" : "Reply"}</Text>
                                                 </TouchableOpacity>
                                                 {Array.isArray(reply.comment_likes) &&
                                                     reply.comment_likes.length > 0 && (
@@ -423,14 +429,14 @@ const CommentModalComponent = ({ visible, onClose, postId }) => {
     return (
         <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
             <View style={styles(isDarkMode).modalContainer}>
-                <Text style={styles(isDarkMode).modalTitle}>Bình luận</Text>
+                <Text style={styles(isDarkMode).modalTitle}>{language === "vn" ? "Bình luận" : "Comment"}</Text>
 
                 {isLoading ? (
                     <ActivityIndicator size="large" color="#0000ff" />
                 ) : comments.length === 0 ? (
                     <View style={styles(isDarkMode).noCommentContainer}>
                         <NoComment width={100} height={100} />
-                        <Text style={styles(isDarkMode).noCommentText}>Chưa có bình luận nào</Text>
+                        <Text style={styles(isDarkMode).noCommentText}>{language === "vn" ? "Chưa có bình luận nào" : "No comment in here yet"}</Text>
                     </View>
                 ) : (
                     <FlatList
@@ -443,7 +449,7 @@ const CommentModalComponent = ({ visible, onClose, postId }) => {
                 {replyCommentId && (
                     <View style={styles(isDarkMode).replyingToContainer}>
                         <Text style={styles(isDarkMode).replyingToText}>
-                            Đang trả lời bình luận của:{" "}
+                        {language === "vn" ? "Đang trả lời bình luận của" : "Replying to"}{" "}
                             <Text style={styles(isDarkMode).replyingToUser}>
                                 {
                                     comments.find((c) => c.id === replyCommentId)?.user
@@ -465,7 +471,9 @@ const CommentModalComponent = ({ visible, onClose, postId }) => {
                     <TextInput
                         style={styles(isDarkMode).input}
                         placeholder={
-                            replyCommentId ? "Trả lời bình luận..." : "Viết bình luận..."
+                            replyCommentId
+                                ? (language === "vn" ? "Trả lời bình luận..." : "Reply to...")
+                                : (language === "vn" ? "Viết bình luận..." : "Write your comment")
                         }
                         placeholderTextColor={isDarkMode ? "#fff" : "#888"}
                         value={newComment}

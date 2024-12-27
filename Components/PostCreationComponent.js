@@ -137,7 +137,7 @@ const PostCreationComponent = ({ onPostCreated, navigation }) => {
           </TouchableOpacity>
           <TextInput
             style={styles(isDarkMode).input}
-            placeholder="Bạn đang nghĩ gì?"
+            placeholder={language === "vn" ? "Bạn đang nghĩ gì?" : "What's in your mind?"}
             placeholderTextColor={isDarkMode ? "#fff" : "#888"}
             value={content}
             onChangeText={setContent}
