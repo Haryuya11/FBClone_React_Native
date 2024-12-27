@@ -6,6 +6,10 @@ import * as userService from "../services/userService";
 export const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [language, setLanguage] = useState('vn'); 
+  const toggleDarkMode = () => setIsDarkMode(prevMode => !prevMode);
+  const toggleLanguage = () => setLanguage(prevLang => (prevLang === 'vn' ? 'en' : 'vn'));
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -68,11 +72,12 @@ export const UserProvider = ({ children }) => {
   const handleRegister = async (userData) => {
     try {
       const { user: authUser, profile } = await userService.signUp(userData);
-      setUser(authUser);
-      setUserProfile(profile);
-      setIsAuthenticated(true);
+      // setUser(authUser);
+      // setUserProfile(profile);
+      // // setIsAuthenticated(true);
+      handleLogin(userData.email, userData.password);
 
-      await AsyncStorage.setItem("user_profile", JSON.stringify(profile));
+      // await AsyncStorage.setItem("user_profile", JSON.stringify(profile));
     } catch (error) {
       throw error;
     }
@@ -162,6 +167,10 @@ export const UserProvider = ({ children }) => {
         logout: handleLogout,
         updateImageCache,
         imageCache,
+        isDarkMode, 
+        toggleDarkMode, 
+        language, 
+        toggleLanguage
       }}
     >
       {children}

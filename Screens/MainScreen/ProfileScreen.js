@@ -24,9 +24,10 @@ import FriendButton from "../../Components/FriendButton";
 import SettingIcon from "../../assets/svg/setting.svg";
 import PencilIcon from "../../assets/svg/pencil.svg";
 import ChatSolidIcon from "../../assets/svg/chat_solid.svg";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 const ProfileScreen = ({ route, navigation }) => {
-    const { userProfile, logout } = useContext(UserContext);
+    const { userProfile, logout } = useContext(UserContext);``
     const [profile, setProfile] = useState(null);
     const [posts, setPosts] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -121,7 +122,7 @@ const ProfileScreen = ({ route, navigation }) => {
                         <PencilIcon width={25} height={25} />
                         <Text style={styles.textEditProfileBtn}>Chỉnh sửa trang cá nhân</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.settingBtn} onPress={logout}>
+                    <TouchableOpacity style={styles.settingBtn} onPress={() => navigation.navigate("Setting")}>
                         <SettingIcon width={25} height={25} />
                     </TouchableOpacity>
                 </>
@@ -161,8 +162,8 @@ const ProfileScreen = ({ route, navigation }) => {
 
     const navigationButtons = [
         { name: "Home", label: <Home width={35} height={35} /> },
-        { name: "Post", label: <Post width={35} height={35} /> },
         { name: "Video", label: <Video width={35} height={35} /> },
+        { name: "FriendRequest", label: <Ionicons name="person-add-outline" size={35} color="black" /> },
         {
             name: "Profile",
             label: (

@@ -23,7 +23,7 @@ const RegisterScreen_Step10 = ({ navigation, route }) => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>facebook</Text>
+        <Text style={styles.headerTitle}>Facenote</Text>
       </View>
 
       <View style={styles.contentContainer}>
@@ -31,7 +31,7 @@ const RegisterScreen_Step10 = ({ navigation, route }) => {
           <Image style={styles.avatar} source={registerData.avatar} />
         </View>
         <Text style={styles.title}>
-          {registerData.lastName}, Chào mừng bạn đến với Facebook
+          {registerData.lastName}, Chào mừng bạn đến với Facenote
         </Text>
         <Text style={styles.subtitle}>
           Hãy bắt đầu tùy chỉnh trải nghiệm của bạn nhé

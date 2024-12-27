@@ -21,6 +21,7 @@ import LikeReaction from "../../assets/svg/like_reaction.svg";
 import { UserContext } from "../../context/UserContext";
 import * as postService from "../../services/postService";
 import PostComponent from "../../Components/PostComponent";
+import Ionicons from "@expo/vector-icons/Ionicons";
 // Chiều cao của Header
 const HEADER_HEIGHT = 55;
 
@@ -58,8 +59,8 @@ const VideoScreen = ({ navigation }) => {
   // Biểu tượng trên Navigation
   const navigationButtons = [
     { name: "Home", label: <Home width={35} height={35} /> },
-    { name: "Post", label: <Post width={35} height={35} /> },
     { name: "Video", label: <Video width={35} height={35} /> },
+    { name: "FriendRequest", label: <Ionicons name="person-add-outline" size={35} color="black" /> },
     {
       name: "Profile",
       label: (
