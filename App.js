@@ -33,6 +33,7 @@ import { ActivityIndicator } from "react-native";
 import DirectMessageScreen from "./Screens/ChatScreen/DirectMessageScreen";
 import ChatMenuScreen from "./Screens/ChatScreen/ChatMenuScreen";
 import { ChatProvider } from './context/ChatContext';
+import SettingScreen from "./Screens/ProfileScreen/SettingScreen";
 
 
 const authStack = createStackNavigator();
@@ -128,6 +129,8 @@ const ProfileStack = () => {
             <profileStack.Screen name="FriendList" component={FriendListScreen} />
             <profileStack.Screen name="EditProfile" component={EditProfileScreen} />
             <profileStack.Screen name="PostArticles" component={PostArticlesScreen} />
+            <profileStack.Screen name="Setting" component={SettingScreen} />
+            
         </profileStack.Navigator>
     );
 };

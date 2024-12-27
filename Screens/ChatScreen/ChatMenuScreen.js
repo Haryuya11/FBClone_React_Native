@@ -20,7 +20,7 @@ import { formatTimeAgo } from '../../utils/dateUtils';
 
 const ChatMenuScreen = ({ navigation }) => {
   const { chatClient, clientReady } = useContext(ChatContext);
-  const { userProfile } = useContext(UserContext);
+  const { userProfile, language, isDarkMode } = useContext(UserContext);
   const [isLoading, setIsLoading] = useState(true);
   const [friends, setFriends] = useState([]);
   const [existingChannels, setExistingChannels] = useState(new Set());

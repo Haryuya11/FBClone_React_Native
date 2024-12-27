@@ -6,6 +6,10 @@ import * as userService from "../services/userService";
 export const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [language, setLanguage] = useState('vn'); 
+  const toggleDarkMode = () => setIsDarkMode(prevMode => !prevMode);
+  const toggleLanguage = () => setLanguage(prevLang => (prevLang === 'vn' ? 'en' : 'vn'));
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -162,6 +166,10 @@ export const UserProvider = ({ children }) => {
         logout: handleLogout,
         updateImageCache,
         imageCache,
+        isDarkMode, 
+        toggleDarkMode, 
+        language, 
+        toggleLanguage
       }}
     >
       {children}
