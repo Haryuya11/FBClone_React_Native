@@ -34,7 +34,8 @@ import DirectMessageScreen from "./Screens/ChatScreen/DirectMessageScreen";
 import ChatMenuScreen from "./Screens/ChatScreen/ChatMenuScreen";
 import { ChatProvider } from './context/ChatContext';
 import SettingScreen from "./Screens/ProfileScreen/SettingScreen";
-
+import FriendRequestScreen from "./Screens/MainScreen/FriendRequestScreen";
+import SearchScreen from "./Screens/MainScreen/SearchScreen";
 
 const authStack = createStackNavigator();
 const profileStack = createStackNavigator();
@@ -143,6 +144,8 @@ const MainStack = () => {
             <mainStack.Screen name="Video" component={VideoScreen} />
             <mainStack.Screen name="Profile" component={ProfileStack} />
             <mainStack.Screen name="Chat" component={ChatStack} />
+            <mainStack.Screen name="FriendRequest" component={FriendRequestScreen} />
+            <mainStack.Screen name="Search" component={SearchScreen} />
         </mainStack.Navigator>
     );
 };

@@ -4,6 +4,7 @@ import {
   Text,
   StyleSheet,
   ActivityIndicator,
+  Alert,
 } from "react-native";
 import { UserContext } from "../context/UserContext";
 import * as friendshipService from "../services/friendshipService";
@@ -14,68 +15,83 @@ import RemoveFriendIcon from "../assets/svg/remove_friend.svg";
 
 const FriendButton = ({ userId, style, onFriendshipChange }) => {
   const { userProfile } = useContext(UserContext);
-  const [isFriend, setIsFriend] = useState(false);
+  const [friendshipStatus, setFriendshipStatus] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    checkFriendshipStatus();
-  }, [userId]);
 
   const checkFriendshipStatus = async () => {
     try {
-      const status = await friendshipService.checkFriendship(userId);
-      setIsFriend(status);
+      setIsLoading(true);
+      const status = await friendshipService.getFriendshipStatus(userId);
+      setFriendshipStatus(status);
     } catch (error) {
-      console.error("Lỗi khi kiểm tra trạng thái bạn bè:", error);
-    }
-  };
-
-  const handleFriendAction = async () => {
-    if (isLoading) return;
-    setIsLoading(true);
-
-    try {
-      if (isFriend) {
-        await friendshipService.removeFriend(userId);
-        setIsFriend(false);
-      } else {
-        await friendshipService.addFriend(userId);
-        setIsFriend(true);
-      }
-      if (onFriendshipChange) {
-        onFriendshipChange(isFriend);
-      }
-    } catch (error) {
-      console.error("Lỗi khi thực hiện hành động bạn bè:", error);
+      console.error(error);
+      Alert.alert('Lỗi', 'Không thể kiểm tra trạng thái kết bạn');
     } finally {
       setIsLoading(false);
     }
   };
 
+  useEffect(() => {
+    checkFriendshipStatus();
+  }, [userId]);
+
+  
+
+  const handleFriendRequest = async () => {
+    try {
+      setIsLoading(true);
+      if (!friendshipStatus) {
+        await friendshipService.sendFriendRequest(userId);
+        setFriendshipStatus('pending');
+      } else if (friendshipStatus === 'pending') {
+        // Nếu là người nhận request
+        await friendshipService.acceptFriendRequest(userId);
+        setFriendshipStatus('accepted');
+      }
+      if (onFriendshipChange) onFriendshipChange();
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Lỗi', error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const getButtonStyle = () => {
+    switch (friendshipStatus) {
+      case 'accepted':
+        return styles.unfriendButton;
+      case 'pending':
+        return styles.pendingButton;
+      default:
+        return styles.addFriendButton;
+    }
+  };
+
+  const getButtonText = () => {
+    switch (friendshipStatus) {
+      case 'accepted':
+        return 'Bạn bè';
+      case 'pending':
+        if(userId === userProfile.id)
+          return 'Đã gửi lời mời';
+        else
+          return 'Đã nhận lời mời';
+      default:
+        return 'Thêm bạn';
+    }
+  };
+
   return (
     <TouchableOpacity
-      style={[
-        styles.button,
-        isFriend ? styles.unfriendButton : styles.addFriendButton,
-      ]}
-      onPress={handleFriendAction}
+      style={[styles.button, getButtonStyle(), style]}
+      onPress={handleFriendRequest}
       disabled={isLoading}
     >
       {isLoading ? (
-        <ActivityIndicator size="small" color={isFriend ? "#000" : "#fff"} />
+        <ActivityIndicator color="#fff" size="small" />
       ) : (
-        <>
-        {isFriend ? (<RemoveFriendIcon width={23} height={23}/>) : (<AddFriendIcon width={23} height={23}/>)}
-          <Text
-            style={[
-              styles.buttonText,
-              styles.buttonFriendText,
-              isFriend ? styles.buttonUnfriendText : null,
-            ]}
-          >
-            {isFriend ? "Hủy kết bạn" : "Kết bạn"}
-          </Text>
-        </>
+        <Text style={styles.buttonText}>{getButtonText()}</Text>
       )}
     </TouchableOpacity>
   );
@@ -89,7 +105,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 5,
     justifyContent: "center",
-    width: "40%",
+    maxWidth: 150
   },
   addFriendButton: {
     backgroundColor: "#316ff6",
@@ -102,12 +118,16 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     fontSize: 14,
     fontWeight: "500",
+    color: "#fff",
   },
   buttonFriendText: {
     color: "#fff",
   },
   buttonUnfriendText: {
-    color: "black",
+    color: "#fff",
+  },
+  pendingButton: {
+    backgroundColor: "#ffd700",
   },
 });
 

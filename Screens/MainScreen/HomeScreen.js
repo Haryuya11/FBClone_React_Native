@@ -20,7 +20,7 @@ import PostComponent from '../../Components/PostComponent';
 import PostCreationComponent from '../../Components/PostCreationComponent';
 import {UserContext} from "../../context/UserContext";
 import * as postService from "../../services/postService";
-
+import Ionicons from "@expo/vector-icons/Ionicons";
 // Chiều cao của Header
 const HEADER_HEIGHT = 100;
 
@@ -102,8 +102,8 @@ const HomeScreen = ({navigation}) => {
     // Biểu tượng trên Navigation
     const navigationButtons = [
         {name: 'Home', label: <Home width={35} height={35}/>},
-        {name: 'Post', label: <Post width={35} height={35}/>},
         {name: 'Video', label: <Video width={35} height={35}/>},
+        {name: 'FriendRequest', label: <Ionicons name="person-add-outline" size={35} color="black" />},
         {
             name: 'Profile', label: <Image source={{
                 uri: userProfile?.avatar_url || 'https://www.pngkey.com/png/full/114-1149878_setting-user-avatar-in-specific-size-without-breaking.png'
@@ -130,7 +130,7 @@ const HomeScreen = ({navigation}) => {
                 <View style={styles.headerTop}>
                     <Text style={styles.appName}>Facenote</Text>
                     <View style={styles.headerIcons}>
-                        <TouchableOpacity>
+                        <TouchableOpacity onPress={() => navigation.navigate("Search")}>
                             <Search width={35} height={35}/>
                         </TouchableOpacity>
                         <TouchableOpacity onPress={() => navigation.navigate("Chat")}>

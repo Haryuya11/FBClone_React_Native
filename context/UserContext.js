@@ -72,11 +72,12 @@ export const UserProvider = ({ children }) => {
   const handleRegister = async (userData) => {
     try {
       const { user: authUser, profile } = await userService.signUp(userData);
-      setUser(authUser);
-      setUserProfile(profile);
-      setIsAuthenticated(true);
+      // setUser(authUser);
+      // setUserProfile(profile);
+      // // setIsAuthenticated(true);
+      handleLogin(userData.email, userData.password);
 
-      await AsyncStorage.setItem("user_profile", JSON.stringify(profile));
+      // await AsyncStorage.setItem("user_profile", JSON.stringify(profile));
     } catch (error) {
       throw error;
     }
