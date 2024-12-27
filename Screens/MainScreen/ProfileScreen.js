@@ -121,7 +121,7 @@ const ProfileScreen = ({ route, navigation }) => {
                         <PencilIcon width={25} height={25} />
                         <Text style={styles.textEditProfileBtn}>Chỉnh sửa trang cá nhân</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.settingBtn} onPress={logout}>
+                    <TouchableOpacity style={styles.settingBtn} onPress={() => navigation.navigate("Setting")}>
                         <SettingIcon width={25} height={25} />
                     </TouchableOpacity>
                 </>
