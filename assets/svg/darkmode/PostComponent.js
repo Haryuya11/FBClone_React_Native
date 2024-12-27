@@ -13,13 +13,10 @@ import {
     Alert,
 } from "react-native";
 import LikeBlue from "../assets/svg/like_blue.svg";
-import LikeReaction from "../assets/svg/like_reaction.svg";
 import LikeOutline from "../assets/svg/like_outline.svg";
+import LikeReaction from "../assets/svg/like_reaction.svg";
 import Comment from "../assets/svg/comment.svg";
 import ShareIcon from "../assets/svg/share.svg";
-import LikeOutlineDark from "../assets/svg/darkmode/like_outline.svg";
-import CommentDark from "../assets/svg/darkmode/comment.svg";
-import ShareIconDark from "../assets/svg/darkmode/share.svg";
 import CommentModalComponent from "./CommentModalComponent";
 import {ResizeMode, Video} from "expo-av";
 import {UserContext} from "../context/UserContext";
@@ -714,7 +711,7 @@ const PostComponent  = ({post: initialPost, onRefresh}) => {
                     {userLiked ? (
                         <LikeBlue width={28} height={28}/>
                     ) : (
-                        isDarkMode ? <LikeOutlineDark width={28} height={28}/> : <LikeOutline width={28} height={28}/>
+                        <LikeOutline width={28} height={28}/>
                     )}
                     <Text
                         style={[styles(isDarkMode).actionText, userLiked && styles(isDarkMode).actionTextLiked]}
@@ -726,11 +723,11 @@ const PostComponent  = ({post: initialPost, onRefresh}) => {
                     style={styles(isDarkMode).actionButton}
                     onPress={handleCommentPress}
                 >
-                    {isDarkMode ? <CommentDark width={28} height={28}/> : <Comment width={28} height={28}/>}
+                    <Comment width={28} height={28}/>
                     <Text style={styles(isDarkMode).actionText}>Bình luận</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles(isDarkMode).actionButton} onPress={handleShare}>
-                    {isDarkMode ? <ShareIconDark width={28} height={28}/> : <ShareIcon width={28} height={28}/>}
+                    <ShareIcon width={28} height={28}/>
                     <Text style={styles(isDarkMode).actionText}>Chia sẻ</Text>
                 </TouchableOpacity>
             </View>
@@ -820,7 +817,7 @@ const styles = (isDarkMode) =>
     },
     content: {
         marginVertical: 10,
-        fontSize: 16,
+        fontSize: 14,
         color: isDarkMode ? "#fff" : "#000",
     },
     postImage: {

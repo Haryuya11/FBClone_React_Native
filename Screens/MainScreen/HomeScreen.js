@@ -1,4 +1,4 @@
-import React, {useRef, useState, useContext, useEffect, useCallback} from 'react';
+import React, { useRef, useState, useContext, useEffect } from 'react';
 import {
     View,
     Text,
@@ -11,21 +11,26 @@ import {
     Easing,
 } from 'react-native';
 import HeaderNavigationComponent from '../../Components/HeaderNavigationComponent';
-import Home from '../../assets/svg/home_blue.svg'
-import Post from '../../assets/svg/post_outline.svg'
-import Video from '../../assets/svg/video_outline.svg'
-import Search from '../../assets/svg/search.svg'
-import Chat from '../../assets/svg/chat.svg'
+import Home from '../../assets/svg/home_blue.svg';
+import Post from '../../assets/svg/post_outline.svg';
+import PostDark from '../../assets/svg/darkmode/post_outline.svg';
+import HomeDark from '../../assets/svg/darkmode/home_outline.svg';
+import VideoDark from '../../assets/svg/darkmode/video_outline.svg';
+import Video from '../../assets/svg/video_outline.svg';
+import SearchDark from '../../assets/svg/darkmode/search.svg';
+import ChatDark from '../../assets/svg/darkmode/chat.svg';
+import Search from '../../assets/svg/search.svg';
+import Chat from '../../assets/svg/chat.svg';
 import PostComponent from '../../Components/PostComponent';
 import PostCreationComponent from '../../Components/PostCreationComponent';
-import {UserContext} from "../../context/UserContext";
+import { UserContext } from "../../context/UserContext";
 import * as postService from "../../services/postService";
 
 // Chiều cao của Header
 const HEADER_HEIGHT = 100;
 
-const HomeScreen = ({navigation}) => {
-    const {userProfile} = useContext(UserContext);
+const HomeScreen = ({ navigation }) => {
+    const { userProfile, isDarkMode, language } = useContext(UserContext);
 
     const [posts, setPosts] = useState([]);
     const [isRefreshing, setIsRefreshing] = useState(false);
@@ -101,13 +106,13 @@ const HomeScreen = ({navigation}) => {
 
     // Biểu tượng trên Navigation
     const navigationButtons = [
-        {name: 'Home', label: <Home width={35} height={35}/>},
-        {name: 'Post', label: <Post width={35} height={35}/>},
-        {name: 'Video', label: <Video width={35} height={35}/>},
+        { name: 'Home', label: <Home width={35} height={35} /> },
+        { name: 'Post', label: isDarkMode ? <PostDark width={35} height={35} /> : <Post width={35} height={35} /> },
+        { name: 'Video', label: isDarkMode ? <VideoDark width={35} height={35} /> : <Video width={35} height={35} /> },
         {
             name: 'Profile', label: <Image source={{
                 uri: userProfile?.avatar_url || 'https://www.pngkey.com/png/full/114-1149878_setting-user-avatar-in-specific-size-without-breaking.png'
-            }} style={styles.profileIcon}/>
+            }} style={styles(isDarkMode).profileIcon} />
         },
     ];
 
@@ -117,40 +122,37 @@ const HomeScreen = ({navigation}) => {
     };
 
     return (
-        <View style={{flex: 1}}>
-            <StatusBar barStyle="dark-content" backgroundColor="#fff"/>
-
-            {/* Header Animated */}
+        <View style={styles(isDarkMode).container}>
+            <StatusBar
+                barStyle={isDarkMode ? 'light-content' : 'dark-content'}
+                backgroundColor={isDarkMode ? '#27262b' : '#FFF'}
+            />
             <Animated.View
                 style={[
-                    styles.headerContainer,
-                    {transform: [{translateY}]},
+                    styles(isDarkMode).headerContainer,
+                    { transform: [{ translateY }] },
                 ]}
             >
-                <View style={styles.headerTop}>
-                    <Text style={styles.appName}>Facenote</Text>
-                    <View style={styles.headerIcons}>
+                <View style={styles(isDarkMode).headerTop}>
+                    <Text style={styles(isDarkMode).appName}>Facenote</Text>
+                    <View style={styles(isDarkMode).headerIcons}>
                         <TouchableOpacity>
-                            <Search width={35} height={35}/>
+                            {isDarkMode ? <SearchDark width={35} height={35} /> : <Search width={35} height={35} />}
                         </TouchableOpacity>
                         <TouchableOpacity onPress={() => navigation.navigate("Chat")}>
-                            <Chat width={30} height={30}/>
+                        {isDarkMode ? <ChatDark width={30} height={30} /> : <Chat width={30} height={30} />}
                         </TouchableOpacity>
                     </View>
                 </View>
-
-                {/* Header Navigation Component */}
                 <HeaderNavigationComponent
                     navigationButtons={navigationButtons}
-                    onButtonPress={handleButtonPress}
+                    onButtonPress={(name) => navigation.navigate(name)}
                     selectedButton={selectedButton}
                 />
             </Animated.View>
-
-            {/* Post List */}
             <FlatList
                 data={posts}
-                renderItem={({item}) => (
+                renderItem={({ item }) => (
                     <PostComponent
                         post={item}
                         navigation={navigation}
@@ -161,70 +163,57 @@ const HomeScreen = ({navigation}) => {
                 onScroll={handleScroll}
                 refreshing={isRefreshing}
                 onRefresh={handleRefresh}
-                initialNumToRender = {3}
-                maxToRenderPerBatch = {1}
-                updateCellsBatchingPeriod = {1}
-                // Component tạo bài viết
                 ListHeaderComponent={
-                    <View style={styles.newPost}>
-                        <PostCreationComponent onPostSubmit={handlePostSubmit} navigation={navigation}/>
+                    <View style={styles(isDarkMode).newPost}>
+                        <PostCreationComponent onPostSubmit={handlePostSubmit} />
                     </View>
                 }
             />
         </View>
     );
 };
-const styles = StyleSheet.create({
-    headerContainer: {
-        backgroundColor: '#fff',
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        zIndex: 1000,
-        elevation: 5,
-        paddingHorizontal: 10,
-        height: HEADER_HEIGHT,
-    },
-    headerTop: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        height: 50,
-    },
-    appName: {
-        fontSize: 30,
-        fontWeight: 'bold',
-        color: 'blue',
-    },
-    headerIcons: {
-        flexDirection: 'row',
-        gap: 20,
-    },
-    headerBottom: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        alignItems: 'center',
-        height: 50,
-    },
-    headerButton: {
-        paddingVertical: 10,
-        paddingHorizontal: 15,
-    },
-    headerButtonText: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: '#333',
-    },
-    newPost: {
-        paddingTop: 105,
-    },
-    profileIcon: {
-        height: 35,
-        width: 35,
-        borderRadius: 25,
-        resizeMode: 'cover',
-    }
-});
+
+const styles = (isDarkMode) =>
+    StyleSheet.create({
+        container: {
+            flex: 1,
+            backgroundColor: isDarkMode ? '#000' : '#FFF',
+        },
+        headerContainer: {
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            zIndex: 1000,
+            elevation: 5,
+            paddingHorizontal: 10,
+            height: HEADER_HEIGHT,
+            backgroundColor: isDarkMode ? '#27262b' : '#FFF',
+        },
+        appName: {
+            fontSize: 30,
+            fontWeight: 'bold',
+            color: isDarkMode ? 'white' : '#316ff6',
+        },
+        headerTop: {
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            height: 50,
+        },
+        headerIcons: {
+            flexDirection: 'row',
+            gap: 20,
+        },
+        newPost: {
+            paddingTop: 105,
+        },
+        profileIcon: {
+            height: 35,
+            width: 35,
+            borderRadius: 25,
+            resizeMode: 'cover',
+        },
+    });
 
 export default HomeScreen;

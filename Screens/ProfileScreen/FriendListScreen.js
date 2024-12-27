@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useContext} from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import {
     View,
     Text,
@@ -9,13 +9,13 @@ import {
     TouchableOpacity,
     ActivityIndicator,
 } from 'react-native';
-import {UserContext} from "../../context/UserContext";
+import { UserContext } from "../../context/UserContext";
 import * as friendshipService from "../../services/friendshipService";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import FriendButton from "../../Components/FriendButton";
 
-const FriendListScreen = ({navigation, route}) => {
-    const {userProfile} = useContext(UserContext);
+const FriendListScreen = ({ navigation, route }) => {
+    const { userProfile, isDarkMode, language } = useContext(UserContext);
     const [friends, setFriends] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
@@ -51,25 +51,25 @@ const FriendListScreen = ({navigation, route}) => {
         }
     };
 
-    const renderFriendItem = ({item}) => (
+    const renderFriendItem = ({ item }) => (
         <TouchableOpacity
-            style={styles.friendItem}
+            style={styles(isDarkMode).friendItem}
             onPress={() => {
                 navigation.navigate("Profile", {
                     screen: "ProfileScreen",
-                    params: {userId: item.id},
+                    params: { userId: item.id },
                 });
             }}
         >
-            <Image source={{uri: item.avatar_url}} style={styles.avatar}/>
-            <View style={styles.friendInfo}>
-                <Text style={styles.friendName} numberOfLines={1}>
+            <Image source={{ uri: item.avatar_url }} style={styles(isDarkMode).avatar} />
+            <View style={styles(isDarkMode).friendInfo}>
+                <Text style={styles(isDarkMode).friendName} numberOfLines={1}>
                     {`${item.first_name} ${item.last_name}`}
                 </Text>
                 {!isOwnProfile && item.id !== userProfile?.id && (
                     <FriendButton
                         userId={item.id}
-                        style={styles.friendActionButton}
+                        style={styles(isDarkMode).friendActionButton}
                         onFriendshipChange={loadFriends}
                     />
                 )}
@@ -84,21 +84,22 @@ const FriendListScreen = ({navigation, route}) => {
     );
 
     if (isLoading) {
-        return <ActivityIndicator size="large" color="#316ff6"/>;
+        return <ActivityIndicator size="large" color="#316ff6" />;
     }
 
     return (
-        <View style={styles.container}>
-            <View style={styles.header}>
+        <View style={styles(isDarkMode).container}>
+            <View style={styles(isDarkMode).header}>
                 <TouchableOpacity onPress={() => navigation.goBack()}>
-                    <Text style={styles.backButton}>←</Text>
+                    <Text style={styles(isDarkMode).backButton}>←</Text>
                 </TouchableOpacity>
-                <Text style={styles.title}>Bạn bè ({friends.length})</Text>
+                <Text style={styles(isDarkMode).title}>Bạn bè ({friends.length})</Text>
             </View>
 
             <TextInput
-                style={styles.searchBar}
+                style={styles(isDarkMode).searchBar}
                 placeholder="Tìm kiếm bạn bè..."
+                placeholderTextColor={isDarkMode ? "#fff" : "#888"}
                 value={searchQuery}
                 onChangeText={setSearchQuery}
             />
@@ -107,18 +108,18 @@ const FriendListScreen = ({navigation, route}) => {
                 data={filteredFriends}
                 renderItem={renderFriendItem}
                 keyExtractor={(item) => item.id}
-                contentContainerStyle={styles.friendList}
+                contentContainerStyle={styles(isDarkMode).friendList}
                 showsVerticalScrollIndicator={false}
             />
         </View>
     );
 };
 
-const styles = StyleSheet.create({
+const styles = (isDarkMode) => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
         paddingHorizontal: 10,
+        backgroundColor: isDarkMode ? "#27262b" : "#fff",
     },
     header: {
         flexDirection: 'row',
@@ -135,7 +136,7 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     searchBar: {
-        backgroundColor: '#f0f0f0',
+        backgroundColor: isDarkMode ? '#333333' : '#f0f0f0',
         padding: 10,
         borderRadius: 8,
         marginVertical: 10,
@@ -148,7 +149,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         padding: 10,
         marginVertical: 5,
-        backgroundColor: '#f9f9f9',
+        backgroundColor: isDarkMode ? "#333333" : "#fff",
         borderRadius: 8,
         elevation: 1, // Hiệu ứng đổ bóng nhẹ
     },
@@ -159,9 +160,10 @@ const styles = StyleSheet.create({
         marginBottom: 5,
     },
     friendName: {
-        fontSize: 14,
+        fontSize: 18,
         textAlign: 'center',
-        marginLeft: 20
+        marginLeft: 20,
+        color: isDarkMode ? "#fff" : "#000",
     },
     friendInfo: {
         flex: 1,

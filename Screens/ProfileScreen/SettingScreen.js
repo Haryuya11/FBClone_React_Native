@@ -1,11 +1,11 @@
 // SettingScreen.js
-import React, {useContext} from 'react';
-import { View, Text, Switch, Button, StyleSheet, StatusBar } from 'react-native';
+import React, { useContext } from 'react';
+import { View, Text, Switch, Button, StyleSheet, StatusBar, TouchableOpacity } from 'react-native';
 import { UserContext } from "../../context/UserContext";
 
 
 const SettingScreen = () => {
-    const {  isDarkMode, toggleDarkMode, language, toggleLanguage, logout } = useContext(UserContext);
+    const { isDarkMode, language, toggleDarkMode, toggleLanguage, logout } = useContext(UserContext);
 
     const backgroundStyle = {
         backgroundColor: isDarkMode ? '#333' : '#FFF',
@@ -14,29 +14,37 @@ const SettingScreen = () => {
         alignItems: 'center',
     };
 
-    const langText = language === 'en' ? 'Language: English' : 'Ngôn ngữ: Tiếng Việt';
-
     return (
         <View style={backgroundStyle}>
-            <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+            <StatusBar
+                barStyle={isDarkMode ? 'light-content' : 'dark-content'}
+                backgroundColor={isDarkMode ? 'black' : '#FFF'}
+            />
 
             <Text style={[styles.text, { color: isDarkMode ? '#FFF' : '#000' }]}>
-                {langText}
+                {language === 'en' ? 'Language: English' : 'Ngôn ngữ: Tiếng Việt'}
             </Text>
 
             <View style={styles.settingItem}>
-                <Text style={[styles.text, { color: isDarkMode ? '#FFF' : '#000' }]}>Dark Mode</Text>
+                <Text style={[styles.text, { color: isDarkMode ? '#FFF' : '#000' }]}>
+                    {language === 'vn' ? 'Chế độ tối' : 'Dark mode'}
+                </Text>
                 <Switch value={isDarkMode} onValueChange={toggleDarkMode} />
             </View>
 
             <View style={styles.settingItem}>
-                <Button title="Change Language" onPress={toggleLanguage} />
+                <TouchableOpacity onPress={toggleLanguage}>
+                    <Text style={[styles.text, { color: isDarkMode ? '#FFF' : '#000' }]}>
+                        {language === 'vn' ? 'Thay đổi ngôn ngữ' : 'Change language'}
+                    </Text>
+                </TouchableOpacity>
             </View>
             <View>
-            <Button title="Đăng xuất" onPress={logout} />
+                <Button title="Đăng xuất" onPress={logout} />
             </View>
         </View>
     );
+
 };
 
 const styles = StyleSheet.create({

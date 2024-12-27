@@ -15,7 +15,7 @@ import * as ImagePicker from "expo-image-picker";
 import {supabase} from "../../lib/supabase";
 
 const EditProfileScreen = ({navigation}) => {
-    const {userProfile, updateProfile, refreshProfile, updateImageCache} = useContext(UserContext);
+    const {userProfile, updateProfile, refreshProfile, updateImageCache, isDarkMode, language} = useContext(UserContext);
     const [isLoading, setIsLoading] = useState(false);
     const [avatar, setAvatar] = useState({
         uri: userProfile?.avatar_url || 'https://www.pngkey.com/png/full/114-1149878_setting-user-avatar-in-specific-size-without-breaking.png',
@@ -158,71 +158,71 @@ const EditProfileScreen = ({navigation}) => {
     };
 
     return (
-        <ScrollView style={styles.container}>
+        <ScrollView style={styles(isDarkMode).container}>
             {/* Header */}
-            <View style={styles.header}>
+            <View style={styles(isDarkMode).header}>
                 <TouchableOpacity onPress={() => navigation.goBack()}>
-                    <Text style={styles.backButton}>←</Text>
+                    <Text style={styles(isDarkMode).backButton}>←</Text>
                 </TouchableOpacity>
-                <Text style={styles.title}>Chỉnh sửa trang cá nhân</Text>
+                <Text style={styles(isDarkMode).title}>Chỉnh sửa trang cá nhân</Text>
             </View>
 
             {/* Cover Photo */}
-            <View style={styles.coverPhotoContainer}>
+            <View style={styles(isDarkMode).coverPhotoContainer}>
                 <Image
                     source={{
                         uri: background.uri,
                     }}
-                    style={styles.coverPhoto}
+                    style={styles(isDarkMode).coverPhoto}
                 />
                 <TouchableOpacity
-                    style={styles.editCoverButton}
+                    style={styles(isDarkMode).editCoverButton}
                     onPress={() => {
                         selectImage("background");
                     }}
                 >
-                    <Text style={styles.editButtonText}>Thay đổi ảnh bìa</Text>
+                    <Text style={styles(isDarkMode).editButtonText}>Thay đổi ảnh bìa</Text>
                 </TouchableOpacity>
             </View>
 
             {/* Avatar */}
-            <View style={styles.avatarContainer}>
+            <View style={styles(isDarkMode).avatarContainer}>
                 <Image
                     source={{
                         uri: avatar.uri,
                     }}
-                    style={styles.avatar}
+                    style={styles(isDarkMode).avatar}
                 />
                 <TouchableOpacity
-                    style={styles.editAvatarButton}
+                    style={styles(isDarkMode).editAvatarButton}
                     onPress={() => {
                         selectImage("avatar");
                     }}
                 >
-                    <Text style={styles.editButtonText}>Thay đổi ảnh đại diện</Text>
+                    <Text style={styles(isDarkMode).editButtonText}>Thay đổi ảnh đại diện</Text>
                 </TouchableOpacity>
             </View>
 
             {/* Form chỉnh sửa thông tin */}
-            <View style={styles.form}>
-                <Text style={styles.label}>Tên</Text>
+            <View style={styles(isDarkMode).form}>
+                <Text style={styles(isDarkMode).label}>Tên</Text>
                 <TextInput
-                    style={styles.input}
+                    style={styles(isDarkMode).input}
                     value={name}
                     onChangeText={(text) => setName(text)}
                 />
 
-                <Text style={styles.label}>Email</Text>
+                <Text style={styles(isDarkMode).label}>Email</Text>
                 <TextInput
-                    style={styles.input}
+                    style={styles(isDarkMode).input}
                     value={email}
                     onChangeText={(text) => setEmail(text)}
                     keyboardType="email-address"
                 />
 
-                <Text style={styles.label}>Số điện thoại</Text>
+                <Text style={styles(isDarkMode).label}>Số điện thoại</Text>
                 <TextInput
-                    style={styles.input}
+                    style={styles(isDarkMode).input}
                     value={phone}
                     onChangeText={(text) => setPhone(text)}
                     keyboardType="phone-pad"
@@ -230,30 +230,30 @@ const EditProfileScreen = ({navigation}) => {
             </View>
 
             {/* Buttons */}
-            <View style={styles.buttonContainer}>
+            <View style={styles(isDarkMode).buttonContainer}>
                 <TouchableOpacity
-                    style={styles.saveButton}
+                    style={styles(isDarkMode).saveButton}
                     onPress={handleSave}
                     onDisabled={isLoading}
                 >
                     {isLoading ? (
                         <ActivityIndicator color="#fff"/>
                     ) : (
-                        <Text style={styles.buttonText}>Lưu thay đổi</Text>
+                        <Text style={styles(isDarkMode).buttonText}>Lưu thay đổi</Text>
                     )}
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
-                    <Text style={styles.buttonText}>Hủy</Text>
+                <TouchableOpacity style={styles(isDarkMode).cancelButton} onPress={handleCancel}>
+                    <Text style={styles(isDarkMode).buttonText}>Hủy</Text>
                 </TouchableOpacity>
             </View>
         </ScrollView>
     );
 };
 
-const styles = StyleSheet.create({
+const styles = (isDarkMode) => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#fff",
+        backgroundColor: isDarkMode ? "#27262b" : "#fff",
         paddingHorizontal: 10,
     },
     header: {
@@ -266,11 +266,13 @@ const styles = StyleSheet.create({
         fontSize: 24,
         fontWeight: "bold",
         marginRight: 10,
+        color: isDarkMode ? "#fff" : "#000",
     },
     title: {
         fontSize: 20,
         marginTop: 10,
         fontWeight: "bold",
+        color: isDarkMode ? "#fff" : "#000",
     },
     coverPhotoContainer: {
         position: "relative",
@@ -317,6 +319,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: "bold",
         marginVertical: 5,
+        color: isDarkMode ? "#fff" : "#000",
     },
     input: {
         backgroundColor: "#f0f0f0",
