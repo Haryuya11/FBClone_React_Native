@@ -103,25 +103,95 @@ export const createPost = async (
   }
 };
 
-export const updatePost = async (postId, userId, content, medias) => {
+export const updatePost = async (postId, userId, content, newMedias = [], existingMediaPaths = []) => {
   try {
+    // Upload new media files
+    const mediaFiles = [];
+    if (newMedias && newMedias.length > 0) {
+      for (const media of newMedias) {
+        const fileExt = media.uri.split(".").pop();
+        const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+        const filePath = `${userId}/${fileName}`;
+
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from("post-media")
+          .upload(filePath, {
+            uri: media.uri,
+            type: media.type,
+            name: fileName,
+          });
+
+        if (uploadError) throw uploadError;
+
+        mediaFiles.push({
+          media_url: uploadData.path,
+          media_type: media.type.startsWith("image") ? "image" : "video",
+        });
+      }
+    }
+
+    // Delete media files that are not in existingMediaPaths
+    const { data: currentMedia } = await supabase
+      .from("post_media")
+      .select("*")
+      .eq("post_id", postId);
+
+    for (const media of currentMedia || []) {
+      if (!existingMediaPaths.includes(media.media_url)) {
+        // Delete from storage
+        await supabase.storage
+          .from("post-media")
+          .remove([media.media_url]);
+        
+        // Delete from database
+        await supabase
+          .from("post_media")
+          .delete()
+          .eq("id", media.id);
+      }
+    }
+
+    // Update post content
     const { data: postData, error: postError } = await supabase
       .from("posts")
       .update({ content })
       .eq("id", postId)
       .eq("user_id", userId)
-      .select(
-        `
-        *,
-        user:profiles(*),
-        media:post_media(*),
-        likes:post_likes(count),
-        comments:comments(count)
-      `
-      )
+      .select()
       .single();
-    return postData;
+
+    if (postError) throw postError;
+
+    // Add new media files
+    if (mediaFiles.length > 0) {
+      const { error: mediaError } = await supabase
+        .from("post_media")
+        .insert(mediaFiles.map(file => ({
+          post_id: postId,
+          ...file
+        })));
+
+      if (mediaError) throw mediaError;
+    }
+
+    // Get updated post with all media
+    const { data: updatedPost, error: fetchError } = await supabase
+      .from("posts")
+      .select(`
+        *,
+        profiles:user_id (*),
+        post_media (*),
+        post_likes (*),
+        comments (*)
+      `)
+      .eq("id", postId)
+      .single();
+
+    if (fetchError) throw fetchError;
+
+    return updatedPost;
   } catch (error) {
+    console.error("Update post error:", error);
     throw error;
   }
 };
@@ -416,4 +486,10 @@ export const subscribeToUserPosts = (userId, callback) => {
       callback
     )
     .subscribe();
+};
+
+export const getMediaUrl = (path) => {
+  if (!path) return null;
+  const { data: { publicUrl } } = supabase.storage.from("post-media").getPublicUrl(path);
+  return publicUrl;
 };

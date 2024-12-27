@@ -11,6 +11,7 @@ import {
     TouchableWithoutFeedback,
     ActivityIndicator,
     Alert,
+    TextInput,
 } from "react-native";
 import LikeBlue from "../assets/svg/like_blue.svg";
 import LikeOutline from "../assets/svg/like_outline.svg";
@@ -25,6 +26,7 @@ import {supabase} from "../lib/supabase";
 import {formatTimeAgo} from "../utils/dateUtils";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import {useNavigation} from '@react-navigation/native';
+import PostEditComponent from './PostEditComponent';
 
 const getMediaUrl = (path) => {
     if (!path) return null;
@@ -52,6 +54,8 @@ const PostComponent  = ({post: initialPost, onRefresh}) => {
     const [isCommentModalVisible, setIsCommentModalVisible] = useState(false);
     const [showOptionsModal, setShowOptionsModal] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
+    const [editedContent, setEditedContent] = useState(post.content);
 
     const handleDeletePost = async () => {
         Alert.alert(
@@ -634,6 +638,20 @@ const PostComponent  = ({post: initialPost, onRefresh}) => {
     </View>
     ));
 
+    const handleEditPost = async () => {
+        try {
+            setIsUpdating(true);
+            await postService.updatePost(post.id, userProfile.id, editedContent);
+            setPost(prev => ({...prev, content: editedContent}));
+            setIsEditing(false);
+            setShowOptionsModal(false);
+        } catch (error) {
+            alert("Không thể cập nhật bài viết. Vui lòng thử lại sau.");
+        } finally {
+            setIsUpdating(false);
+        }
+    };
+
     return (
         <View style={styles.post}>
             <View style={styles.header}>
@@ -754,8 +772,18 @@ const PostComponent  = ({post: initialPost, onRefresh}) => {
                                 <TouchableOpacity
                                     style={styles.modalOption}
                                     onPress={() => {
-                                        handleDeletePost();
+                                        setIsEditing(true);
+                                        setShowOptionsModal(false);
                                     }}
+                                >
+                                    <Ionicons name="pencil-outline" size={24} color="#316ff6"/>
+                                    <Text style={[styles.modalOptionText, {color: "#316ff6"}]}>
+                                        Chỉnh sửa bài viết
+                                    </Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    style={styles.modalOption}
+                                    onPress={handleDeletePost}
                                     disabled={isDeleting}
                                 >
                                     {isDeleting ? (
@@ -774,6 +802,16 @@ const PostComponent  = ({post: initialPost, onRefresh}) => {
                     </View>
                 </TouchableWithoutFeedback>
             </Modal>
+
+            {/* Modal chỉnh sửa bài viết */}
+            <PostEditComponent
+                post={post}
+                visible={isEditing}
+                onClose={() => setIsEditing(false)}
+                onPostUpdated={(updatedPost) => {
+                    setPost(prev => ({...prev, ...updatedPost}));
+                }}
+            />
         </View>
     );
 };
@@ -1033,20 +1071,69 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         padding: 15,
     },
-    modalOption: {
-        flexDirection: "row",
-        alignItems: "center",
-        padding: 15,
-    },
-    modalOptionText: {
-        fontSize: 16,
-        marginLeft: 10,
-    },
     deletePostBtn: {
         position: "absolute",
         top: 10,
         right: 10,
         padding: 5,
+    },
+    editModalContainer: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        padding: 20,
+    },
+    editModalContent: {
+        backgroundColor: 'white',
+        borderRadius: 10,
+        padding: 20,
+    },
+    editModalTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginBottom: 15,
+        textAlign: 'center',
+    },
+    editInput: {
+        borderWidth: 1,
+        borderColor: '#ddd',
+        borderRadius: 5,
+        padding: 10,
+        minHeight: 100,
+        textAlignVertical: 'top',
+        marginBottom: 15,
+    },
+    editModalButtons: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+    },
+    editModalButton: {
+        flex: 1,
+        padding: 10,
+        borderRadius: 5,
+        marginHorizontal: 5,
+    },
+    saveButton: {
+        backgroundColor: '#316ff6',
+    },
+    cancelButton: {
+        backgroundColor: '#ccc',
+    },
+    editModalButtonText: {
+        color: 'white',
+        textAlign: 'center',
+        fontWeight: 'bold',
+    },
+    modalOption: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 15,
+        borderBottomWidth: 1,
+        borderBottomColor: '#eee',
+    },
+    modalOptionText: {
+        fontSize: 16,
+        marginLeft: 10,
     },
 });
 
