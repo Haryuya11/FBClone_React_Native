@@ -41,7 +41,7 @@ const LoginScreen = ({ navigation }) => {
       <View style={styles.imageContainer}>
         <Image
           style={styles.logo}
-          source={require("../../assets/logo/logo_react_native.png")}
+          source={require("../../assets/logo/facenote.png")}
         />
       </View>
 
@@ -103,9 +103,9 @@ const styles = StyleSheet.create({
     marginTop: 250,
   },
   logo: {
-    width: 60,
-    height: 60,
-    borderRadius: 50,
+    width: 170,
+    height: 170,
+    borderRadius: 35,
   },
   contentContainer: {
     flex: 1,

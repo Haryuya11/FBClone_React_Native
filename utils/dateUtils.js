@@ -1,4 +1,10 @@
+
+import {useContext} from 'react';
+import { UserContext } from '../context/UserContext';
+
 export const formatTimeAgo = (createdAt) => {
+  const { language } = useContext(UserContext);
+
   const now = new Date();
   const created = new Date(createdAt);
   const diffInMilliseconds = now - created;
@@ -8,21 +14,46 @@ export const formatTimeAgo = (createdAt) => {
   const diffInWeeks = Math.floor(diffInDays / 7);
   const diffInMonths = Math.floor(diffInDays / 30);
 
+  const translations = {
+    vi: {
+      justNow: 'Vừa xong',
+      minutesAgo: 'phút trước',
+      hoursAgo: 'giờ trước',
+      daysAgo: 'ngày trước',
+      weeksAgo: 'tuần trước',
+      monthsAgo: created.toLocaleDateString('vi-VN', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      }),
+    },
+    en: {
+      justNow: 'Just now',
+      minutesAgo: 'minutes ago',
+      hoursAgo: 'hours ago',
+      daysAgo: 'days ago',
+      weeksAgo: 'weeks ago',
+      monthsAgo: created.toLocaleDateString('en-US', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      }),
+    },
+  };
+
+  const t = translations[language] || translations.vi; 
+
   if (diffInMonths > 0) {
-    return created.toLocaleDateString('vi-VN', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    });
+    return t.monthsAgo;
   } else if (diffInWeeks > 0) {
-    return `${diffInWeeks} tuần trước`;
+    return `${diffInWeeks} ${t.weeksAgo}`;
   } else if (diffInDays > 0) {
-    return `${diffInDays} ngày trước`;
+    return `${diffInDays} ${t.daysAgo}`;
   } else if (diffInHours > 0) {
-    return `${diffInHours} giờ trước`;
+    return `${diffInHours} ${t.hoursAgo}`;
   } else if (diffInMinutes > 0) {
-    return `${diffInMinutes} phút trước`;
+    return `${diffInMinutes} ${t.minutesAgo}`;
   } else {
-    return 'Vừa xong';
+    return t.justNow;
   }
-}; 
+};

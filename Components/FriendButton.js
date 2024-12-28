@@ -14,7 +14,7 @@ import RemoveFriendIcon from "../assets/svg/remove_friend.svg";
 
 
 const FriendButton = ({ userId, style, onFriendshipChange }) => {
-  const { userProfile } = useContext(UserContext);
+  const { userProfile, language } = useContext(UserContext);
   const [friendshipStatus, setFriendshipStatus] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -91,7 +91,20 @@ const FriendButton = ({ userId, style, onFriendshipChange }) => {
       {isLoading ? (
         <ActivityIndicator color="#fff" size="small" />
       ) : (
-        <Text style={styles.buttonText}>{getButtonText()}</Text>
+        <>
+          {isFriend ? (<RemoveFriendIcon width={23} height={23} />) : (<AddFriendIcon width={23} height={23} />)}
+          <Text
+            style={[
+              styles.buttonText,
+              styles.buttonFriendText,
+              isFriend ? styles.buttonUnfriendText : null,
+            ]}
+          >
+            {isFriend
+              ? (language === "vn" ? "Hủy kết bạn" : "Unfriend")
+              : (language === "vn" ? "Kết bạn" : "Add friend")}
+          </Text>
+        </>
       )}
     </TouchableOpacity>
   );

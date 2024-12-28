@@ -15,7 +15,7 @@ import PostComponent from '../../Components/PostComponent';
 import { UserContext } from '../../context/UserContext';
 
 const SearchScreen = ({ navigation }) => {
-  const { userProfile } = useContext(UserContext);
+  const { userProfile, language, isDarkMode} = useContext(UserContext);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('all'); // 'all', 'posts', 'people'
   const [searchResults, setSearchResults] = useState({ users: [], posts: [] });
@@ -93,14 +93,14 @@ const SearchScreen = ({ navigation }) => {
 
   const renderUserItem = ({ item }) => (
     <TouchableOpacity
-      style={styles.userItem}
+      style={styles(isDarkMode).userItem}
       onPress={() => navigation.navigate('Profile', { userId: item.id })}
     >
       <Image
         source={{ uri: item?.avatar_url || 'https://www.pngkey.com/png/full/114-1149878_setting-user-avatar-in-specific-size-without-breaking.png' }}
-        style={styles.avatar}
+        style={styles(isDarkMode).avatar}
       />
-      <Text style={styles.userName}>
+      <Text style={styles(isDarkMode).userName}>
         {item.first_name} {item.last_name}
       </Text>
     </TouchableOpacity>
@@ -108,13 +108,13 @@ const SearchScreen = ({ navigation }) => {
 
   const getContent = () => {
     if (isLoading) {
-      return <ActivityIndicator style={styles.loading} size="large" />;
+      return <ActivityIndicator style={styles(isDarkMode).loading} size="large" />;
     }
 
     if (searchQuery.length === 0) {
       return (
-        <View style={styles.emptyState}>
-          <Text style={styles.emptyStateText}>
+        <View style={styles(isDarkMode).emptyState}>
+          <Text style={styles(isDarkMode).emptyStateText}>
             Nhập từ khóa để tìm kiếm
           </Text>
         </View>
@@ -129,7 +129,7 @@ const SearchScreen = ({ navigation }) => {
             renderItem={renderUserItem}
             keyExtractor={item => item.id}
             ListEmptyComponent={
-              <Text style={styles.noResults}>Không tìm thấy người dùng</Text>
+              <Text style={styles(isDarkMode).noResults}>Không tìm thấy người dùng</Text>
             }
           />
         );
@@ -140,7 +140,7 @@ const SearchScreen = ({ navigation }) => {
             renderItem={({ item }) => <PostComponent post={item} userProfile={userProfile} navigation={navigation} />}
             keyExtractor={item => item.id}
             ListEmptyComponent={
-              <Text style={styles.noResults}>Không tìm thấy bài viết</Text>
+              <Text style={styles(isDarkMode).noResults}>Không tìm thấy bài viết</Text>
             }
           />
         );
@@ -149,7 +149,7 @@ const SearchScreen = ({ navigation }) => {
           <>
             {searchResults.users.length > 0 && (
               <View>
-                <Text style={styles.sectionTitle}>Người dùng</Text>
+                <Text style={styles(isDarkMode).sectionTitle}>Người dùng</Text>
                 <FlatList
                   data={searchResults.users.slice(0, 3)}
                   renderItem={renderUserItem}
@@ -160,7 +160,7 @@ const SearchScreen = ({ navigation }) => {
             )}
             {searchResults.posts.length > 0 && (
               <View>
-                <Text style={styles.sectionTitle}>Bài viết</Text>
+                <Text style={styles(isDarkMode).sectionTitle}>Bài viết</Text>
                 <FlatList
                   data={searchResults.posts.slice(0, 3)}
                   renderItem={({ item }) => <PostComponent post={item} userProfile={userProfile} navigation={navigation} />}
@@ -175,61 +175,62 @@ const SearchScreen = ({ navigation }) => {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
+    <View style={styles(isDarkMode).container}>
+      <View style={styles(isDarkMode).header}>
         <TouchableOpacity
           onPress={() => navigation.goBack()}
-          style={styles.backButton}
+          style={styles(isDarkMode).backButton}
         >
           <Ionicons name="arrow-back" size={24} color="black" />
         </TouchableOpacity>
         <TextInput
-          style={styles.searchInput}
+          style={styles(isDarkMode).searchInput}
           placeholder="Tìm kiếm..."
           value={searchQuery}
+          placeholderTextColor={isDarkMode ? "#fff" : "#888"}
           onChangeText={setSearchQuery}
           autoFocus
         />
       </View>
 
-      <View style={styles.tabs}>
+      <View style={styles(isDarkMode).tabs}>
         <TouchableOpacity
-          style={[styles.tab, activeTab === 'all' && styles.activeTab]}
+          style={[styles(isDarkMode).tab, activeTab === 'all' && styles(isDarkMode).activeTab]}
           onPress={() => setActiveTab('all')}
         >
-          <Text style={[styles.tabText, activeTab === 'all' && styles.activeTabText]}>
+          <Text style={[styles(isDarkMode).tabText, activeTab === 'all' && styles(isDarkMode).activeTabText]}>
             Tất cả
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.tab, activeTab === 'posts' && styles.activeTab]}
+          style={[styles(isDarkMode).tab, activeTab === 'posts' && styles(isDarkMode).activeTab]}
           onPress={() => setActiveTab('posts')}
         >
-          <Text style={[styles.tabText, activeTab === 'posts' && styles.activeTabText]}>
+          <Text style={[styles(isDarkMode).tabText, activeTab === 'posts' && styles(isDarkMode).activeTabText]}>
             Bài viết
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.tab, activeTab === 'people' && styles.activeTab]}
+          style={[styles(isDarkMode).tab, activeTab === 'people' && styles(isDarkMode).activeTab]}
           onPress={() => setActiveTab('people')}
         >
-          <Text style={[styles.tabText, activeTab === 'people' && styles.activeTabText]}>
+          <Text style={[styles(isDarkMode).tabText, activeTab === 'people' && styles(isDarkMode).activeTabText]}>
             Mọi người
           </Text>
         </TouchableOpacity>
       </View>
 
-      <View style={styles.content}>
+      <View style={styles(isDarkMode).content}>
         {getContent()}
       </View>
     </View>
   );
 };
 
-const styles = StyleSheet.create({
+const styles = (isDarkMode) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: isDarkMode ? '#28242c' : '#fff',
   },
   header: {
     flexDirection: 'row',
@@ -244,7 +245,8 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     height: 40,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: isDarkMode ? 'black' : '#fff',
+    color: isDarkMode ? '#fff' : '#000',
     borderRadius: 20,
     paddingHorizontal: 15,
     marginLeft: 10,
@@ -252,7 +254,8 @@ const styles = StyleSheet.create({
   tabs: {
     flexDirection: 'row',
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: isDarkMode ? '#28242c' : '#eee',
+    color: isDarkMode ? '#28242c' : '#fff',
   },
   tab: {
     flex: 1,

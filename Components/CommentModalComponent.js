@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useContext, useEffect, useMemo } from "react";
 import {
     View,
     Text,
@@ -24,7 +24,7 @@ const CommentModalComponent = ({ visible, onClose, postId }) => {
     const [newComment, setNewComment] = useState("");
     const [replyCommentId, setReplyCommentId] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
-    const { userProfile } = useContext(UserContext);
+    const { userProfile, isDarkMode, language } = useContext(UserContext);
 
     useEffect(() => {
         if (visible && postId) {
@@ -46,6 +46,8 @@ const CommentModalComponent = ({ visible, onClose, postId }) => {
             };
         }
     }, [visible, postId]);
+
+
 
     useEffect(() => {
         if (visible && postId && comments.length > 0) {
@@ -267,26 +269,30 @@ const CommentModalComponent = ({ visible, onClose, postId }) => {
         const [isExpanded, setIsExpanded] = useState(false);
         const [isTruncated, setIsTruncated] = useState(false);
 
-        const userLiked =
-            Array.isArray(item.comment_likes) &&
-            item.comment_likes.some((like) => like.user_id === userProfile.id);
+
+        const userLiked = useMemo(
+            () =>
+                Array.isArray(item.comment_likes) &&
+                item.comment_likes.some((like) => like.user_id === userProfile.id),
+            [item.comment_likes, userProfile.id]
+        );
 
         return (
-            <View style={styles.commentItem}>
+            <View style={styles(isDarkMode).commentItem}>
                 <TouchableOpacity
                     onPress={() => handleAvatarPress(item.user?.id)}
                 >
                     <Image
                         source={{ uri: item.user?.avatar_url || 'https://www.pngkey.com/png/full/114-1149878_setting-user-avatar-in-specific-size-without-breaking.png' }}
-                        style={styles.avatar}
+                        style={styles(isDarkMode).avatar}
                     />
                 </TouchableOpacity>
-                <View style={styles.commentContent}>
-                    <Text style={styles.userName}>
+                <View style={styles(isDarkMode).commentContent}>
+                    <Text style={styles(isDarkMode).userName}>
                         {`${item.user?.first_name} ${item.user?.last_name}`}
                     </Text>
                     <Text
-                        style={[styles.commentText, !isExpanded && styles.collapsedText]}
+                        style={[styles(isDarkMode).commentText, !isExpanded && styles(isDarkMode).collapsedText]}
                         numberOfLines={isExpanded ? null : 4}
                         onTextLayout={(e) => {
                             const { lines } = e.nativeEvent;
@@ -295,7 +301,7 @@ const CommentModalComponent = ({ visible, onClose, postId }) => {
                     >
                         {item.content.startsWith("@") ? (
                             <>
-                                <Text style={styles.replyingToUser}>
+                                <Text style={styles(isDarkMode).replyingToUser}>
                                     {item.content.split(" ").slice(0, 2).join(" ")}
                                 </Text>
                                 <Text> {item.content.split(" ").slice(2).join(" ")}</Text>
@@ -306,31 +312,31 @@ const CommentModalComponent = ({ visible, onClose, postId }) => {
                     </Text>
                     {isTruncated && (
                         <TouchableOpacity onPress={() => setIsExpanded(!isExpanded)}>
-                            <Text style={styles.expandButton}>
+                            <Text style={styles(isDarkMode).expandButton}>
                                 {isExpanded ? "Thu gọn" : "Xem thêm"}
                             </Text>
                         </TouchableOpacity>
                     )}
-                    <View style={styles.commentFooter}>
-                        <Text style={styles.commentTime}>
+                    <View style={styles(isDarkMode).commentFooter}>
+                        <Text style={styles(isDarkMode).commentTime}>
                             {formatTimeAgo(item.created_at)}
                         </Text>
                         <TouchableOpacity onPress={() => handleLikeComment(item.id)}>
                             <Text
                                 style={[
-                                    styles.likeButton,
-                                    userLiked && styles.likeButtonActive,
+                                    styles(isDarkMode).likeButton,
+                                    userLiked && styles(isDarkMode).likeButtonActive,
                                 ]}
                             >
-                                Thích
+                                {language === "vn" ? "Thích" : "Like"}
                             </Text>
                         </TouchableOpacity>
                         <TouchableOpacity onPress={() => handleReply(item.id)}>
-                            <Text style={styles.replyButton}>Trả lời</Text>
+                            <Text style={styles(isDarkMode).replyButton}>{language === "vn" ? "Trả lời" : "Reply"}</Text>
                         </TouchableOpacity>
                         {item.comment_likes?.length > 0 && (
-                            <View style={styles.likeContainer}>
-                                <Text style={styles.likeCount}>
+                            <View style={styles(isDarkMode).likeContainer}>
+                                <Text style={styles(isDarkMode).likeCount}>
                                     {item.comment_likes.length}
                                 </Text>
                                 <LikeReaction width={22} height={19} />
@@ -338,7 +344,7 @@ const CommentModalComponent = ({ visible, onClose, postId }) => {
                         )}
                     </View>
                     {item.replies?.length > 0 && (
-                        <View style={styles.repliesContainer}>
+                        <View style={styles(isDarkMode).repliesContainer}>
                             {item.replies.map((reply) => {
                                 // Kiểm tra kỹ hơn cho reply likes
                                 const replyUserLiked =
@@ -348,25 +354,25 @@ const CommentModalComponent = ({ visible, onClose, postId }) => {
                                     );
 
                                 return (
-                                    <View key={reply.id} style={styles.commentItem}>
+                                    <View key={reply.id} style={styles(isDarkMode).commentItem}>
                                         <Image
                                             source={{ uri: reply.user?.avatar_url || 'https://www.pngkey.com/png/full/114-1149878_setting-user-avatar-in-specific-size-without-breaking.png' }}
-                                            style={styles.avatar}
+                                            style={styles(isDarkMode).avatar}
                                         />
-                                        <View style={styles.commentContent}>
-                                            <Text style={styles.userName}>
+                                        <View style={styles(isDarkMode).commentContent}>
+                                            <Text style={styles(isDarkMode).userName}>
                                                 {`${reply.user?.first_name} ${reply.user?.last_name}`}
                                             </Text>
                                             <Text
                                                 style={[
-                                                    styles.commentText,
-                                                    !isExpanded && styles.collapsedText,
+                                                    styles(isDarkMode).commentText,
+                                                    !isExpanded && styles(isDarkMode).collapsedText,
                                                 ]}
                                                 numberOfLines={isExpanded ? null : 4}
                                             >
                                                 {reply.content.startsWith("@") ? (
                                                     <>
-                                                        <Text style={styles.replyingToUser}>
+                                                        <Text style={styles(isDarkMode).replyingToUser}>
                                                             {reply.content.split(" ").slice(0, 2).join(" ")}
                                                         </Text>
                                                         <Text>
@@ -378,8 +384,8 @@ const CommentModalComponent = ({ visible, onClose, postId }) => {
                                                     reply.content
                                                 )}
                                             </Text>
-                                            <View style={styles.commentFooter}>
-                                                <Text style={styles.commentTime}>
+                                            <View style={styles(isDarkMode).commentFooter}>
+                                                <Text style={styles(isDarkMode).commentTime}>
                                                     {formatTimeAgo(reply.created_at)}
                                                 </Text>
                                                 <TouchableOpacity
@@ -387,22 +393,22 @@ const CommentModalComponent = ({ visible, onClose, postId }) => {
                                                 >
                                                     <Text
                                                         style={[
-                                                            styles.likeButton,
-                                                            replyUserLiked && styles.likeButtonActive,
+                                                            styles(isDarkMode).likeButton,
+                                                            replyUserLiked && styles(isDarkMode).likeButtonActive,
                                                         ]}
                                                     >
-                                                        Thích
+                                                        {language === "vn" ? "Thích" : "Like"}
                                                     </Text>
                                                 </TouchableOpacity>
                                                 <TouchableOpacity
                                                     onPress={() => handleReply(reply.id, item.id)}
                                                 >
-                                                    <Text style={styles.replyButton}>Trả lời</Text>
+                                                    <Text style={styles(isDarkMode).replyButton}>{language === "vn" ? "Trả lời" : "Reply"}</Text>
                                                 </TouchableOpacity>
                                                 {Array.isArray(reply.comment_likes) &&
                                                     reply.comment_likes.length > 0 && (
-                                                        <View style={styles.likeContainer}>
-                                                            <Text style={styles.likeCount}>
+                                                        <View style={styles(isDarkMode).likeContainer}>
+                                                            <Text style={styles(isDarkMode).likeCount}>
                                                                 {reply.comment_likes.length}
                                                             </Text>
                                                             <LikeReaction width={22} height={19} />
@@ -422,15 +428,15 @@ const CommentModalComponent = ({ visible, onClose, postId }) => {
 
     return (
         <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
-            <View style={styles.modalContainer}>
-                <Text style={styles.modalTitle}>Bình luận</Text>
+            <View style={styles(isDarkMode).modalContainer}>
+                <Text style={styles(isDarkMode).modalTitle}>{language === "vn" ? "Bình luận" : "Comment"}</Text>
 
                 {isLoading ? (
                     <ActivityIndicator size="large" color="#0000ff" />
                 ) : comments.length === 0 ? (
-                    <View style={styles.noCommentContainer}>
+                    <View style={styles(isDarkMode).noCommentContainer}>
                         <NoComment width={100} height={100} />
-                        <Text style={styles.noCommentText}>Chưa có bình luận nào</Text>
+                        <Text style={styles(isDarkMode).noCommentText}>{language === "vn" ? "Chưa có bình luận nào" : "No comment in here yet"}</Text>
                     </View>
                 ) : (
                     <FlatList
@@ -441,10 +447,10 @@ const CommentModalComponent = ({ visible, onClose, postId }) => {
                 )}
 
                 {replyCommentId && (
-                    <View style={styles.replyingToContainer}>
-                        <Text style={styles.replyingToText}>
-                            Đang trả lời bình luận của:{" "}
-                            <Text style={styles.replyingToUser}>
+                    <View style={styles(isDarkMode).replyingToContainer}>
+                        <Text style={styles(isDarkMode).replyingToText}>
+                        {language === "vn" ? "Đang trả lời bình luận của" : "Replying to"}{" "}
+                            <Text style={styles(isDarkMode).replyingToUser}>
                                 {
                                     comments.find((c) => c.id === replyCommentId)?.user
                                         ?.first_name
@@ -453,17 +459,23 @@ const CommentModalComponent = ({ visible, onClose, postId }) => {
                             </Text>
                         </Text>
                         <TouchableOpacity onPress={() => setReplyCommentId(null)}>
-                            <Text style={styles.cancelReplyButton}>Hủy</Text>
+                            <Text style={styles(isDarkMode).cancelReplyButton}>Hủy</Text>
                         </TouchableOpacity>
                     </View>
                 )}
 
-                <View style={styles.inputContainer}>
+                <View style={styles(isDarkMode).inputContainer}>
+                    <Image source={{
+                        uri: userProfile?.avatar_url || 'https://www.pngkey.com/png/full/114-1149878_setting-user-avatar-in-specific-size-without-breaking.png'
+                    }} style={styles(isDarkMode).avatar} />
                     <TextInput
-                        style={styles.input}
+                        style={styles(isDarkMode).input}
                         placeholder={
-                            replyCommentId ? "Trả lời bình luận..." : "Viết bình luận..."
+                            replyCommentId
+                                ? (language === "vn" ? "Trả lời bình luận..." : "Reply to...")
+                                : (language === "vn" ? "Viết bình luận..." : "Write your comment")
                         }
+                        placeholderTextColor={isDarkMode ? "#fff" : "#888"}
                         value={newComment}
                         onChangeText={setNewComment}
                         multiline
@@ -477,129 +489,139 @@ const CommentModalComponent = ({ visible, onClose, postId }) => {
     );
 };
 
-const styles = StyleSheet.create({
-    modalContainer: {
-        flex: 1,
-        padding: 20,
-        backgroundColor: "#fff",
-    },
-    modalTitle: {
-        fontSize: 22,
-        fontWeight: "bold",
-        marginBottom: 20,
-        textAlign: "center",
-    },
-    commentItem: {
-        flexDirection: "row",
-        marginBottom: 15,
-    },
-    avatar: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        marginRight: 10,
-    },
-    commentContent: {
-        flex: 1,
-    },
-    userName: {
-        fontWeight: "bold",
-        fontSize: 18,
-    },
-    commentText: {
-        fontSize: 16,
-        marginVertical: 5,
-    },
-    commentFooter: {
-        flex: 1,
-        flexDirection: "row",
-        alignItems: "center",
-    },
-    commentTime: {
-        fontSize: 12,
-        color: "#888",
-        marginRight: 15,
-    },
-    likeButton: {
-        fontSize: 14,
-        color: "#888",
-        marginRight: 15,
-    },
-    likeButtonActive: {
-        color: "blue",
-    },
-    likeContainer: {
-        flex: 1,
-        flexDirection: "row",
-        justifyContent: "flex-end",
-    },
-    replyButton: {
-        fontSize: 14,
-        color: "#888",
-    },
-    replyItem: {
-        flexDirection: "row",
-        marginTop: 10,
-    },
-    inputContainer: {
-        flexDirection: "row",
-        alignItems: "center",
-        marginTop: 20,
-    },
-    input: {
-        flex: 1,
-        borderWidth: 1,
-        borderColor: "#ccc",
-        borderRadius: 5,
-        padding: 10,
-        marginRight: 10,
-    },
-    closeButton: {
-        marginTop: 20,
-        alignSelf: "center",
-    },
-    closeButtonText: {
-        color: "red",
-    },
-    replyingToContainer: {
-        flexDirection: "row",
-        alignItems: "center",
-        paddingInline: 10,
-        paddingBlockStart: 10,
-        backgroundColor: "#f9f9f9",
-        borderRadius: 5,
-    },
-    replyingToText: {
-        flex: 1,
-        fontSize: 16,
-        color: "#333",
-    },
-    replyingToUser: {
-        fontWeight: "bold",
-        color: "#007BFF",
-    },
-    cancelReplyButton: {
-        fontSize: 18,
-        color: "red",
-        marginLeft: 10,
-    },
-    noCommentContainer: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        marginTop: 20,
-    },
-    noCommentText: {
-        marginTop: 10,
-        fontSize: 20,
-        color: "#888",
-    },
-    expandButton: {
-        color: "#888",
-    },
-    repliesContainer: {
-        marginTop: 10,
-    },
-});
+const styles = (isDarkMode) =>
+    StyleSheet.create({
+        modalContainer: {
+            flex: 1,
+            padding: 20,
+            backgroundColor: isDarkMode ? "#27262b" : "#fff",
+        },
+        modalTitle: {
+            fontSize: 22,
+            fontWeight: "bold",
+            marginBottom: 20,
+            textAlign: "center",
+            color: isDarkMode ? "#fff" : "#000",
+        },
+        commentItem: {
+            flexDirection: "row",
+            marginBottom: 15,
+            
+        },
+        avatar: {
+            width: 40,
+            height: 40,
+            borderRadius: 20,
+            marginRight: 10,
+        },
+        commentContent: {
+            flex: 1,
+        },
+        userName: {
+            fontWeight: "bold",
+            fontSize: 18,
+            color: isDarkMode ? "#fff" : "#000",
+        },
+        commentText: {
+            fontSize: 16,
+            marginVertical: 5,
+            color: isDarkMode ? "#fff" : "#000",
+        },
+        commentFooter: {
+            flex: 1,
+            flexDirection: "row",
+            alignItems: "center",
+        },
+        commentTime: {
+            fontSize: 12,
+            color: "#888",
+            marginRight: 15,
+        },
+        likeButton: {
+            fontSize: 14,
+            color: "#888",
+            marginRight: 15,
+        },
+        likeCount: {
+            color: isDarkMode ? "#888" : "#000",
+        },
+        likeButtonActive: {
+            color: "blue",
+        },
+        likeContainer: {
+            flex: 1,
+            flexDirection: "row",
+            justifyContent: "flex-end",
+        },
+        replyButton: {
+            fontSize: 14,
+            color: "#888",
+        },
+        replyItem: {
+            flexDirection: "row",
+            marginTop: 10,
+        },
+        inputContainer: {
+            flexDirection: "row",
+            alignItems: "center",
+            marginTop: 20,
+        },
+        input: {
+            flex: 1,
+            borderWidth: 1,
+            borderColor: "#ccc",
+            borderRadius: 5,
+            padding: 10,
+            marginRight: 10,
+            color: isDarkMode ? "#fff" : "#888",
+        },
+        closeButton: {
+            marginTop: 20,
+            alignSelf: "center",
+        },
+        closeButtonText: {
+            color: "red",
+        },
+        replyingToContainer: {
+            flexDirection: "row",
+            alignItems: "center",
+            paddingInline: 10,
+            paddingBlockStart: 10,
+            backgroundColor: isDarkMode ? "#27262b" : "#f9f9f9",
+            color: isDarkMode ? "#fff" : "#888",
+            borderRadius: 5,
+        },
+        replyingToText: {
+            flex: 1,
+            fontSize: 16,
+            color: isDarkMode ? "#fff" : "#333",
+        },
+        replyingToUser: {
+            fontWeight: "bold",
+            color: "#007BFF",
+        },
+        cancelReplyButton: {
+            fontSize: 18,
+            color: "red",
+            marginLeft: 10,
+        },
+        noCommentContainer: {
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            marginTop: 20,
+        },
+        noCommentText: {
+            marginTop: 10,
+            fontSize: 20,
+            color: "#888",
+        },
+        expandButton: {
+            color: "#888",
+        },
+        repliesContainer: {
+            marginTop: 10,
+        },
+    });
 
 export default CommentModalComponent;

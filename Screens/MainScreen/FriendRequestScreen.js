@@ -19,12 +19,15 @@ import Post from '../../assets/svg/post_outline.svg';
 import Search from '../../assets/svg/search.svg';
 import Chat from '../../assets/svg/chat.svg';
 import Ionicons from "@expo/vector-icons/Ionicons";
+import Friend from '../../assets/svg/friend_blue.svg';
+import HomeDark from '../../assets/svg/darkmode/home_outline.svg';
+import VideoDark from '../../assets/svg/darkmode/video_outline.svg';
 
 const FriendRequestScreen = ({ navigation }) => {
     const [friendRequests, setFriendRequests] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [processingIds, setProcessingIds] = useState(new Set());
-    const { userProfile } = useContext(UserContext);
+    const { userProfile, isDarkMode, language } = useContext(UserContext);
 
     useEffect(() => {
         loadFriendRequests();
@@ -44,7 +47,7 @@ const FriendRequestScreen = ({ navigation }) => {
 
     const handleAccept = async (friendshipId) => {
         if (processingIds.has(friendshipId)) return;
-        
+
         try {
             await friendshipService.acceptFriendRequest(friendshipId);
             setFriendRequests(prev => prev.filter(request => request.id !== friendshipId));
@@ -65,9 +68,9 @@ const FriendRequestScreen = ({ navigation }) => {
     };
 
     const navigationButtons = [
-        { name: "Home", label: <Home width={35} height={35} /> },
-        { name: "Video", label: <Video width={35} height={35} /> },
-        { name: "FriendRequest", label: <Ionicons name="person-add" size={35} color="#316ff6" /> },
+        { name: "Home", label: isDarkMode ? <HomeDark width={35} height={35} /> : <Home width={35} height={35} /> },
+        { name: "Video", label: isDarkMode ? <VideoDark width={35} height={35} /> : <Video width={35} height={35} /> },
+        { name: "FriendRequest", label: <Friend width={35} height={35} /> },
         {
             name: "Profile",
             label: (
@@ -75,7 +78,7 @@ const FriendRequestScreen = ({ navigation }) => {
                     source={{
                         uri: userProfile?.avatar_url || 'https://www.pngkey.com/png/full/114-1149878_setting-user-avatar-in-specific-size-without-breaking.png'
                     }}
-                    style={styles.profileIcon}
+                    style={styles(isDarkMode).profileIcon}
                 />
             ),
         },
@@ -86,13 +89,16 @@ const FriendRequestScreen = ({ navigation }) => {
     };
 
     if (isLoading) {
-        return <ActivityIndicator size="large" style={styles.loader} />;
+        return <ActivityIndicator size="large" style={styles(isDarkMode).loader} />;
     }
 
     return (
-        <View style={styles.container}>
-            <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-            <View style={styles.headerContainer}>
+        <View style={styles(isDarkMode).container}>
+            <StatusBar
+                barStyle={isDarkMode ? 'light-content' : 'dark-content'}
+                backgroundColor={isDarkMode ? '#27262b' : '#FFF'}
+            />
+            <View style={styles(isDarkMode).headerContainer}>
                 <HeaderNavigationComponent
                     navigationButtons={navigationButtons}
                     onButtonPress={handleNavigationPress}
@@ -103,50 +109,50 @@ const FriendRequestScreen = ({ navigation }) => {
                 data={friendRequests}
                 keyExtractor={(item) => item.id}
                 renderItem={({ item }) => (
-                    <View style={styles.requestItem}>
-                        <Image 
+                    <View style={styles(isDarkMode).requestItem}>
+                        <Image
                             source={{ uri: item.profiles.avatar_url }}
-                            style={styles.avatar}
+                            style={styles(isDarkMode).avatar}
                         />
-                        <View style={styles.requestInfo}>
-                            <Text style={styles.name}>
+                        <View style={styles(isDarkMode).requestInfo}>
+                            <Text style={styles(isDarkMode).name}>
                                 {item.profiles.first_name} {item.profiles.last_name}
                             </Text>
-                            <View style={styles.buttonContainer}>
+                            <View style={styles(isDarkMode).buttonContainer}>
                                 <TouchableOpacity
-                                    style={[styles.button, styles.acceptButton]}
+                                    style={[styles(isDarkMode).button, styles(isDarkMode).acceptButton]}
                                     onPress={() => handleAccept(item.id)}
                                 >
-                                    <Text style={styles.buttonText}>Chấp nhận</Text>
+                                    <Text style={styles(isDarkMode).buttonText}>Chấp nhận</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity
-                                    style={[styles.button, styles.rejectButton]}
+                                    style={[styles(isDarkMode).button, styles(isDarkMode).rejectButton]}
                                     onPress={() => handleReject(item.id)}
                                 >
-                                    <Text style={styles.buttonText}>Từ chối</Text>
+                                    <Text style={styles(isDarkMode).buttonText}>Từ chối</Text>
                                 </TouchableOpacity>
                             </View>
                         </View>
                     </View>
                 )}
                 ListEmptyComponent={() => (
-                    <View style={styles.emptyContainer}>
-                        <Text style={styles.emptyText}>Không có lời mời kết bạn nào</Text>
+                    <View style={styles(isDarkMode).emptyContainer}>
+                        <Text style={styles(isDarkMode).emptyText}>Không có lời mời kết bạn nào</Text>
                     </View>
                 )}
-                contentContainerStyle={styles.listContainer}
+                contentContainerStyle={styles(isDarkMode).listContainer}
             />
         </View>
     );
 };
 
-const styles = StyleSheet.create({
+const styles = (isDarkMode) => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: isDarkMode ? '#000' : '#FFF',
     },
     headerContainer: {
-        backgroundColor: '#fff',
+        backgroundColor: isDarkMode ? '#27262b' : '#FFF',
         position: 'absolute',
         top: 0,
         left: 0,

@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useMemo, memo, useRef, useState } from "react";
+import React, {useContext, useEffect, useMemo, memo, useRef, useState } from "react";
 import {
     Dimensions,
     Image,
@@ -11,37 +11,32 @@ import {
     TouchableWithoutFeedback,
     ActivityIndicator,
     Alert,
-    TextInput,
 } from "react-native";
 import LikeBlue from "../assets/svg/like_blue.svg";
-import LikeReaction from "../assets/svg/like_reaction.svg";
 import LikeOutline from "../assets/svg/like_outline.svg";
+import LikeReaction from "../assets/svg/like_reaction.svg";
 import Comment from "../assets/svg/comment.svg";
 import ShareIcon from "../assets/svg/share.svg";
-import LikeOutlineDark from "../assets/svg/darkmode/like_outline.svg";
-import CommentDark from "../assets/svg/darkmode/comment.svg";
-import ShareIconDark from "../assets/svg/darkmode/share.svg";
 import CommentModalComponent from "./CommentModalComponent";
-import { ResizeMode, Video } from "expo-av";
-import { UserContext } from "../context/UserContext";
+import {ResizeMode, Video} from "expo-av";
+import {UserContext} from "../context/UserContext";
 import * as postService from "../services/postService";
-import { supabase } from "../lib/supabase";
-import { formatTimeAgo } from "../utils/dateUtils";
+import {supabase} from "../lib/supabase";
+import {formatTimeAgo} from "../utils/dateUtils";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { useNavigation } from '@react-navigation/native';
-import PostEditComponent from './PostEditComponent';
+import {useNavigation} from '@react-navigation/native';
 
 const getMediaUrl = (path) => {
     if (!path) return null;
     const {
-        data: { publicUrl },
+        data: {publicUrl},
     } = supabase.storage.from("post-media").getPublicUrl(path);
     return publicUrl;
 };
 
-const PostComponent = ({ post: initialPost, onRefresh }) => {
+const PostComponent  = ({post: initialPost, onRefresh}) => {
     const navigation = useNavigation();
-    const { userProfile, language, isDarkMode } = useContext(UserContext);
+    const {userProfile, language, isDarkMode} = useContext(UserContext);
     const [post, setPost] = useState(initialPost);
     const [postUser, setPostUser] = useState(post?.profiles || null);
     const [isExpanded, setIsExpanded] = useState(false); // Trạng thái xem thêm
@@ -57,8 +52,6 @@ const PostComponent = ({ post: initialPost, onRefresh }) => {
     const [isCommentModalVisible, setIsCommentModalVisible] = useState(false);
     const [showOptionsModal, setShowOptionsModal] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
-    const [isEditing, setIsEditing] = useState(false);
-    const [editedContent, setEditedContent] = useState(post.content);
 
     const handleDeletePost = async () => {
         Alert.alert(
@@ -126,7 +119,7 @@ const PostComponent = ({ post: initialPost, onRefresh }) => {
     useEffect(() => {
         const postSubscription = postService.subscribeToPosts((payload) => {
             if (payload.new.id === post.id) {
-                setPost((prev) => ({ ...prev, ...payload.new }));
+                setPost((prev) => ({...prev, ...payload.new}));
             }
         });
 
@@ -331,7 +324,7 @@ const PostComponent = ({ post: initialPost, onRefresh }) => {
                         >
                             {media.media_type === "video" ? (
                                 <Video
-                                    source={{ uri: getMediaUrl(media.media_url) }}
+                                    source={{uri: getMediaUrl(media.media_url)}}
                                     style={[
                                         styles(isDarkMode).mediaItem,
                                         {
@@ -346,7 +339,7 @@ const PostComponent = ({ post: initialPost, onRefresh }) => {
                                 />
                             ) : (
                                 <Image
-                                    source={{ uri: getMediaUrl(media.media_url) }}
+                                    source={{uri: getMediaUrl(media.media_url)}}
                                     style={[
                                         styles(isDarkMode).mediaItem,
                                         {
@@ -446,7 +439,7 @@ const PostComponent = ({ post: initialPost, onRefresh }) => {
             if (media.media_type === "video") {
                 return (
                     <Video
-                        source={{ uri: getMediaUrl(media.media_url) }}
+                        source={{uri: getMediaUrl(media.media_url)}}
                         style={styles(isDarkMode).mediaItem}
                         resizeMode="cover"
                         shouldPlay={false}
@@ -456,7 +449,7 @@ const PostComponent = ({ post: initialPost, onRefresh }) => {
             }
             return (
                 <Image
-                    source={{ uri: getMediaUrl(media.media_url) }}
+                    source={{uri: getMediaUrl(media.media_url)}}
                     style={styles(isDarkMode).mediaItem}
                     resizeMode="cover"
                 />
@@ -513,7 +506,7 @@ const PostComponent = ({ post: initialPost, onRefresh }) => {
 
                             {selectedMedia.media_type === "video" ? (
                                 <Video
-                                    source={{ uri: getMediaUrl(selectedMedia.media_url) }}
+                                    source={{uri: getMediaUrl(selectedMedia.media_url)}}
                                     style={styles(isDarkMode).fullScreenMedia}
                                     resizeMode="contain"
                                     shouldPlay={true}
@@ -522,7 +515,7 @@ const PostComponent = ({ post: initialPost, onRefresh }) => {
                                 />
                             ) : (
                                 <Image
-                                    source={{ uri: getMediaUrl(selectedMedia.media_url) }}
+                                    source={{uri: getMediaUrl(selectedMedia.media_url)}}
                                     style={styles(isDarkMode).fullScreenMedia}
                                     resizeMode="contain"
                                 />
@@ -623,76 +616,43 @@ const PostComponent = ({ post: initialPost, onRefresh }) => {
 
     const ReactionBar = memo(({ totalLikes, totalComments, userLiked, handleLike }) => (
         <View style={styles(isDarkMode).reactionBar}>
-            <View style={styles(isDarkMode).leftReactions}>
-                {totalLikes > 0 && (
-                    <View style={styles(isDarkMode).reactionCount}>
-                        <LikeReaction width={22} height={22} />
-                        <Text style={styles(isDarkMode).reactionText}>{totalLikes}</Text>
-                    </View>
-                )}
-            </View>
-            <View style={styles(isDarkMode).rightReactions}>
-                {totalComments > 0 && (
-                    <View style={styles(isDarkMode).reactionCount}>
-                        <Text style={styles(isDarkMode).reactionText}>{totalComments} {language === "vn" ? "bình luận" : "comments"}</Text>
-                    </View>
-                )}
-            </View>
+        <View style={styles(isDarkMode).leftReactions}>
+            {totalLikes > 0 && (
+                <View style={styles(isDarkMode).reactionCount}>
+                    <LikeReaction width={22} height={22}/>
+                    <Text style={styles(isDarkMode).reactionText}>{totalLikes}</Text>
+                </View>
+            )}
         </View>
+        <View style={styles(isDarkMode).rightReactions}>
+            {totalComments > 0 && (
+                <View style={styles(isDarkMode).reactionCount}>
+                    <Text style={styles(isDarkMode).reactionText}>{totalComments} {language === "vn" ? "bình luận" : "comments"}</Text>
+                </View>
+            )}
+        </View>
+    </View>
     ));
-
-    const handleEditPost = async () => {
-        try {
-            setIsUpdating(true);
-            await postService.updatePost(post.id, userProfile.id, editedContent);
-            setPost(prev => ({ ...prev, content: editedContent }));
-            setIsEditing(false);
-            setShowOptionsModal(false);
-        } catch (error) {
-            alert("Không thể cập nhật bài viết. Vui lòng thử lại sau.");
-        } finally {
-            setIsUpdating(false);
-        }
-    };
 
     return (
         <View style={styles(isDarkMode).post}>
-            <View style={styles(isDarkMode).postHeader}>
-                <View style={styles(isDarkMode).userInfo}>
-                    <TouchableOpacity onPress={() => navigation.navigate("Profile", { userId: post.user_id })}>
-                        <Image
-                            source={{ uri: post.profiles.avatar_url }}
-                            style={styles(isDarkMode).avatar}
-                        />
-                    </TouchableOpacity>
-                    <View style={styles(isDarkMode).headerText}>
-                        <TouchableOpacity onPress={() => navigation.navigate("Profile", { userId: post.user_id })}>
-                            <Text style={styles(isDarkMode).username}>
-                                {post.profiles.first_name} {post.profiles.last_name}
-                            </Text>
-                        </TouchableOpacity>
-                        <View style={styles(isDarkMode).postMetadata}>
-                            <Text style={styles(isDarkMode).timestamp}>{formatTimeAgo(post.created_at)}</Text>
-                            <Text style={styles(isDarkMode).dot}> · </Text>
-                            <View style={styles(isDarkMode).privacyIndicator}>
-                                <Ionicons
-                                    name={
-                                        post.privacy === "public" ? "earth" :
-                                            post.privacy === "private" ? "lock-closed" : "people"
-                                    }
-                                    size={12}
-                                    color="#666"
-                                />
-                                <Text style={styles(isDarkMode).privacyText}>
-                                    {post.privacy === "public"
-                                        ? (language === "vn" ? "Công khai" : "Public")
-                                        : post.privacy === "private"
-                                            ? (language === "vn" ? "Chỉ mình tôi" : "Only me")
-                                            : (language === "vn" ? "Bạn bè" : "Friends")}
-                                </Text>
-
-                            </View>
-                        </View>
+            <View style={styles(isDarkMode).header}>
+                <TouchableOpacity onPress={handleAvatarPress}>
+                    <Image
+                        style={styles(isDarkMode).avatar}
+                        source={{
+                            uri: post.profiles?.avatar_url || 'https://www.pngkey.com/png/full/114-1149878_setting-user-avatar-in-specific-size-without-breaking.png'
+                        }}
+                    />
+                </TouchableOpacity>
+                <View style={styles(isDarkMode).headerText}>
+                    <Text style={styles(isDarkMode).username}>
+                        {postUser
+                            ? `${postUser.first_name} ${postUser.last_name}`
+                            : "Unknown User"}
+                    </Text>
+                    <View style={styles(isDarkMode).postInfo}>
+                        <Text style={styles(isDarkMode).time}>{formatTimeAgo(post.created_at)}</Text>
                     </View>
                 </View>
                 {post.user_id === userProfile.id && (
@@ -735,7 +695,7 @@ const PostComponent = ({ post: initialPost, onRefresh }) => {
             />
 
             {/* Divider */}
-            <View style={styles(isDarkMode).divider} />
+            <View style={styles(isDarkMode).divider}/>
 
             {/* Action button*/}
             <View style={styles(isDarkMode).actions}>
@@ -749,9 +709,9 @@ const PostComponent = ({ post: initialPost, onRefresh }) => {
                     disabled={isUpdating}
                 >
                     {userLiked ? (
-                        <LikeBlue width={28} height={28} />
+                        <LikeBlue width={28} height={28}/>
                     ) : (
-                        isDarkMode ? <LikeOutlineDark width={28} height={28} /> : <LikeOutline width={28} height={28} />
+                        <LikeOutline width={28} height={28}/>
                     )}
                     <Text
                         style={[styles(isDarkMode).actionText, userLiked && styles(isDarkMode).actionTextLiked]}
@@ -763,11 +723,11 @@ const PostComponent = ({ post: initialPost, onRefresh }) => {
                     style={styles(isDarkMode).actionButton}
                     onPress={handleCommentPress}
                 >
-                    {isDarkMode ? <CommentDark width={28} height={28} /> : <Comment width={28} height={28} />}
+                    <Comment width={28} height={28}/>
                     <Text style={styles(isDarkMode).actionText}>{language === "vn" ? "Bình luận" : "Comment"}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles(isDarkMode).actionButton} onPress={handleShare}>
-                    {isDarkMode ? <ShareIconDark width={28} height={28} /> : <ShareIcon width={28} height={28} />}
+                    <ShareIcon width={28} height={28}/>
                     <Text style={styles(isDarkMode).actionText}>{language === "vn" ? "Chia sẻ" : "Share"}</Text>
                 </TouchableOpacity>
             </View>
@@ -794,26 +754,16 @@ const PostComponent = ({ post: initialPost, onRefresh }) => {
                                 <TouchableOpacity
                                     style={styles(isDarkMode).modalOption}
                                     onPress={() => {
-                                        setIsEditing(true);
-                                        setShowOptionsModal(false);
+                                        handleDeletePost();
                                     }}
-                                >
-                                    <Ionicons name="pencil-outline" size={24} color="#316ff6" />
-                                    <Text style={[styles(isDarkMode).modalOptionText, { color: "#316ff6" }]}>
-                                        Chỉnh sửa bài viết
-                                    </Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity
-                                    style={styles(isDarkMode).modalOption}
-                                    onPress={handleDeletePost}
                                     disabled={isDeleting}
                                 >
                                     {isDeleting ? (
-                                        <ActivityIndicator color="red" />
+                                        <ActivityIndicator color="red"/>
                                     ) : (
                                         <>
-                                            <Ionicons name="trash-outline" size={24} color="red" />
-                                            <Text style={[styles(isDarkMode).modalOptionText, { color: "red" }]}>
+                                            <Ionicons name="trash-outline" size={24} color="red"/>
+                                            <Text style={[styles(isDarkMode).modalOptionText, {color: "red"}]}>
                                                 Xóa bài viết
                                             </Text>
                                         </>
@@ -824,353 +774,272 @@ const PostComponent = ({ post: initialPost, onRefresh }) => {
                     </View>
                 </TouchableWithoutFeedback>
             </Modal>
-
-            {/* Modal chỉnh sửa bài viết */}
-            <PostEditComponent
-                post={post}
-                visible={isEditing}
-                onClose={() => setIsEditing(false)}
-                onPostUpdated={(updatedPost) => {
-                    setPost(prev => ({ ...prev, ...updatedPost }));
-                }}
-            />
         </View>
     );
 };
 
-const styles = (isDarkMode) =>
+const styles = (isDarkMode) => 
     StyleSheet.create({
-        post: {
-            backgroundColor: isDarkMode ? "#27262b" : "#fff",
-            marginBottom: 10,
-            padding: 10,
-            borderRadius: 10,
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.1,
-            shadowRadius: 2,
-            elevation: 3,
-        },
-        postHeader: {
-            flexDirection: "row",
-            alignItems: "center",
-        },
-        userInfo: {
-            flexDirection: "row",
-            alignItems: "center",
-        },
-        avatar: {
-            width: 40,
-            height: 40,
-            borderRadius: 20,
-            marginRight: 10,
-        },
-        settingsBtn: {
-            position: "absolute",
-            right: 10,
-            top: 5,
-        },
-        headerText: {
-            flexDirection: "column",
-            color: isDarkMode ? "#fff" : "#000",
-        },
-        username: {
-            fontWeight: "bold",
-            fontSize: 16,
-            color: isDarkMode ? "#fff" : "#000",
-        },
-        content: {
-            marginVertical: 10,
-            fontSize: 16,
-            color: isDarkMode ? "#fff" : "#000",
-        },
-        postImage: {
-            width: "100%",
-            height: 200,
-            borderRadius: 10,
-            marginVertical: 10,
-        },
-        postVideo: {
-            width: "100%",
-            height: 200,
-            borderRadius: 10,
-            marginVertical: 10,
-        },
-        reaction: {
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginHorizontal: 5,
-            height: 35,
-        },
-        actions: {
-            flexDirection: "row",
-            justifyContent: "space-around",
-            marginInline: -10,
-        },
-        actionButton: {
-            flexDirection: "row",
-            alignItems: "center",
-            padding: 10,
-        },
-        actionText: {
-            fontSize: 14,
-            color: isDarkMode ? "#b3b2b7" : "#000",
-            marginLeft: 5,
-        },
-        expandButton: {
-            color: isDarkMode ? "#fff" : "#888",
-        },
-        mediaContainer: {
-            marginVertical: 10,
-            overflow: "hidden",
-            backgroundColor: "#f0f0f0",
-        },
-        mediaItem: {
-            width: "100%",
-            height: "100%",
-        },
-        gridContainer: {
-            flexDirection: "row",
-            marginVertical: 10,
-        },
-        singleMedia: {
-            width: "100%",
-            height: 300,
-        },
-        twoGridMedia: {
-            flex: 1,
-            height: 200,
-            marginHorizontal: 1,
-        },
-        threeGridFirst: {
-            width: "50%",
-            height: 400,
-            marginRight: 2,
-        },
-        threeGridOthers: {
-            height: 199,
-            marginBottom: 2,
-        },
-        rightGrid: {
-            flex: 1,
-        },
-        fourGridFirst: {
-            width: "50%",
-            height: 400,
-            marginRight: 2,
-        },
-        fourGridOthers: {
-            height: 132,
-            marginBottom: 2,
-        },
-        moreOverlay: {
-            ...StyleSheet.absoluteFillObject,
-            backgroundColor: "rgba(0, 0, 0, 0.7)",
-            justifyContent: "center",
-            alignItems: "center",
-        },
-        moreText: {
-            color: "white",
-            fontSize: 20,
-            fontWeight: "bold",
-        },
-        modalContainer: {
-            flex: 1,
-            backgroundColor: "black",
-            justifyContent: "center",
-        },
-        fullScreenMedia: {
-            width: "100%",
-            height: "100%",
-        },
-        closeButton: {
-            position: "absolute",
-            top: 40,
-            right: 20,
-            zIndex: 1,
-            padding: 10,
-        },
-        closeButtonText: {
-            color: "white",
-            fontSize: 30,
-            fontWeight: "bold",
-        },
-        navButton: {
-            position: "absolute",
-            top: "50%",
-            transform: [{ translateY: -25 }],
-            width: 50,
-            height: 50,
-            backgroundColor: "rgba(0, 0, 0, 0.5)",
-            borderRadius: 25,
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 1,
-        },
-        prevButton: {
-            left: 10,
-        },
-        nextButton: {
-            right: 10,
-        },
-        navButtonText: {
-            color: "white",
-            fontSize: 40,
-            fontWeight: "bold",
-        },
-        mediaCounter: {
-            position: "absolute",
-            top: 40,
-            left: 20,
-            backgroundColor: "rgba(0, 0, 0, 0.5)",
-            padding: 8,
-            borderRadius: 15,
-            zIndex: 1,
-        },
-        mediaCounterText: {
-            color: "white",
-            fontSize: 14,
-        },
-        postMetadata: {
-            flexDirection: "row",
-            alignItems: "center",
-        },
-        timestamp: {
-            color: "#65676B",
-            fontSize: 12,
-        },
-        dot: {
-            color: "#65676B",
-            fontSize: 12,
-            marginHorizontal: 5,
-        },
-        privacyIndicator: {
-            flexDirection: "row",
-            alignItems: "center",
-            gap: 5,
-        },
-        privacyText: {
-            color: "#65676B",
-        },
-        time: {
-            color: isDarkMode ? "#b3b2b7" : "#65676b",
-            fontSize: 12,
-        },
-        reactionBar: {
-            flexDirection: "row",
-            justifyContent: "space-between",
-            paddingHorizontal: 12,
-            paddingVertical: 10,
-        },
-        leftReactions: {
-            flex: 1,
-        },
-        rightReactions: {
-            flex: 1,
-            alignItems: "flex-end",
-        },
-        reactionCount: {
-            flexDirection: "row",
-            alignItems: "center",
-            gap: 5,
-        },
-        reactionText: {
-            color: isDarkMode ? "#b3b2b7" : "#65676B",
-            fontSize: 16,
-            marginLeft: 0,
-        },
-        divider: {
-            height: 1,
-            backgroundColor: "#CED0D4",
-            marginHorizontal: 12,
-        },
-        actionButtonLiked: {
-            opacity: 1,
-        },
-        actionTextLiked: {
-            color: "#1877F2",
-        },
-        actionButtonDisabled: {
-            opacity: 0.7,
-        },
-        modalOverlay: {
-            flex: 1,
-            backgroundColor: "rgba(0, 0, 0, 0.5)",
-            justifyContent: "center",
-            alignItems: "center",
-        },
-        modalContent: {
-            width: "80%",
-            backgroundColor: "white",
-            borderRadius: 10,
-            padding: 15,
-        },
-        deletePostBtn: {
-            position: "absolute",
-            top: 10,
-            right: 10,
-            padding: 5,
-        },
-        editModalContainer: {
-            flex: 1,
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-            justifyContent: 'center',
-            padding: 20,
-        },
-        editModalContent: {
-            backgroundColor: 'white',
-            borderRadius: 10,
-            padding: 20,
-        },
-        editModalTitle: {
-            fontSize: 18,
-            fontWeight: 'bold',
-            marginBottom: 15,
-            textAlign: 'center',
-        },
-        editInput: {
-            borderWidth: 1,
-            borderColor: '#ddd',
-            borderRadius: 5,
-            padding: 10,
-            minHeight: 100,
-            textAlignVertical: 'top',
-            marginBottom: 15,
-        },
-        editModalButtons: {
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-        },
-        editModalButton: {
-            flex: 1,
-            padding: 10,
-            borderRadius: 5,
-            marginHorizontal: 5,
-        },
-        saveButton: {
-            backgroundColor: '#316ff6',
-        },
-        cancelButton: {
-            backgroundColor: '#ccc',
-        },
-        editModalButtonText: {
-            color: 'white',
-            textAlign: 'center',
-            fontWeight: 'bold',
-        },
-        modalOption: {
-            flexDirection: 'row',
-            alignItems: 'center',
-            padding: 15,
-            borderBottomWidth: 1,
-            borderBottomColor: '#eee',
-        },
-        modalOptionText: {
-            fontSize: 16,
-            marginLeft: 10,
-        },
-    });
+    post: {
+        backgroundColor: isDarkMode ? "#27262b" : "#fff" ,
+        marginBottom: 10,
+        padding: 10,
+        borderRadius: 10,
+        shadowColor: "#000",
+        shadowOffset: {width: 0, height: 2},
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+        elevation: 3,
+    },
+    header: {
+        flexDirection: "row",
+        alignItems: "center",
+    },
+    avatar: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        marginRight: 10,
+    },
+    settingsBtn: {
+        position: "absolute",
+        right: 10,
+        top: 5,
+    },
+    headerText: {
+        flexDirection: "column",
+        color: isDarkMode ? "#fff" : "#000",
+    },
+    username: {
+        fontWeight: "bold",
+        fontSize: 16,
+        color: isDarkMode ? "#fff" : "#000",
+    },
+    content: {
+        marginVertical: 10,
+        fontSize: 14,
+        color: isDarkMode ? "#fff" : "#000",
+    },
+    postImage: {
+        width: "100%",
+        height: 200,
+        borderRadius: 10,
+        marginVertical: 10,
+    },
+    postVideo: {
+        width: "100%",
+        height: 200,
+        borderRadius: 10,
+        marginVertical: 10,
+    },
+    reaction: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginHorizontal: 5,
+        height: 35,
+    },
+    actions: {
+        flexDirection: "row",
+        justifyContent: "space-around",
+        marginInline: -10,
+    },
+    actionButton: {
+        flexDirection: "row",
+        alignItems: "center",
+        padding: 10,
+    },
+    actionText: {
+        fontSize: 14,
+        color: isDarkMode ? "#b3b2b7" : "#000",
+        marginLeft: 5,
+    },
+    expandButton: {
+        color: isDarkMode ? "#fff" : "#888",
+    },
+    mediaContainer: {
+        marginVertical: 10,
+        overflow: "hidden",
+        backgroundColor: "#f0f0f0",
+    },
+    mediaItem: {
+        width: "100%",
+        height: "100%",
+    },
+    gridContainer: {
+        flexDirection: "row",
+        marginVertical: 10,
+    },
+    singleMedia: {
+        width: "100%",
+        height: 300,
+    },
+    twoGridMedia: {
+        flex: 1,
+        height: 200,
+        marginHorizontal: 1,
+    },
+    threeGridFirst: {
+        width: "50%",
+        height: 400,
+        marginRight: 2,
+    },
+    threeGridOthers: {
+        height: 199,
+        marginBottom: 2,
+    },
+    rightGrid: {
+        flex: 1,
+    },
+    fourGridFirst: {
+        width: "50%",
+        height: 400,
+        marginRight: 2,
+    },
+    fourGridOthers: {
+        height: 132,
+        marginBottom: 2,
+    },
+    moreOverlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: "rgba(0, 0, 0, 0.7)",
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    moreText: {
+        color: "white",
+        fontSize: 20,
+        fontWeight: "bold",
+    },
+    modalContainer: {
+        flex: 1,
+        backgroundColor: "black",
+        justifyContent: "center",
+    },
+    fullScreenMedia: {
+        width: "100%",
+        height: "100%",
+    },
+    closeButton: {
+        position: "absolute",
+        top: 40,
+        right: 20,
+        zIndex: 1,
+        padding: 10,
+    },
+    closeButtonText: {
+        color: "white",
+        fontSize: 30,
+        fontWeight: "bold",
+    },
+    navButton: {
+        position: "absolute",
+        top: "50%",
+        transform: [{translateY: -25}],
+        width: 50,
+        height: 50,
+        backgroundColor: "rgba(0, 0, 0, 0.5)",
+        borderRadius: 25,
+        justifyContent: "center",
+        alignItems: "center",
+        zIndex: 1,
+    },
+    prevButton: {
+        left: 10,
+    },
+    nextButton: {
+        right: 10,
+    },
+    navButtonText: {
+        color: "white",
+        fontSize: 40,
+        fontWeight: "bold",
+    },
+    mediaCounter: {
+        position: "absolute",
+        top: 40,
+        left: 20,
+        backgroundColor: "rgba(0, 0, 0, 0.5)",
+        padding: 8,
+        borderRadius: 15,
+        zIndex: 1,
+    },
+    mediaCounterText: {
+        color: "white",
+        fontSize: 14,
+    },
+    postInfo: {
+        flexDirection: "row",
+        alignItems: "center",
+    },
+    time: {
+        color: isDarkMode ? "#b3b2b7" : "#65676b",
+        fontSize: 12,
+    },
+    reactionBar: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        paddingHorizontal: 12,
+        paddingVertical: 10,
+    },
+    leftReactions: {
+        flex: 1,
+    },
+    rightReactions: {
+        flex: 1,
+        alignItems: "flex-end",
+    },
+    reactionCount: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 5,
+    },
+    reactionText: {
+        color: isDarkMode ? "#b3b2b7" : "#65676B",
+        fontSize: 16,
+        marginLeft: 0,
+    },
+    divider: {
+        height: 1,
+        backgroundColor: "#CED0D4",
+        marginHorizontal: 12,
+    },
+    actionButtonLiked: {
+        opacity: 1,
+    },
+    actionTextLiked: {
+        color: "#1877F2",
+    },
+    actionButtonDisabled: {
+        opacity: 0.7,
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: "rgba(0, 0, 0, 0.5)",
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    modalContent: {
+        width: "80%",
+        backgroundColor: "white",
+        borderRadius: 10,
+        padding: 15,
+    },
+    modalOption: {
+        flexDirection: "row",
+        alignItems: "center",
+        padding: 15,
+    },
+    modalOptionText: {
+        fontSize: 16,
+        marginLeft: 10,
+    },
+    deletePostBtn: {
+        position: "absolute",
+        top: 10,
+        right: 10,
+        padding: 5,
+    },
+});
 
 export default memo(PostComponent);
-

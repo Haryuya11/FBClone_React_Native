@@ -22,12 +22,18 @@ import * as friendshipService from "../../services/friendshipService";
 import * as userService from "../../services/userService";
 import FriendButton from "../../Components/FriendButton";
 import SettingIcon from "../../assets/svg/setting.svg";
+import SettingIconDark from "../../assets/svg/darkmode/setting.svg";
 import PencilIcon from "../../assets/svg/pencil.svg";
 import ChatSolidIcon from "../../assets/svg/chat_solid.svg";
-import Ionicons from "@expo/vector-icons/Ionicons";
+import PostDark from '../../assets/svg/darkmode/post_outline.svg';
+import HomeDark from '../../assets/svg/darkmode/home_outline.svg';
+import VideoDark from '../../assets/svg/darkmode/video_outline.svg';
+import Friend from '../../assets/svg/friend.svg';
+import FriendDark from '../../assets/svg/darkmode/friend.svg';
+
 
 const ProfileScreen = ({ route, navigation }) => {
-    const { userProfile, logout } = useContext(UserContext);``
+    const { userProfile, logout, isDarkMode, language } = useContext(UserContext);
     const [profile, setProfile] = useState(null);
     const [posts, setPosts] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -112,27 +118,29 @@ const ProfileScreen = ({ route, navigation }) => {
     };
 
     const renderActionButtons = () => (
-        <View style={styles.midContent}>
+        <View style={styles(isDarkMode).midContent}>
             {isOwnProfile ? (
                 <>
                     <TouchableOpacity
-                        style={styles.editProfileBtn}
+                        style={styles(isDarkMode).editProfileBtn}
                         onPress={() => navigation.navigate("EditProfile")}
                     >
                         <PencilIcon width={25} height={25} />
-                        <Text style={styles.textEditProfileBtn}>Chỉnh sửa trang cá nhân</Text>
+                        <Text style={styles(isDarkMode).textEditProfileBtn}>
+                            {language === "vn" ? "Chỉnh sửa trang cá nhân" : "Change your profile"}
+                        </Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.settingBtn} onPress={() => navigation.navigate("Setting")}>
-                        <SettingIcon width={25} height={25} />
+                    <TouchableOpacity style={styles(isDarkMode).settingBtn} onPress={() => navigation.navigate("Setting")}>
+                        {isDarkMode ? <SettingIconDark width={25} height={25} /> : <SettingIcon width={25} height={25} />}
                     </TouchableOpacity>
                 </>
             ) : (
                 <>
-                    <TouchableOpacity style={styles.chatBtn} onPress={handleMessage}>
+                    <TouchableOpacity style={styles(isDarkMode).chatBtn} onPress={handleMessage}>
                         <ChatSolidIcon width={22} height={22} />
-                        <Text style={styles.textChatBtn}> Nhắn tin</Text>
+                        <Text style={styles(isDarkMode).textChatBtn}> {language === "vn" ? "Nhắn tin" : "Message"}</Text>
                     </TouchableOpacity>
-                    <FriendButton userId={userId} style={styles.editProfileBtn} onFriendshipChange={loadData} />
+                    <FriendButton userId={userId} style={styles(isDarkMode).editProfileBtn} onFriendshipChange={loadData} />
                 </>
             )}
         </View>
@@ -140,7 +148,7 @@ const ProfileScreen = ({ route, navigation }) => {
 
     const renderFriendItem = ({ item }) => (
         <TouchableOpacity
-            style={styles.friendItem}
+            style={styles(isDarkMode).friendItem}
             onPress={() => {
                 navigation.navigate("Profile", {
                     screen: 'ProfileScreen',
@@ -152,18 +160,18 @@ const ProfileScreen = ({ route, navigation }) => {
                 source={{
                     uri: item?.avatar_url || 'https://www.pngkey.com/png/full/114-1149878_setting-user-avatar-in-specific-size-without-breaking.png'
                 }}
-                style={styles.friendAvatar}
+                style={styles(isDarkMode).friendAvatar}
             />
-            <Text style={styles.friendName} numberOfLines={1}>
+            <Text style={styles(isDarkMode).friendName} numberOfLines={1}>
                 {`${item.first_name} ${item.last_name}`}
             </Text>
         </TouchableOpacity>
     );
 
     const navigationButtons = [
-        { name: "Home", label: <Home width={35} height={35} /> },
-        { name: "Video", label: <Video width={35} height={35} /> },
-        { name: "FriendRequest", label: <Ionicons name="person-add-outline" size={35} color="black" /> },
+        { name: "Home", label: isDarkMode ? <HomeDark width={35} height={35} /> : <Home width={35} height={35} /> },
+        { name: "Video", label: isDarkMode ? <VideoDark width={35} height={35} /> : <Video width={35} height={35} /> },
+        { name: "FriendRequest", label: isDarkMode ? <FriendDark width={35} height={35} /> : <Friend width={35} height={35} /> },
         {
             name: "Profile",
             label: (
@@ -171,7 +179,7 @@ const ProfileScreen = ({ route, navigation }) => {
                     source={{
                         uri: userProfile?.avatar_url || 'https://www.pngkey.com/png/full/114-1149878_setting-user-avatar-in-specific-size-without-breaking.png'
                     }}
-                    style={styles.profileIcon}
+                    style={styles(isDarkMode).profileIcon}
                 />
             ),
         },
@@ -182,7 +190,7 @@ const ProfileScreen = ({ route, navigation }) => {
     }
 
     return (
-        <View style={{ flex: 1 }}>
+        <View style={styles(isDarkMode).container}>
             <FlatList
                 data={posts}
                 renderItem={({ item }) => <PostComponent post={item} onRefresh={handleRefresh} />}
@@ -191,46 +199,52 @@ const ProfileScreen = ({ route, navigation }) => {
                 onRefresh={handleRefresh}
                 ListHeaderComponent={
                     <>
-                        <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-                        <View style={styles.headerContainer}>
+                        <StatusBar
+                            barStyle={isDarkMode ? 'light-content' : 'dark-content'}
+                            backgroundColor={isDarkMode ? '#27262b' : '#FFF'}
+                        />
+                        <View style={styles(isDarkMode).headerContainer}>
                             <HeaderNavigationComponent
                                 navigationButtons={navigationButtons}
                                 onButtonPress={(name) => navigation.navigate(name)}
                                 selectedButton="Profile"
                             />
                         </View>
-                        <View style={styles.topContent}>
+                        <View style={styles(isDarkMode).topContent}>
                             <Image
-                                style={styles.backgroundImageProfile}
+                                style={styles(isDarkMode).backgroundImageProfile}
                                 source={{
                                     uri: profile?.background_image || "https://t4.ftcdn.net/jpg/07/69/40/97/360_F_769409709_PjhFP5bP2AZVJinAEE4tAVKNkQVhQMpH.jpg",
                                 }}
                             />
-                            <View style={styles.avatarBox}>
-                                <View style={styles.avatarContainer}>
-                                    <View style={styles.borderAvatar}>
+                            <View style={styles(isDarkMode).avatarBox}>
+                                <View style={styles(isDarkMode).avatarContainer}>
+                                    <View style={styles(isDarkMode).borderAvatar}>
                                         <Image
-                                            style={styles.avatar}
+                                            style={styles(isDarkMode).avatar}
                                             source={{
                                                 uri: profile?.avatar_url || 'https://www.pngkey.com/png/full/114-1149878_setting-user-avatar-in-specific-size-without-breaking.png',
                                             }}
                                         />
                                     </View>
                                 </View>
-                                <Text style={styles.userNameAvatarBox}>
+                                <Text style={styles(isDarkMode).userNameAvatarBox}>
                                     {profile ? `${profile.first_name} ${profile.last_name}` : "Loading..."}
                                 </Text>
                             </View>
                         </View>
                         {renderActionButtons()}
-                        <View style={styles.friendContainer}>
-                            <View style={styles.friendHeader}>
-                                <Text style={styles.friendTitle}>Bạn bè</Text>
-                                <Text style={styles.numberOfFriends}>{friendCount} người bạn</Text>
+                        <View style={styles(isDarkMode).friendContainer}>
+                            <View>
+                                <View style={styles(isDarkMode).friendHeader}>
+                                    <Text style={styles(isDarkMode).friendTitle}>{language === "vn" ? "Bạn bè" : "Friends"}</Text>
+                                    <Text style={styles(isDarkMode).numberOfFriends}> ({friendCount} {language === "vn" ? "người bạn" : "friends"})
+                                    </Text>
+                                </View>
                                 <TouchableOpacity
                                     onPress={() => navigation.navigate("FriendList", { userId })}
                                 >
-                                    <Text style={styles.friendSeeAll}>Xem tất cả</Text>
+                                    <Text style={styles(isDarkMode).friendSeeAll}>{language === "vn" ? "Xem tất cả" : "View all friends"}</Text>
                                 </TouchableOpacity>
                             </View>
                             <FlatList
@@ -239,7 +253,7 @@ const ProfileScreen = ({ route, navigation }) => {
                                 keyExtractor={(item) => item.id}
                                 numColumns={3}
                                 scrollEnabled={false}
-                                contentContainerStyle={styles.friendList}
+                                contentContainerStyle={styles(isDarkMode).friendList}
                             />
                         </View>
                         {isOwnProfile && (
@@ -254,9 +268,14 @@ const ProfileScreen = ({ route, navigation }) => {
         </View>
     );
 };
-const styles = StyleSheet.create({
+
+const styles = (isDarkMode) => StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: isDarkMode ? "#27262b" : "#fff",
+    },
     headerContainer: {
-        backgroundColor: "#fff",
+        backgroundColor: isDarkMode ? "#27262b" : "#fff",
         position: "absolute",
         top: 0,
         left: 0,
@@ -265,11 +284,12 @@ const styles = StyleSheet.create({
     },
     topContent: {
         marginBottom: 160,
+        backgroundColor: isDarkMode ? "#27262b" : "#fff",
     },
     avatarContainer: {
         height: 200,
         width: 200,
-        backgroundColor: "white",
+        color: isDarkMode ? "#27262b" : "#fff",
         borderRadius: 200,
         borderWidth: 0.6,
         borderColor: "#ccc",
@@ -292,19 +312,20 @@ const styles = StyleSheet.create({
     userNameAvatarBox: {
         fontSize: 28,
         fontWeight: "bold",
-    },
-    numberOfFriends: {
-        fontStyle: "italic",
+        color: isDarkMode ? "white" : "black",
+        backgroundColor: isDarkMode ? "#27262b" : "#fff",
     },
     midContent: {
         marginBottom: 10,
         flex: 1,
         paddingHorizontal: 20,
-        borderBottomWidth: 15,
-        borderColor: "#CACED0",
+        borderBottomWidth: 5,
+        borderColor: isDarkMode ? "#000" : "#CACED0",
         paddingBottom: 22,
         flexDirection: "row",
         justifyContent: "space-between",
+        backgroundColor: isDarkMode ? "#27262b" : "white",
+
     },
     editProfileBtn: {
         flexDirection: "row",
@@ -322,7 +343,6 @@ const styles = StyleSheet.create({
         elevation: 8,
         justifyContent: "center",
         width: "85%",
-
     },
     textEditProfileBtn: {
         fontSize: 17,
@@ -333,7 +353,7 @@ const styles = StyleSheet.create({
     settingBtn: {
         flexDirection: "row",
         alignItems: "center",
-        backgroundColor: "white",
+        backgroundColor: isDarkMode ? "#444" : "white",
         borderRadius: 5,
         borderWidth: 0.5,
         paddingVertical: 10,
@@ -345,6 +365,10 @@ const styles = StyleSheet.create({
         elevation: 8,
         justifyContent: "center",
         width: "13%",
+    },
+    numberOfFriends: {
+        color: isDarkMode ? "white" : "black",
+        fontSize: 16,
     },
     chatBtn: {
         flexDirection: "row",
@@ -367,60 +391,42 @@ const styles = StyleSheet.create({
         color: "white",
         fontWeight: "bold",
     },
-    botContent: {},
-    postBtnContainer: {
-        flexDirection: "row",
-        paddingLeft: 20,
-        gap: 10,
-        textAlign: "center",
-        justifyContent: "flex-start",
-        borderBottomColor: "gray",
-        borderBottomWidth: 0.5,
-        paddingBottom: 20,
-    },
-    postBtn: {
-        borderColor: "#CCC",
-        borderWidth: 0.5,
-        paddingVertical: 7,
-        paddingHorizontal: 15,
-        borderRadius: 20,
-        backgroundColor: "#EBF5FD",
-        color: "gray",
-        fontWeight: "500",
-    },
-    detail: {
-        marginTop: 20,
-        fontSize: 25,
-        paddingLeft: 20,
-        fontWeight: "bold",
-    },
-    detailContainer: {
-        paddingLeft: 20,
-        marginBottom: 20,
-        padding: 10,
-        borderBottomColor: "gray",
-        borderBottomWidth: 0.5,
-    },
     friendContainer: {
         paddingHorizontal: 20,
-        borderBottomWidth: 15,
-        borderColor: "#CACED0",
+        borderBottomWidth: 5,
+        borderColor: isDarkMode ? "#000" : "#CACED0",
         paddingBottom: 20,
+        justifyContent: "left",
+        alignItems: "left",
+        alignSelf: "left",
+
     },
     friendTitle: {
         fontSize: 18,
         fontWeight: "bold",
+        color: isDarkMode ? "white" : "black",
     },
     friendSeeAll: {
         color: "#007bff",
         fontWeight: "bold",
-        fontSize: 14,
+        fontSize: 16,
+    },
+    friendHeader: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "flex-start",
+        marginBottom: 3,
     },
     friendList: {
-        alignItems: "center",
+        display: "flex",
+        flexDirection: "row",
+        flexWrap: "wrap",
+        alignItems: "flex-start",
+        justifyContent: "flex-start",
+
     },
     friendItem: {
-        flex: 1,
+        width: 110,
         margin: 5,
         alignItems: "center",
     },
@@ -434,94 +440,7 @@ const styles = StyleSheet.create({
         fontSize: 14,
         textAlign: "center",
         maxWidth: 80, // Giới hạn chiều rộng tên
-    },
-    postBox: {
-        borderBottomWidth: 15,
-        borderColor: "#CACED0",
-        padding: 20,
-    },
-    postBoxBtn: {
-        flexDirection: "row",
-        alignItems: "center",
-        marginTop: 20,
-    },
-    avatarContainerPost: {
-        height: 70,
-        width: 70,
-        backgroundColor: "white",
-        borderRadius: 200,
-        borderWidth: 0.6,
-        borderColor: "#ccc",
-        justifyContent: "center",
-        alignItems: "center",
-    },
-    borderAvatarPost: {
-        height: "100%",
-        width: "100%",
-        borderRadius: 200,
-        alignItems: "center",
-        justifyContent: "center",
-    },
-    avatarPost: {
-        height: "100%",
-        width: "100%",
-    },
-    post: {
-        backgroundColor: "#fff",
-        marginBottom: 10,
-        padding: 10,
-        borderRadius: 10,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 2,
-        elevation: 3,
-    },
-    header: {
-        flexDirection: "row",
-        alignItems: "center",
-    },
-    avatarInPost: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        marginRight: 10,
-    },
-    headerText: {
-        flexDirection: "column",
-    },
-    username: {
-        fontWeight: "bold",
-        fontSize: 16,
-    },
-    time: {
-        color: "#888",
-        fontSize: 12,
-    },
-    content: {
-        marginVertical: 10,
-        fontSize: 14,
-    },
-    postImage: {
-        width: "100%",
-        height: 200,
-        borderRadius: 10,
-        marginVertical: 10,
-    },
-    actions: {
-        flexDirection: "row",
-        justifyContent: "space-around",
-        marginInline: -15,
-    },
-    actionButton: {
-        flexDirection: "row",
-        alignItems: "center",
-        padding: 10,
-    },
-    actionText: {
-        fontSize: 14,
-        color: "black",
-        marginLeft: 5,
+        color: isDarkMode ? "white" : "black",
     },
     backgroundImageProfile: {
         width: "100%",
@@ -537,15 +456,12 @@ const styles = StyleSheet.create({
         marginTop: 200,
         marginLeft: 10,
     },
-
     profileIcon: {
         height: 40,
         width: 40,
         borderRadius: 25,
         resizeMode: "cover",
-        borderWidth: 3,
-        borderColor: "#316ff6",
-    },
+    }
 });
 
 export default ProfileScreen;
