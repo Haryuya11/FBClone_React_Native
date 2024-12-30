@@ -25,7 +25,6 @@ import PostComponent from '../../Components/PostComponent';
 import PostCreationComponent from '../../Components/PostCreationComponent';
 import { UserContext } from "../../context/UserContext";
 import * as postService from "../../services/postService";
-import Ionicons from "@expo/vector-icons/Ionicons";
 // Chiều cao của Header
 const HEADER_HEIGHT = 100;
 

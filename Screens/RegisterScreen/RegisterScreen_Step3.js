@@ -8,7 +8,6 @@ import {
   View,
   Modal,
   TextInput,
-  Label,
 } from "react-native";
 import { RadioButton } from "react-native-paper";
 import { RegisterContext } from "../../context/RegisterContext";

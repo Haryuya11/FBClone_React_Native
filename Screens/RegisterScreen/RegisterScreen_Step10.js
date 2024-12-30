@@ -1,5 +1,5 @@
 import React, { useEffect, useContext } from "react";
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Image, StyleSheet, Text, View } from "react-native";
 import { RegisterContext } from "../../context/RegisterContext";
 import { UserContext } from "../../context/UserContext";
 

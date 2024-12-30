@@ -2,11 +2,7 @@ import React from 'react';
 import {
   View,
   Text,
-  FlatList,
   StyleSheet,
-  Image,
-  TextInput,
-  TouchableOpacity,
 } from 'react-native';
 
 

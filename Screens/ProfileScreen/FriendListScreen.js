@@ -12,7 +12,6 @@ import {
 } from 'react-native';
 import { UserContext } from "../../context/UserContext";
 import * as friendshipService from "../../services/friendshipService";
-import AntDesign from "@expo/vector-icons/AntDesign";
 import FriendButton from "../../Components/FriendButton";
 
 const FriendListScreen = ({ navigation, route }) => {

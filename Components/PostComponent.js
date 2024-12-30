@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useMemo, memo, useRef, useState } from "react";
+import React, { useContext, useEffect, useMemo, memo, useState } from "react";
 import {
     Dimensions,
     Image,

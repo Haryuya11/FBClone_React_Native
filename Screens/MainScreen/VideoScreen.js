@@ -8,7 +8,6 @@ import {
 } from "react-native";
 import HeaderNavigationComponent from "../../Components/HeaderNavigationComponent";
 import Home from "../../assets/svg/home_outline.svg";
-import Post from "../../assets/svg/post_outline.svg";
 import Video from "../../assets/svg/video_blue.svg";
 import Friend from '../../assets/svg/friend.svg';
 import FriendDark from '../../assets/svg/darkmode/friend.svg';
@@ -17,7 +16,6 @@ import VideoDark from '../../assets/svg/darkmode/video_outline.svg';
 import { UserContext } from "../../context/UserContext";
 import * as postService from "../../services/postService";
 import PostComponent from "../../Components/PostComponent";
-import Ionicons from "@expo/vector-icons/Ionicons";
 // Chiều cao của Header
 const HEADER_HEIGHT = 55;
 

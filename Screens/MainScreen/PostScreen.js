@@ -1,10 +1,8 @@
 import React, { useState, useContext, useEffect } from 'react';
 import {
     View,
-    Text,
     FlatList,
     Image,
-    TouchableOpacity,
     StyleSheet,
     StatusBar,
 } from 'react-native';

@@ -10,9 +10,7 @@ import {
     ActivityIndicator,
 } from "react-native";
 import HeaderNavigationComponent from "../../Components/HeaderNavigationComponent";
-import Entypo from "@expo/vector-icons/Entypo";
 import Home from "../../assets/svg/home_outline.svg";
-import Post from "../../assets/svg/post_outline.svg";
 import Video from "../../assets/svg/video_outline.svg";
 import { UserContext } from "../../context/UserContext";
 import PostComponent from "../../Components/PostComponent";
@@ -25,7 +23,6 @@ import SettingIcon from "../../assets/svg/setting.svg";
 import SettingIconDark from "../../assets/svg/darkmode/setting.svg";
 import PencilIcon from "../../assets/svg/pencil.svg";
 import ChatSolidIcon from "../../assets/svg/chat_solid.svg";
-import PostDark from '../../assets/svg/darkmode/post_outline.svg';
 import HomeDark from '../../assets/svg/darkmode/home_outline.svg';
 import VideoDark from '../../assets/svg/darkmode/video_outline.svg';
 import Friend from '../../assets/svg/friend.svg';

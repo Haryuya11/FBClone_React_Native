@@ -1,4 +1,4 @@
-import React, { createContext, useEffect, useContext, useState } from "react";
+import React, { createContext, useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as userService from "../services/userService";

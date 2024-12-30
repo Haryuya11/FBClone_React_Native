@@ -8,7 +8,6 @@ import {
 } from "react-native";
 import { UserContext } from "../context/UserContext";
 import * as friendshipService from "../services/friendshipService";
-import Ionicons from "@expo/vector-icons/Ionicons";
 import AddFriendIcon from "../assets/svg/add_friend.svg";
 import RemoveFriendIcon from "../assets/svg/remove_friend.svg";
 
